@@ -1,0 +1,12 @@
+*.d
+*.o
+*.su
+*.mk
+/Debug/*.d
+/Debug/*.o
+/Debug/*.su
+/Debug/*.mk
+/Release/*.d
+/Release/*.o
+/Release/*.su
+/Release/*.mk
