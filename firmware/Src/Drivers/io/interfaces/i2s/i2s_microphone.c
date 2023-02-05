@@ -56,8 +56,6 @@ void i2s2_msp_init(void)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* I2S2 DMA Init */
-    /* SPI2_RX Init */
-    hdma_spi2_rx.Instance                 = DMA1_Stream3;
     hdma_spi2_rx.Init.Channel             = DMA_CHANNEL_0;
     hdma_spi2_rx.Init.Direction           = DMA_PERIPH_TO_MEMORY;
     hdma_spi2_rx.Init.PeriphInc           = DMA_PINC_DISABLE;
@@ -70,6 +68,8 @@ void i2s2_msp_init(void)
     hdma_spi2_rx.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
     hdma_spi2_rx.Init.MemBurst            = DMA_MBURST_SINGLE;
     hdma_spi2_rx.Init.PeriphBurst         = DMA_MBURST_SINGLE;
+
+    hdma_spi2_rx.Instance                 = DMA1_Stream3;
 
     if (HAL_DMA_Init(&hdma_spi2_rx) != HAL_OK) {
       Error_Handler();
@@ -88,10 +88,10 @@ void i2s2_init(void)
     hi2s2.Instance            = SPI2;
     hi2s2.Init.Mode           = I2S_MODE_SLAVE_RX;
     hi2s2.Init.Standard       = I2S_STANDARD_PHILIPS;
-    hi2s2.Init.DataFormat     = I2S_DATAFORMAT_16B;
+    hi2s2.Init.DataFormat     = I2S_DATAFORMAT_24B;
     hi2s2.Init.MCLKOutput     = I2S_MCLKOUTPUT_DISABLE;
     hi2s2.Init.AudioFreq      = I2S_AUDIOFREQ_48K;
-    hi2s2.Init.CPOL           = I2S_CPOL_HIGH;
+    hi2s2.Init.CPOL           = I2S_CPOL_LOW;
     hi2s2.Init.ClockSource    = I2S_CLOCK_PLL;
     hi2s2.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
 
@@ -104,7 +104,12 @@ void i2s2_init(void)
 
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-    microphone_half_transfer_callback(hi2s);
+    microphone.state = MICROPHONE_RX_STATE_1;
+}
+
+void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s)
+{
+    microphone.state = MICROPHONE_RX_STATE_2;
 }
 
 
