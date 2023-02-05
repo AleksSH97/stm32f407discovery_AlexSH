@@ -85,7 +85,8 @@ void initialize_drivers(void)
     microphone_init();
 
     uart_all_init();
-    ring_buf_init();
+    ring_buf_uart_init();
+    ring_buf_i2s2_init();
     uart_setup_receive_char(&huart3, &data_uart.keyboard);
 
     log_init();

@@ -21,6 +21,8 @@
 #include "indication.h"
 #include "button.h"
 
+extern DMA_HandleTypeDef hdma_spi2_rx;
+
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -76,6 +78,11 @@ void USART2_IRQHandler(void)
 void USART3_IRQHandler(void)
 {
     HAL_UART_IRQHandler(&huart3);
+}
+
+void DMA1_Stream3_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_spi2_rx);
 }
 
 void SysTick_Handler(void)

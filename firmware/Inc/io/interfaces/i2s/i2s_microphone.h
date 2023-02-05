@@ -9,6 +9,4 @@
 #include "microphone.h"
 #include "stm32f4xx_hal.h"
 
-
-
 void i2s_microphone_init(void);
