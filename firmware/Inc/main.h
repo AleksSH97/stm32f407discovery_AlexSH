@@ -47,6 +47,7 @@ extern "C" {
 #include "ring_buf.h"
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
+#include "microphone.h"
 
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
