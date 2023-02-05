@@ -9,15 +9,27 @@
 
 #include "ring_buf.h"
 
-void ring_buf_init()
+void ring_buf_uart_init(void)
 {
     lwrb_init(&data_uart.lwrb, data_uart.buff, sizeof(data_uart.buff));
 
     if (!lwrb_is_ready(&data_uart.lwrb)) {
-        log_printf_crlf("Error ring buf init");
+        log_printf_crlf("Error ring buf uart init");
     }
 
     lwrb_set_evt_fn(&data_uart.lwrb, ring_buf_evt_callback);
+}
+
+void ring_buf_i2s2_init(void)
+{
+    lwrb_init(&microphone.lwrb, microphone.buff, sizeof(microphone.buff));
+
+    if (!lwrb_is_ready(&microphone.lwrb)) {
+        log_printf_crlf("Error ring buf i2s2 init");
+    }
+
+
+    lwrb_set_evt_fn(&microphone.lwrb, ring_buf_evt_callback);
 }
 
 void ring_buf_write(struct uart *self, const void *data, size_t num_byte_to_write)
