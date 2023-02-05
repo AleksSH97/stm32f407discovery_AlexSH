@@ -82,6 +82,8 @@ void initialize_drivers(void)
     indication_led_loading();
     initialize_button();
 
+    microphone_init();
+
     uart_all_init();
     ring_buf_init();
     uart_setup_receive_char(&huart3, &data_uart.keyboard);
