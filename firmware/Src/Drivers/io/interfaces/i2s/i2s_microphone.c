@@ -9,13 +9,23 @@
 
 static void i2s2_init(void);
 static void i2s2_msp_init(void);
+static bool i2s2_receive_dma(I2S_HandleTypeDef *hi2s, struct microphone *microphone_ptr);
 
 I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_rx;
 
+struct microphone microphone;
+
 void i2s_microphone_init(void)
 {
     i2s2_init();
+}
+
+void i2s_setup_receive_dma(void)
+{
+    if (!i2s2_receive_dma(&hi2s2 ,&microphone)) {
+        microphone.state == MICROPHONE_INIT_ERROR;
+    }
 }
 
 void i2s2_msp_init(void)
@@ -23,9 +33,9 @@ void i2s2_msp_init(void)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
-    PeriphClkInitStruct.PLLI2S.PLLI2SN       = 192;
-    PeriphClkInitStruct.PLLI2S.PLLI2SR       = 2;
+    PeriphClkInitStruct.PeriphClockSelection = I2S_MICROPHONE_PERIPH_CLOCK;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN       = I2S_MICROPHONE_PLLI2SN;
+    PeriphClkInitStruct.PLLI2S.PLLI2SR       = I2S_MICROPHONE_PLLI2SR;
 
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
       Error_Handler();
@@ -102,9 +112,17 @@ void i2s2_init(void)
     i2s2_msp_init();
 }
 
+bool i2s2_receive_dma(I2S_HandleTypeDef *hi2s, struct microphone *microphone_ptr)
+{
+    return HAL_I2S_Receive_DMA(hi2s, microphone_ptr->buff, 64) == HAL_OK;
+}
+
+
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
     microphone.state = MICROPHONE_RX_STATE_1;
+    lwrb_write(&microphone.lwrb, microphone.buff, 64);
+    i2s2_receive_dma(&hi2s2, &microphone);
 }
 
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s)
