@@ -181,8 +181,8 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
         }
         else if (strcmp(argv[i], _CMD_CHECK) == 0) {
             console_print(microrl_ptr, "\tHere's your buffer:  ");
-            for (int i = 0; i < UART_BUFF_SIZE; i++) {
-                log_printf("%d ", data_uart.lwrb.buff[i]);
+            for (int i = 0; i < I2S2_BUFF_SIZE; i++) {
+                log_printf("%d ", microphone.lwrb.buff[i]);
             }
             console_print(microrl_ptr, "\t " _ENDLINE_SEQ);
         }
