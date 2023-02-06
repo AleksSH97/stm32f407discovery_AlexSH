@@ -14,8 +14,11 @@
 #include "stm32f4xx_hal.h"
 #include "i2s_microphone.h"
 #include "lwrb.h"
+#include "log.h"
 
 #define I2S2_BUFF_SIZE    128
+
+extern struct microphone microphone;
 
 typedef enum {
     MICROPHONE_OK            = 0x00,
@@ -25,16 +28,13 @@ typedef enum {
     MICROPHONE_PROCESS_ERROR = 0x08,
 } microphone_status_t;
 
-typedef struct {
+struct microphone {
     lwrb_t   lwrb;
     uint16_t buff[I2S2_BUFF_SIZE];
 
     microphone_status_t state;
     bool started;
-} microphone_t;
-
-extern microphone_status_t microphone_status;
-extern microphone_t microphone;
+};
 
 void microphone_init(void);
 
