@@ -15,10 +15,12 @@
 #include "i2s_microphone.h"
 #include "lwrb.h"
 #include "log.h"
+#include "pdm2pcm.h"
 
 #define I2S2_BUFF_SIZE    128
 
 extern struct microphone microphone;
+extern CRC_HandleTypeDef hcrc;
 
 typedef enum {
     MICROPHONE_OK            = 0x00,
