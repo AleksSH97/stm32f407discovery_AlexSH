@@ -19,9 +19,8 @@ extern "C" {
 #include "log.h"
 #include "uart.h"
 
-#define DATA_TX_Pin       GPIO_PIN_10
-#define DATA_RX_Pin       GPIO_PIN_11
-#define DATA_GPIO_Port    GPIOB
+#define DATA_TX_Pin          GPIO_PIN_10
+#define DATA_RX_Pin          GPIO_PIN_11
 
 extern UART_HandleTypeDef huart3;
 extern struct uart data_uart;
