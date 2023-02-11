@@ -25,6 +25,7 @@
 osThreadId_t LogsInput;
 osThreadId_t ButtonInput;
 osThreadId_t IndicationUpdate;
+osThreadId_t MicrophoneInput;
 
 const osThreadAttr_t LogsTask_attributes = {
         .name = "LogsTask",
@@ -39,9 +40,15 @@ const osThreadAttr_t ButtonTask_attributes = {
 };
 
 const osThreadAttr_t IndicationTask_attributes = {
-        .name = "LedsUpdateTask",
+        .name = "IndicationUpdateTask",
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityNormal,
+};
+
+const osThreadAttr_t MicrophoneTask_attributes = {
+        .name = "MicrophoneTask",
+        .stack_size = 128 * 4,
+        .priority = (osPriority_t) osPriorityHigh,
 };
 
 
@@ -50,6 +57,7 @@ void MX_FREERTOS_Init(void)
     LogsInput = osThreadNew(LogsTaskStart, NULL, &LogsTask_attributes);
     ButtonInput = osThreadNew(ButtonTaskStart, NULL, &ButtonTask_attributes);
     IndicationUpdate = osThreadNew(IndicationUpdateTaskStart, NULL, &IndicationTask_attributes);
+    MicrophoneInput = osThreadNew(MicrophoneTaskStart, NULL, &MicrophoneTask_attributes);
 }
 /******************************************************************************/
 
