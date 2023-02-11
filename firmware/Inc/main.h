@@ -48,6 +48,7 @@ extern "C" {
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "microphone.h"
+#include "pdm2pcm.h"
 
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
@@ -59,7 +60,6 @@ extern "C" {
 
 
 /* Exported constants --------------------------------------------------------*/
-
 
 /* Exported macro ------------------------------------------------------------*/
 
