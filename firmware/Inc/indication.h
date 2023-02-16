@@ -67,7 +67,8 @@ extern enum indication_led_speed speed;
 extern mculed_t mculed[N_LED];
 
 void initialize_led_indication(void);
-void indication_led(void);
+void indication_led_top(void);
+void indication_led_bottom(void);
 void indication_led_loading(void);
 void indication_led_error(void);
 void indication_led_button(void);
