@@ -118,7 +118,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART3) {
-        indication_led();
+//       indication_led();
         lwrb_write(&data_uart.lwrb, &data_uart.keyboard, sizeof(char));
         uart_setup_receive_char(&huart3, &data_uart.keyboard);
     }

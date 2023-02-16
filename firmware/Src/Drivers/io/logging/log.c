@@ -25,7 +25,7 @@ void LogsTaskStart(void *argument)
             lwrb_read(&data_uart.lwrb, &data_uart.console_input, sizeof(char));
             console_insert_char(data_uart.console_input);
         }
-        osDelay(100);
+        osDelay(10);
     }
 }
 /******************************************************************************/
