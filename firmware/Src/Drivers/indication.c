@@ -28,7 +28,8 @@ static void indication_led_button_setup(mculed_t *led_ptr, int led_index);
 static void indication_led_button_hold_setup(mculed_t *led_ptr, int led_index);
 static void indication_led_error_setup(mculed_t *led_ptr);
 static void indication_led_button_double_click_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_setup(mculed_t *led_ptr, int led_index);
+static void indication_led_top_setup(mculed_t *led_ptr, int led_index);
+static void indication_led_bottom_setup(mculed_t *led_ptr, int led_index);
 
 /**
  * @brief          Initialization off led CLK, Pins, hardware, fns and init of each led fns
@@ -83,7 +84,7 @@ void IndicationUpdateTaskStart(void *argument)
     {
         indication_leds_update();
 
-        osDelay(1);
+        osDelay(10);
     }
 }
 /******************************************************************************/
@@ -129,14 +130,29 @@ void indication_led_loading(void)
 
 
 /**
- * @brief          LED on
+ * @brief          LED top on
  */
-void indication_led(void)
+void indication_led_top(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		indication_led_setup(&mculed[led_index], led_index);
+	    indication_led_top_setup(&mculed[led_index], led_index);
 		led_function(&mculed[led_index]);
 	}
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          LED bottom on
+ */
+void indication_led_bottom(void)
+{
+    for (int led_index = 0; led_index < N_LED; led_index++) {
+        indication_led_bottom_setup(&mculed[led_index], led_index);
+        led_function(&mculed[led_index]);
+    }
 }
 /******************************************************************************/
 
@@ -211,9 +227,9 @@ void indication_led_accelerometer(void)
 
 
 /**
- * @brief          Loading led animation setup
+ * @brief          Loading led top animation setup
  */
-void indication_led_setup(mculed_t *led_ptr, int led_index)
+void indication_led_top_setup(mculed_t *led_ptr, int led_index)
 {
     led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
 
@@ -250,6 +266,51 @@ void indication_led_setup(mculed_t *led_ptr, int led_index)
     led_ptr->status.on_timeout = led_ptr->setup.on_ms;
     led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
+
+
+
+/**
+ * @brief          Loading led bottom animation setup
+ */
+void indication_led_bottom_setup(mculed_t *led_ptr, int led_index)
+{
+    led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
+
+    switch (led_index) {
+        case LED_TOP:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_LEFT:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_BOTTOM:
+            led_ptr->hardware.mode = MCULED_ON_STATE;
+            led_ptr->setup.on_ms = (INDICATION_LED_SPEED_FAST * LED_RIGHT_TIME_ON);
+            led_ptr->setup.off_ms = (INDICATION_LED_SPEED_FAST * LED_RIGHT_TIME_OFF);
+            led_ptr->setup.delay_ms = ZERO_MS;
+            break;
+        case LED_RIGHT:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        default:
+            break;
+    }
+
+    led_ptr->status.iterations_counter = 0;
+    led_ptr->status.on_timeout = led_ptr->setup.on_ms;
+    led_ptr->status.off_timeout = led_ptr->setup.off_ms;
+}
+/******************************************************************************/
 
 
 
