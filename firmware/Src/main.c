@@ -22,6 +22,7 @@ static void initialize_mcu(void);
 static void system_clock_config(void);
 static void initialize_rtos(void);
 static void initialize_drivers(void);
+static void dma_init(void);
 
 
 
@@ -36,9 +37,16 @@ int main(void)
 
     log_print_welcome_msg();
 
-    initialize_rtos();
+    //initialize_rtos();
 
-    for(;;);
+    for(;;)
+    {
+        if (lwrb_get_full(&data_uart.lwrb) != 0) {
+            lwrb_read(&data_uart.lwrb, &data_uart.console_input, sizeof(char));
+            console_insert_char(data_uart.console_input);
+        }
+        microphone_process();
+    }
 }
 /******************************************************************************/
 
@@ -52,6 +60,7 @@ void initialize_mcu(void)
 {
     HAL_Init();
     system_clock_config();
+    dma_init();
     MX_TIM1_Init();
 }
 /******************************************************************************/
@@ -97,6 +106,7 @@ void initialize_drivers(void)
 
 
 
+
 /**
  * @brief          System clock configuration
  */
@@ -104,36 +114,46 @@ void system_clock_config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
+    /** Configure the main internal regulator output voltage
+    */
     __HAL_RCC_PWR_CLK_ENABLE();
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
+    /** Initializes the CPU, AHB and APB busses clocks
+    */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 4;
-    RCC_OscInitStruct.PLL.PLLN = 84;
+    RCC_OscInitStruct.PLL.PLLM = 8;
+    RCC_OscInitStruct.PLL.PLLN = 336;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 4;
+    RCC_OscInitStruct.PLL.PLLQ = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
       Error_Handler();
     }
-
+    /** Initializes the CPU, AHB and APB busses clocks
+    */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
     {
       Error_Handler();
     }
-
-    HAL_RCC_EnableCSS();
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
+    PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
 }
 /******************************************************************************/
 
@@ -145,28 +165,9 @@ void dma_init(void)
 
     HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
-}
 
-void gpio_init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 }
 
 /**
