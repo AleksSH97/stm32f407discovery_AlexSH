@@ -20,8 +20,10 @@
 #include "stm32f4xx_it.h"
 #include "indication.h"
 #include "button.h"
+#include "microphone.h"
 
 extern DMA_HandleTypeDef hdma_spi2_rx;
+extern DMA_HandleTypeDef hdma_spi3_tx;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -31,11 +33,7 @@ extern DMA_HandleTypeDef hdma_spi2_rx;
   */
 void NMI_Handler(void)
 {
-	HAL_RCC_NMI_IRQHandler();
 
-  while (1)
-  {
-  }
 }
 
 void HardFault_Handler(void)
@@ -85,18 +83,29 @@ void DMA1_Stream3_IRQHandler(void)
     HAL_DMA_IRQHandler(&hdma_spi2_rx);
 }
 
+void DMA1_Stream5_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_spi3_tx);
+}
+
+//void SPI2_IRQHandler(void)
+//{
+//    HAL_I2S_IRQHandler(&hi2s2);
+//}
+
 void SysTick_Handler(void)
 {
 	HAL_IncTick();
+	indication_leds_update();
 
-#if (INCLUDE_xTaskGetSchedulerState == 1 )
-  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
-  {
-#endif /* INCLUDE_xTaskGetSchedulerState */
-  xPortSysTickHandler();
-#if (INCLUDE_xTaskGetSchedulerState == 1 )
-  }
-#endif /* INCLUDE_xTaskGetSchedulerState */
+//#if (INCLUDE_xTaskGetSchedulerState == 1 )
+//  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+//  {
+//#endif /* INCLUDE_xTaskGetSchedulerState */
+//  xPortSysTickHandler();
+//#if (INCLUDE_xTaskGetSchedulerState == 1 )
+//  }
+//#endif /* INCLUDE_xTaskGetSchedulerState */
 }
 
 /******************************************************************************/
