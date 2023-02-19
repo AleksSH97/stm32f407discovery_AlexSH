@@ -47,7 +47,27 @@ void microphone_process(void)
 
             for (int i = 0; i < 16; i++) {
                 microphone_fifo_write(microphone.mid_buff[i]);
-                //log_printf_crlf("%d ", microphone.mid_buff[i]);
+                if (microphone.mid_buff[i] < 100) {
+                    log_printf_cont("");
+                }
+                else if ((microphone.mid_buff[i] > 10000) && (microphone.mid_buff[i] < 15000)) {
+                    log_printf_crlf("||");
+                }
+                else if ((microphone.mid_buff[i] > 15000) && (microphone.mid_buff[i] < 20000)) {
+                    log_printf_crlf("|||");
+                }
+                else if ((microphone.mid_buff[i] > 20000) && (microphone.mid_buff[i] < 25000)) {
+                    log_printf_crlf("||||");
+                }
+                else if ((microphone.mid_buff[i] > 25000) && (microphone.mid_buff[i] < 30000)) {
+                    log_printf_crlf("|||||");
+                }
+                else if ((microphone.mid_buff[i] > 30000) && (microphone.mid_buff[i] < 35000)) {
+                    log_printf_crlf("||||||");
+                }
+                else {
+                    log_printf_cont("");
+                }
             }
 
             if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > I2S2_BUFF_SIZE) {
@@ -62,7 +82,27 @@ void microphone_process(void)
 
             for (int i = 0; i < 16; i++) {
                 microphone_fifo_write(microphone.mid_buff[i]);
-                log_printf_crlf("%d ", microphone.mid_buff[i]);
+                if (microphone.mid_buff[i] < 100) {
+                    log_printf_cont("");
+                }
+                else if ((microphone.mid_buff[i] > 10000) && (microphone.mid_buff[i] < 15000)) {
+                    log_printf_crlf("||");
+                }
+                else if ((microphone.mid_buff[i] > 15000) && (microphone.mid_buff[i] < 20000)) {
+                    log_printf_crlf("|||");
+                }
+                else if ((microphone.mid_buff[i] > 20000) && (microphone.mid_buff[i] < 25000)) {
+                    log_printf_crlf("||||");
+                }
+                else if ((microphone.mid_buff[i] > 25000) && (microphone.mid_buff[i] < 30000)) {
+                    log_printf_crlf("|||||");
+                }
+                else if ((microphone.mid_buff[i] > 30000) && (microphone.mid_buff[i] < 35000)) {
+                    log_printf_crlf("||||||");
+                }
+                else {
+                    log_printf_cont("");
+                }
             }
 
             microphone.state = MICROPHONE_READY;
@@ -72,9 +112,7 @@ void microphone_process(void)
                 for (int i = 0; i < I2S2_HALF_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
                     microphone.tx_buff[i] = data;
-                    //log_printf_crlf("%d ", microphone.tx_buff[i]);
                     microphone.tx_buff[i + 2] = data;
-                    //log_printf_crlf("%d ", microphone.tx_buff[i+2]);
                 }
             }
             microphone.state = MICROPHONE_READY;
@@ -83,9 +121,7 @@ void microphone_process(void)
                 for (int i = I2S2_HALF_BUFF_SIZE; i < I2S2_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
                     microphone.tx_buff[i] = data;
-                    //log_printf_crlf("%d ", microphone.tx_buff[i]);
                     microphone.tx_buff[i + 2] = data;
-                    //log_printf_crlf("%d ", microphone.tx_buff[i+2]);
                 }
             }
             microphone.state = MICROPHONE_READY;
