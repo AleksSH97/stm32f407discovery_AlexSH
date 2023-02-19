@@ -17,12 +17,20 @@
 #include "log.h"
 #include "pdm2pcm.h"
 
-#define I2S2_BUFF_SIZE        128
-#define I2S2_HAL_BUFF_SIZE    64
-#define I2S2_MID_BUFF_SIZE    16
+#define I2S2_BUFF_SIZE         128
+#define I2S2_HALF_BUFF_SIZE    64
+#define I2S2_MID_BUFF_SIZE     16
+
+#define I2S2_FIFO_BUFF_SIZE    256
 
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
+
+struct fifo_buff {
+    uint16_t buff[I2S2_FIFO_BUFF_SIZE];
+    uint8_t  w_ptr;
+    uint8_t  r_ptr;
+};
 
 typedef enum {
     MICROPHONE_READY         = 0x00,
@@ -42,6 +50,8 @@ struct microphone {
     uint16_t tx_buff[I2S2_BUFF_SIZE];
 
     microphone_status_t state;
+    struct fifo_buff fifo;
+
     bool started;
     bool read;
 };

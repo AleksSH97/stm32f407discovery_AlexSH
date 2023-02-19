@@ -17,16 +17,10 @@ microphone_status_t microphone_status;
 I2S_HandleTypeDef hi2s2;
 I2S_HandleTypeDef hi2s3;
 
-uint16_t txBuf[128];
-uint16_t pdmRxBuf[128];
-uint16_t MidBuffer[16];
-uint8_t txstate = 0;
-uint8_t rxstate = 0;
-
-uint16_t fifobuf[256];
-uint8_t fifo_w_ptr = 0;
-uint8_t fifo_r_ptr = 0;
-uint8_t fifo_read_enabled = 0;
+//uint16_t fifobuf[256];
+//uint8_t fifo_w_ptr = 0;
+//uint8_t fifo_r_ptr = 0;
+//uint8_t fifo_read_enabled = 0;
 
 void microphone_init(void)
 {
@@ -34,8 +28,12 @@ void microphone_init(void)
     i2s3_init();
     microphone_crc_init();
     PDM2PCM_init();
-    HAL_I2S_Transmit_DMA(&hi2s3, &txBuf[0], 64);
-    HAL_I2S_Receive_DMA(&hi2s2, &pdmRxBuf[0], 64);
+
+    microphone.fifo.w_ptr = 0;
+    microphone.fifo.r_ptr = 0;
+
+    HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx_buff[0], 64);
+    HAL_I2S_Receive_DMA(&hi2s2, &microphone.record[0], 64);
 }
 
 void MicrophoneTaskStart(void *argument)
@@ -46,7 +44,7 @@ void MicrophoneTaskStart(void *argument)
     for (;;)
     {
         microphone_process();
-        osDelay(1);
+        osDelay(10);
     }
 }
 
@@ -54,47 +52,51 @@ void microphone_process(void)
 {
     switch (microphone.state) {
         case MICROPHONE_RX_STATE_1:
-            PDM_Filter(&pdmRxBuf[0], MidBuffer, &PDM1_filter_handler);
+            PDM_Filter(&microphone.record[0], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-            for (int i = 0; i < I2S2_MID_BUFF_SIZE; i++) {
-                microphone_fifo_write(MidBuffer[i]);
+            for (int i = 0; i < 16; i++) {
+                microphone_fifo_write(microphone.mid_buff[i]);
+                //log_printf_crlf("%d ", microphone.mid_buff[i]);
             }
 
-            if (fifo_w_ptr - fifo_r_ptr > I2S2_BUFF_SIZE) {
+            if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > I2S2_BUFF_SIZE) {
+                indication_led_bottom();
                 microphone.read = true;
             }
-
             microphone.state = MICROPHONE_READY;
             break;
         case MICROPHONE_RX_STATE_2:
-            PDM_Filter(&pdmRxBuf[64],&MidBuffer[0], &PDM1_filter_handler);
+            PDM_Filter(&microphone.record[64], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-            for (int i = 0; i < I2S2_MID_BUFF_SIZE; i++) {
-                microphone_fifo_write(MidBuffer[i]);
+            for (int i = 0; i < 16; i++) {
+                microphone_fifo_write(microphone.mid_buff[i]);
+                log_printf_crlf("%d ", microphone.mid_buff[i]);
             }
 
             microphone.state = MICROPHONE_READY;
             break;
         case MICROPHONE_TX_STATE_1:
             if (microphone.read) {
-                for (int i = 0; i < I2S2_HAL_BUFF_SIZE; i =i + 4) {
+                for (int i = 0; i < I2S2_HALF_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
-                    txBuf[i] = data;
-                    log_printf("%d ", txBuf[i]);
-                    txBuf[i+2] = data;
+                    microphone.tx_buff[i] = data;
+                    //log_printf_crlf("%d ", microphone.tx_buff[i]);
+                    microphone.tx_buff[i + 2] = data;
+                    //log_printf_crlf("%d ", microphone.tx_buff[i+2]);
                 }
-                log_printf_crlf("");
-                microphone.state = MICROPHONE_READY;
             }
+            microphone.state = MICROPHONE_READY;
         case MICROPHONE_TX_STATE_2:
             if (microphone.read) {
-                for (int i = I2S2_HAL_BUFF_SIZE; i < I2S2_BUFF_SIZE; i += 4) {
+                for (int i = I2S2_HALF_BUFF_SIZE; i < I2S2_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
-                    txBuf[i] = data;
-                    txBuf[i+2] = data;
+                    microphone.tx_buff[i] = data;
+                    //log_printf_crlf("%d ", microphone.tx_buff[i]);
+                    microphone.tx_buff[i + 2] = data;
+                    //log_printf_crlf("%d ", microphone.tx_buff[i+2]);
                 }
-                microphone.state = MICROPHONE_READY;
             }
+            microphone.state = MICROPHONE_READY;
         case MICROPHONE_READY:
             break;
         case MICROPHONE_PROCESS_ERROR:
@@ -119,21 +121,21 @@ void microphone_crc_init(void)
 
 void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
 {
-  if(hcrc->Instance==CRC) {
-    __HAL_RCC_CRC_CLK_ENABLE();
-  }
+    if(hcrc->Instance==CRC) {
+        __HAL_RCC_CRC_CLK_ENABLE();
+    }
 }
 
 void microphone_fifo_write(uint16_t data)
 {
-    fifobuf[fifo_w_ptr] = data;
-    fifo_w_ptr++;
+    microphone.fifo.buff[microphone.fifo.w_ptr] = data;
+    microphone.fifo.w_ptr++;
 }
 
 uint16_t microphone_fifo_read(void)
 {
-    uint16_t val = fifobuf[fifo_r_ptr];
-    fifo_r_ptr++;
+    uint16_t val = microphone.fifo.buff[microphone.fifo.r_ptr];
+    microphone.fifo.r_ptr++;
 
     return val;
 }
