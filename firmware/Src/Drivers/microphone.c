@@ -9,18 +9,9 @@
 
 static void microphone_crc_init(void);
 static void microphone_fifo_write(uint16_t data);
-static void i2s2_init(void);
-static void i2s3_init(void);
 
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
-I2S_HandleTypeDef hi2s2;
-I2S_HandleTypeDef hi2s3;
-
-//uint16_t fifobuf[256];
-//uint8_t fifo_w_ptr = 0;
-//uint8_t fifo_r_ptr = 0;
-//uint8_t fifo_read_enabled = 0;
 
 void microphone_init(void)
 {
@@ -63,6 +54,7 @@ void microphone_process(void)
                 indication_led_bottom();
                 microphone.read = true;
             }
+
             microphone.state = MICROPHONE_READY;
             break;
         case MICROPHONE_RX_STATE_2:
@@ -139,71 +131,4 @@ uint16_t microphone_fifo_read(void)
 
     return val;
 }
-
-void i2s2_init(void)
-{
-    hi2s2.Instance = SPI2;
-    hi2s2.Init.Mode = I2S_MODE_SLAVE_RX;
-    hi2s2.Init.Standard = I2S_STANDARD_MSB;
-    hi2s2.Init.DataFormat = I2S_DATAFORMAT_24B;
-    hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-    hi2s2.Init.AudioFreq = I2S_AUDIOFREQ_48K;
-    hi2s2.Init.CPOL = I2S_CPOL_LOW;
-    hi2s2.Init.ClockSource = I2S_CLOCK_PLL;
-    hi2s2.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
-
-    if (HAL_I2S_Init(&hi2s2) != HAL_OK) {
-      Error_Handler();
-    }
-}
-
-void i2s3_init(void)
-{
-    hi2s3.Instance = SPI3;
-    hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
-    hi2s3.Init.Standard = I2S_STANDARD_PHILIPS;
-    hi2s3.Init.DataFormat = I2S_DATAFORMAT_24B;
-    hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-    hi2s3.Init.AudioFreq = I2S_AUDIOFREQ_48K;
-    hi2s3.Init.CPOL = I2S_CPOL_LOW;
-    hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
-    hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
-
-    if (HAL_I2S_Init(&hi2s3) != HAL_OK)
-    {
-      Error_Handler();
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

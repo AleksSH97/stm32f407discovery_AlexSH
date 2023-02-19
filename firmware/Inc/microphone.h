@@ -13,6 +13,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "i2s_microphone.h"
+#include "i2s_dac.h"
 #include "lwrb.h"
 #include "log.h"
 #include "pdm2pcm.h"
