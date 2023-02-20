@@ -9,6 +9,7 @@
 
 static void microphone_crc_init(void);
 static void microphone_fifo_write(uint16_t data);
+static void microphone_visualization(uint16_t data);
 
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
@@ -47,26 +48,8 @@ void microphone_process(void)
 
             for (int i = 0; i < 16; i++) {
                 microphone_fifo_write(microphone.mid_buff[i]);
-                if (microphone.mid_buff[i] < 100) {
-                    log_printf_cont("");
-                }
-                else if ((microphone.mid_buff[i] > 10000) && (microphone.mid_buff[i] < 15000)) {
-                    log_printf_crlf("||");
-                }
-                else if ((microphone.mid_buff[i] > 15000) && (microphone.mid_buff[i] < 20000)) {
-                    log_printf_crlf("|||");
-                }
-                else if ((microphone.mid_buff[i] > 20000) && (microphone.mid_buff[i] < 25000)) {
-                    log_printf_crlf("||||");
-                }
-                else if ((microphone.mid_buff[i] > 25000) && (microphone.mid_buff[i] < 30000)) {
-                    log_printf_crlf("|||||");
-                }
-                else if ((microphone.mid_buff[i] > 30000) && (microphone.mid_buff[i] < 35000)) {
-                    log_printf_crlf("||||||");
-                }
-                else {
-                    log_printf_cont("");
+                if (microphone.visualize) {
+                    microphone_visualization(microphone.mid_buff[i]);
                 }
             }
 
@@ -82,26 +65,8 @@ void microphone_process(void)
 
             for (int i = 0; i < 16; i++) {
                 microphone_fifo_write(microphone.mid_buff[i]);
-                if (microphone.mid_buff[i] < 100) {
-                    log_printf_cont("");
-                }
-                else if ((microphone.mid_buff[i] > 10000) && (microphone.mid_buff[i] < 15000)) {
-                    log_printf_crlf("||");
-                }
-                else if ((microphone.mid_buff[i] > 15000) && (microphone.mid_buff[i] < 20000)) {
-                    log_printf_crlf("|||");
-                }
-                else if ((microphone.mid_buff[i] > 20000) && (microphone.mid_buff[i] < 25000)) {
-                    log_printf_crlf("||||");
-                }
-                else if ((microphone.mid_buff[i] > 25000) && (microphone.mid_buff[i] < 30000)) {
-                    log_printf_crlf("|||||");
-                }
-                else if ((microphone.mid_buff[i] > 30000) && (microphone.mid_buff[i] < 35000)) {
-                    log_printf_crlf("||||||");
-                }
-                else {
-                    log_printf_cont("");
+                if (microphone.visualize) {
+                    microphone_visualization(microphone.mid_buff[i]);
                 }
             }
 
@@ -160,6 +125,60 @@ void microphone_fifo_write(uint16_t data)
     microphone.fifo.w_ptr++;
 }
 
+void microphone_visualization(uint16_t data)
+{
+    uint16_t volume = data;
+
+    if (volume < 100) {
+        log_printf_cont("");
+    }
+    else if ((volume > 800) && (volume < 1200)) {
+        log_printf_crlf("|");
+    }
+    else if ((volume > 1200) && (volume < 1300)) {
+        log_printf_crlf("||");
+    }
+    else if ((volume > 1300) && (volume < 1500)) {
+        log_printf_crlf("|||");
+    }
+    else if ((volume > 1500) && (volume < 1800)) {
+        log_printf_crlf("||||");
+    }
+    else if ((volume > 1800) && (volume < 2000)) {
+        log_printf_crlf("|||||");
+    }
+    else if ((volume > 2000) && (volume < 3000)) {
+        log_printf_crlf("||||||");
+    }
+    else if ((volume > 3000) && (volume < 4000)) {
+        log_printf_crlf("|||||||");
+    }
+    else if ((volume > 4000) && (volume < 5000)) {
+        log_printf_crlf("||||||||");
+    }
+    else if ((volume > 5000) && (volume < 10000)) {
+        log_printf_crlf("|||||||||");
+    }
+    else if ((volume > 10000) && (volume < 15000)) {
+        log_printf_crlf("||||||||||");
+    }
+    else if ((volume > 15000) && (volume < 20000)) {
+        log_printf_crlf("|||||||||||");
+    }
+    else if ((volume > 20000) && (volume < 25000)) {
+        log_printf_crlf("||||||||||||");
+    }
+    else if ((volume > 25000) && (volume < 30000)) {
+        log_printf_crlf("|||||||||||||");
+    }
+    else if ((volume > 30000) && (volume < 35000)) {
+        log_printf_crlf("||||||||||||||");
+    }
+    else {
+        log_printf_cont("");
+    }
+}
+
 uint16_t microphone_fifo_read(void)
 {
     uint16_t val = microphone.fifo.buff[microphone.fifo.r_ptr];
@@ -167,4 +186,3 @@ uint16_t microphone_fifo_read(void)
 
     return val;
 }
-
