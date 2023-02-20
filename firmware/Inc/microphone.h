@@ -53,7 +53,7 @@ struct microphone {
     microphone_status_t state;
     struct fifo_buff fifo;
 
-    bool started;
+    bool visualize;
     bool read;
 };
 
