@@ -18,6 +18,8 @@
 #define _CMD_LOGOUT                 "logout"
 
 #define _CMD_BUFF                   "buff"
+#define _CMD_VISUAL                 "visual"
+#define _CMD_SHOW                   "show"
 #define _CMD_RESET                  "reset"
 #define _CMD_FREE                   "free"
 #define _CMD_CHECK                  "check"
@@ -26,7 +28,7 @@
 #define _SCMD_RD                    "?"
 #define _SCMD_SAVE                  "save"
 
-#define _NUM_OF_CMD                 8
+#define _NUM_OF_CMD                 10
 #define _NUM_OF_SETCLEAR_SCMD       2
 
 #if MICRORL_CFG_USE_ECHO_OFF
@@ -39,15 +41,30 @@
 uint8_t  logged_in = 0;
 uint8_t  passw_in = 0;
 #endif /* MICRORL_CFG_USE_ECHO_OFF */
+/******************************************************************************/
+
+
+
 
 static void console_print(microrl_t *microrl_ptr, const char *str);
+/******************************************************************************/
+
+
 
 microrl_t microrl;
 microrl_t *microrl_ptr = &microrl;
+/******************************************************************************/
 
-char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_RESET, _CMD_FREE, _CMD_EXIT};    //available  commands
+
+
+
+char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE, _CMD_EXIT};    //available  commands
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
 char *compl_word [_NUM_OF_CMD + 1];                        // array for completion
+/******************************************************************************/
+
+
+
 
 void console_init(void)
 {
@@ -63,23 +80,43 @@ void console_init(void)
     microrl_set_sigint_callback(microrl_ptr, console_sigint);
 #endif /* MICRORL_CFG_USE_CTRL_C */
 }
+/******************************************************************************/
+
+
+
 
 void console_insert_char(char ch)
 {
     microrl_processing_input(microrl_ptr, &ch, sizeof(ch));
 }
+/******************************************************************************/
+
+
+
 
 void console_print(microrl_t *microrl_ptr, const char *str)
 {
     UNUSED(microrl_ptr);
     log_printf_cont("%s", str);
 }
+/******************************************************************************/
+
+
+
 
 char console_get_char(void)
 {
    return (char)data_uart.console_input;
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           Basic menu in console
+ * \param[in]
+ */
 #if MICRORL_CFG_USE_ECHO_OFF
 int console_execute_main(microrl_t* microrl_ptr, int argc, const char* const *argv) {
 #else
@@ -104,6 +141,11 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
             console_print_buff(microrl_ptr);
             microrl_set_execute_callback(microrl_ptr, console_buff);
         }
+        else if (strcmp(argv[i], _CMD_VISUAL) == 0) {
+            console_print(microrl_ptr, "\tChoose your action with audio visualizer: " _ENDLINE_SEQ);
+            console_print_visualizer(microrl_ptr);
+            microrl_set_execute_callback(microrl_ptr, console_visualizer);
+        }
         else {
             console_print(microrl_ptr, "command: '");
             console_print(microrl_ptr, (char*)argv[i]);
@@ -114,7 +156,15 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
 
     return 0;
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           Login menu in console
+ * \param[in]
+ */
 int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
 {
     int i = 0;
@@ -165,7 +215,15 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
 
     return 0;
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           Buff menu in console
+ * \param[in]
+ */
 int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
 {
     int i = 0;
@@ -181,8 +239,9 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
         }
         else if (strcmp(argv[i], _CMD_CHECK) == 0) {
             console_print(microrl_ptr, "\tHere's your buffer:  ");
-            for (int i = 0; i < I2S2_HAL_BUFF_SIZE; i++) {
-                log_printf("%d ", microphone.lwrb.buff[i]);
+            for (int i = 0; i < I2S2_HALF_BUFF_SIZE; i++) {
+                log_printf("%d ", microphone.tx_buff[i]);
+                log_printf("%d ", microphone.tx_buff[i + 2]);
             }
             console_print(microrl_ptr, "\t " _ENDLINE_SEQ);
         }
@@ -201,6 +260,43 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
 
     return 0;
 }
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Visualizer menu in console
+ * \param[in]
+ */
+int console_visualizer(microrl_t *microrl_ptr, int argc, const char * const *argv)
+{
+    int i = 0;
+
+    while (i < argc) {
+        if (strcmp(argv[i], _CMD_SHOW) == 0) {
+            microphone.visualize = true;
+        }
+        else if (strcmp(argv[i], _CMD_EXIT) == 0) {
+            console_print(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
+            console_print_help(microrl_ptr);
+            microrl_set_execute_callback(microrl_ptr, console_execute_main);
+        }
+        else {
+            console_print(microrl_ptr, "\tUndefined command" _ENDLINE_SEQ);
+            indication_led_error();
+            console_print_visualizer(microrl_ptr);
+        }
+        i++;
+    }
+
+        return 0;
+}
+/******************************************************************************/
+
+
+
+
 
 #if MICRORL_CFG_USE_CTRL_C || __DOXYGEN__
 /**
@@ -283,6 +379,13 @@ void console_print_buff(microrl_t *microrl_ptr)
     console_print(microrl_ptr, "\treset               - reset buffer"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tfree                - free buff memory"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tcheck               - check your buff"_ENDLINE_SEQ);
+    console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
+}
+
+void console_print_visualizer(microrl_t *microrl_ptr)
+{
+    console_print(microrl_ptr, "List of audio visualizer commands:"_ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tshow               -  show visualization"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
 
