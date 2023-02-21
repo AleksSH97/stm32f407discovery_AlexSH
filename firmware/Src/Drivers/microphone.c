@@ -23,6 +23,7 @@ void microphone_init(void)
 
     microphone.fifo.w_ptr = 0;
     microphone.fifo.r_ptr = 0;
+    microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
 
     HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx_buff[0], 64);
     HAL_I2S_Receive_DMA(&hi2s2, &microphone.record[0], 64);
@@ -53,7 +54,7 @@ void microphone_process(void)
                 }
             }
 
-            if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > I2S2_BUFF_SIZE) {
+            if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > MICROPHONE_BUFF_SIZE) {
                 indication_led_bottom();
                 microphone.read = true;
             }
@@ -74,7 +75,7 @@ void microphone_process(void)
             break;
         case MICROPHONE_TX_STATE_1:
             if (microphone.read) {
-                for (int i = 0; i < I2S2_HALF_BUFF_SIZE; i = i + 4) {
+                for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
                     microphone.tx_buff[i] = data;
                     microphone.tx_buff[i + 2] = data;
@@ -83,7 +84,7 @@ void microphone_process(void)
             microphone.state = MICROPHONE_READY;
         case MICROPHONE_TX_STATE_2:
             if (microphone.read) {
-                for (int i = I2S2_HALF_BUFF_SIZE; i < I2S2_BUFF_SIZE; i = i + 4) {
+                for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
                     uint16_t data = microphone_fifo_read();
                     microphone.tx_buff[i] = data;
                     microphone.tx_buff[i + 2] = data;
@@ -112,13 +113,6 @@ void microphone_crc_init(void)
     __HAL_CRC_DR_RESET(&hcrc);
 }
 
-void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
-{
-    if(hcrc->Instance==CRC) {
-        __HAL_RCC_CRC_CLK_ENABLE();
-    }
-}
-
 void microphone_fifo_write(uint16_t data)
 {
     microphone.fifo.buff[microphone.fifo.w_ptr] = data;
@@ -128,6 +122,11 @@ void microphone_fifo_write(uint16_t data)
 void microphone_visualization(uint16_t data)
 {
     uint16_t volume = data;
+
+    if ((HAL_GetTick() - microphone.timestamp_ms) > microphone.timeout_ms) {
+        microphone.timestamp_ms = HAL_GetTick();
+        console_clear_screen_setup();
+    }
 
     if (volume < 100) {
         log_printf_cont("");
