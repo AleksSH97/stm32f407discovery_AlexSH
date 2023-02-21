@@ -18,20 +18,16 @@
 #include "log.h"
 #include "pdm2pcm.h"
 
-#define I2S2_BUFF_SIZE         128
-#define I2S2_HALF_BUFF_SIZE    64
-#define I2S2_MID_BUFF_SIZE     16
+#define MICROPHONE_BUFF_SIZE          128
+#define MICROPHONE_HALF_BUFF_SIZE     64
+#define MICROPHONE_MID_BUFF_SIZE      16
 
-#define I2S2_FIFO_BUFF_SIZE    256
+#define MICROPHONE_FIFO_BUFF_SIZE     256
+
+#define MICROPHONE_TIMEOUT_MS       1000
 
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
-
-struct fifo_buff {
-    uint16_t buff[I2S2_FIFO_BUFF_SIZE];
-    uint8_t  w_ptr;
-    uint8_t  r_ptr;
-};
 
 typedef enum {
     MICROPHONE_READY         = 0x00,
@@ -43,12 +39,21 @@ typedef enum {
     MICROPHONE_PROCESS_ERROR = 0x06,
 } microphone_status_t;
 
+struct fifo_buff {
+    uint16_t buff[MICROPHONE_FIFO_BUFF_SIZE];
+    uint8_t  w_ptr;
+    uint8_t  r_ptr;
+};
+
 struct microphone {
     lwrb_t   lwrb;
-    uint16_t buff[I2S2_BUFF_SIZE];
-    uint16_t record[I2S2_BUFF_SIZE];
-    uint16_t mid_buff[I2S2_MID_BUFF_SIZE];
-    uint16_t tx_buff[I2S2_BUFF_SIZE];
+    uint16_t buff[MICROPHONE_BUFF_SIZE];
+    uint16_t record[MICROPHONE_BUFF_SIZE];
+    uint16_t mid_buff[MICROPHONE_MID_BUFF_SIZE];
+    uint16_t tx_buff[MICROPHONE_BUFF_SIZE];
+
+    uint32_t timeout_ms;
+    uint32_t timestamp_ms;
 
     microphone_status_t state;
     struct fifo_buff fifo;
