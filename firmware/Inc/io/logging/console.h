@@ -33,6 +33,7 @@ void console_print_help(microrl_t *microrl_ptr);
 void console_print_buff(microrl_t *microrl_ptr);
 void console_print_visualizer(microrl_t *microrl_ptr);
 char console_get_char(void);
+void console_clear_screen_setup(void);
 
 #ifdef __cplusplus
 }
