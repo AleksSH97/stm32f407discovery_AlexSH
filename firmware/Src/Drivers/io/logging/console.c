@@ -7,7 +7,7 @@
 
 #include "console.h"
 
-#define _STM32_DEMO_VER             "1.0"
+#define _STM32_DEMO_VER             "1.1"
 
 #define _ENDLINE_SEQ                "\r\n"
 
@@ -45,7 +45,8 @@ uint8_t  passw_in = 0;
 
 
 
-
+static void console_clear_screen(microrl_t *microrl_ptr);
+void console_clear_screen_simple(microrl_t *microrl_ptr);
 static void console_print(microrl_t *microrl_ptr, const char *str);
 /******************************************************************************/
 
@@ -129,8 +130,7 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
             console_print_help(microrl_ptr);        // print help
         }
         else if (strcmp(argv[i], _CMD_CLEAR) == 0) {
-            console_print(microrl_ptr, "\033[2J" _ENDLINE_SEQ);    // ESC seq for clear entire screen
-            console_print(microrl_ptr, "\033[H" _ENDLINE_SEQ);     // ESC seq for move cursor at left-top corner
+            console_clear_screen(microrl_ptr);
         }
         else if (strcmp(argv[i], _CMD_LOGOUT) == 0) {
             console_print(microrl_ptr, "\tBye!" _ENDLINE_SEQ);
@@ -168,6 +168,7 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
 int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
 {
     int i = 0;
+    console_clear_screen(microrl_ptr);
 
     while (i < argc) {
         if (strcmp(argv[i], _CMD_LOGIN) == 0) {
@@ -239,7 +240,7 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
         }
         else if (strcmp(argv[i], _CMD_CHECK) == 0) {
             console_print(microrl_ptr, "\tHere's your buffer:  ");
-            for (int i = 0; i < I2S2_HALF_BUFF_SIZE; i++) {
+            for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i++) {
                 log_printf("%d ", microphone.tx_buff[i]);
                 log_printf("%d ", microphone.tx_buff[i + 2]);
             }
@@ -275,6 +276,7 @@ int console_visualizer(microrl_t *microrl_ptr, int argc, const char * const *arg
 
     while (i < argc) {
         if (strcmp(argv[i], _CMD_SHOW) == 0) {
+            microphone.timestamp_ms = HAL_GetTick();
             microphone.visualize = true;
         }
         else if (strcmp(argv[i], _CMD_EXIT) == 0) {
@@ -297,6 +299,42 @@ int console_visualizer(microrl_t *microrl_ptr, int argc, const char * const *arg
 
 
 
+/**
+ * \brief           Clear console screen fn extern
+ */
+void console_clear_screen_setup(void)
+{
+    console_clear_screen_simple(microrl_ptr);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Clear console screen fn
+ */
+void console_clear_screen(microrl_t *microrl_ptr)
+{
+    console_print(microrl_ptr, "\033[2J" _ENDLINE_SEQ);    // ESC seq for clear entire screen
+    console_print(microrl_ptr, "\033[H" _ENDLINE_SEQ);     // ESC seq for move cursor at left-top corner
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Clear screen simple
+ */
+void console_clear_screen_simple(microrl_t *microrl_ptr)
+{
+    console_print(microrl_ptr, "\033[2J" _ENDLINE_SEQ);    // ESC seq for clear entire screen
+}
+/******************************************************************************/
+
+
+
 
 #if MICRORL_CFG_USE_CTRL_C || __DOXYGEN__
 /**
@@ -305,7 +343,10 @@ int console_visualizer(microrl_t *microrl_ptr, int argc, const char * const *arg
  */
 void console_sigint(microrl_t *microrl_ptr)
 {
+    microphone.visualize = false;
     console_print(microrl_ptr, "^C is caught!"_ENDLINE_SEQ);
+    console_clear_screen(microrl_ptr);
+    console_print_visualizer(microrl_ptr);
 }
 
 //*****************************************************************************
@@ -346,11 +387,14 @@ char **console_complete(microrl_t *microrl_ptr, int argc, const char * const *ar
 
 #endif /* MICRORL_CFG_USE_COMPLETE || __DOXYGEN__ */
 
+
+
+
 void console_print_help(microrl_t *microrl_ptr)
 {
     char ver_str[6] = {0};
     console_get_version(ver_str);
-
+    console_print(microrl_ptr, _ENDLINE_SEQ);
     console_print(microrl_ptr, "MicroRL v");
     console_print(microrl_ptr, ver_str);
     console_print(microrl_ptr, " library DEMO v");
@@ -366,15 +410,20 @@ void console_print_help(microrl_t *microrl_ptr)
     console_print(microrl_ptr, "List of commands:"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tclear               - clear screen"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tlogout              - end session"_ENDLINE_SEQ);
-    console_print(microrl_ptr, "\tbuff                - buff configuring menu"_ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tvisual              - audio visualization configuration menu"_ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tbuff                - buff configuration menu"_ENDLINE_SEQ);
 
 #if MICRORL_CFG_USE_COMPLETE
     console_print(microrl_ptr, "Use TAB key for completion"_ENDLINE_SEQ _ENDLINE_SEQ);
 #endif /* MICRORL_CFG_USE_COMPLETE */
 }
 
+
+
+
 void console_print_buff(microrl_t *microrl_ptr)
 {
+    console_print(microrl_ptr, _ENDLINE_SEQ);
     console_print(microrl_ptr, "List of buff commands:"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\treset               - reset buffer"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tfree                - free buff memory"_ENDLINE_SEQ);
@@ -382,12 +431,19 @@ void console_print_buff(microrl_t *microrl_ptr)
     console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
 
+
+
+
 void console_print_visualizer(microrl_t *microrl_ptr)
 {
+    console_print(microrl_ptr, _ENDLINE_SEQ);
     console_print(microrl_ptr, "List of audio visualizer commands:"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tshow               -  show visualization"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
+
+
+
 
 void console_get_version(char* ver_str)
 {
