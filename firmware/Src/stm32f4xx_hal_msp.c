@@ -128,6 +128,12 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* i2sHandle)
     }
 }
 
+void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
+{
+    if(hcrc->Instance==CRC) {
+        __HAL_RCC_CRC_CLK_ENABLE();
+    }
+}
 
 
 
