@@ -39,7 +39,7 @@
  * copy & replace here settings you want to change values
  */
 
-#define LWPRINTF_CFG_OS                       0
+#define LWPRINTF_CFG_OS                       1
 #define LWPRINTF_CFG_OS_MUTEX_HANDLE          void*
 #define LWPRINTF_CFG_OS_MANUAL_PROTECT        0
 
