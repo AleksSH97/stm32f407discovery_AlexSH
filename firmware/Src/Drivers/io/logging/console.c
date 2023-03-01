@@ -17,9 +17,10 @@
 #define _CMD_LOGIN                  "login"
 #define _CMD_LOGOUT                 "logout"
 
-#define _CMD_BUFF                   "buff"
 #define _CMD_VISUAL                 "visual"
 #define _CMD_SHOW                   "show"
+
+#define _CMD_BUFF                   "buff"
 #define _CMD_RESET                  "reset"
 #define _CMD_FREE                   "free"
 #define _CMD_CHECK                  "check"
@@ -86,9 +87,21 @@ void console_init(void)
 
 
 
+void console_start(void)
+{
+    io_clear_rx_queue();
+    log_clear_queues();
+    console_init();
+
+    log_printf_console(CLR_CLR);
+    console_print_help(microrl_ptr);
+}
+/******************************************************************************/
+
+
 void console_insert_char(char ch)
 {
-    microrl_processing_input(microrl_ptr, &ch, sizeof(ch));
+    microrl_processing_input(microrl_ptr, &ch, 1);
 }
 /******************************************************************************/
 
@@ -98,7 +111,7 @@ void console_insert_char(char ch)
 void console_print(microrl_t *microrl_ptr, const char *str)
 {
     UNUSED(microrl_ptr);
-    log_printf_cont("%s", str);
+    console_printf_cont("%s", str);
 }
 /******************************************************************************/
 
@@ -231,19 +244,16 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
 
     while (i < argc) {
         if (strcmp(argv[i], _CMD_RESET) == 0) {
-            lwrb_reset(&debug_uart.lwrb);
+            lwrb_reset(&debug_uart.lwrb_rx);
             console_print(microrl_ptr, "\tBuffer successfully reseted" _ENDLINE_SEQ);
         }
         else if (strcmp(argv[i], _CMD_FREE) == 0) {
-            lwrb_free(&debug_uart.lwrb);
+            lwrb_free(&debug_uart.lwrb_rx);
             console_print(microrl_ptr, "\tBuffer successfully free" _ENDLINE_SEQ);
         }
         else if (strcmp(argv[i], _CMD_CHECK) == 0) {
             console_print(microrl_ptr, "\tHere's your buffer:  ");
-            for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i++) {
-                log_printf("%d ", microphone.tx_buff[i]);
-                log_printf("%d ", microphone.tx_buff[i + 2]);
-            }
+            // TODO insert buffer to show
             console_print(microrl_ptr, "\t " _ENDLINE_SEQ);
         }
         else if (strcmp(argv[i], _CMD_EXIT) == 0) {

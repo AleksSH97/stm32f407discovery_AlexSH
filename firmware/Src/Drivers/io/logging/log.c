@@ -5,29 +5,52 @@
  *      Author: АлексанDOOR
  */
 
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "log.h"
 #include "uart.h"
+
 #include "lwprintf/lwprintf.h"
 
+
+#define LOGS_QUEUE_SIZE            (512U)
+#define CONSOLE_QUEUE_SIZE         (512U)
+/******************************************************************************/
+
+
+
+
 static int lwprintf_logs_out(int ch, lwprintf_t* p);
+static int lwprintf_console_out(int ch, lwprintf_t* p);
+/******************************************************************************/
 
 
 
 
-void LogsTaskStart(void *argument)
-{
-    uint8_t ddd[128] = {0};
-    UNUSED(ddd);
+osMessageQueueId_t consoleQueueHandle;
+osMessageQueueId_t logsQueueHandle;
+/******************************************************************************/
 
-    for (;;)
-    {
-        if (lwrb_get_full(&data_uart.lwrb) != 0) {
-            lwrb_read(&data_uart.lwrb, &data_uart.console_input, sizeof(char));
-            console_insert_char(data_uart.console_input);
-        }
-        osDelay(10);
-    }
-}
+
+
+
+
+const osMessageQueueAttr_t consoleQueueAttributes = {
+        .name = "consoleQueue",
+};
+
+const osMessageQueueAttr_t logsQueueAttributes = {
+        .name = "logsQueue",
+};
+/******************************************************************************/
+
+
+
+
+
+static lwprintf_t console;
+static lwprintf_t logs;
 /******************************************************************************/
 
 
@@ -35,26 +58,53 @@ void LogsTaskStart(void *argument)
 
 void log_init(void)
 {
-    lwprintf_init(lwprintf_logs_out);
+    consoleQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &consoleQueueAttributes);
+    logsQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &logsQueueAttributes);
+
+    lwprintf_init_ex(&console, lwprintf_console_out);
+    lwprintf_init_ex(&logs, lwprintf_logs_out);
 }
 /******************************************************************************/
 
 
 
 
-int log_printf(const char *fmt, ...)
+void log_clear_queues(void)
+{
+    osMessageQueueReset(logsQueueHandle);
+    osMessageQueueReset(consoleQueueHandle);
+}
+/******************************************************************************/
+
+
+int log_printf_logs(const char *fmt, ...)
 {
     va_list args;
     int len;
 
     va_start(args, fmt);
-    len = lwprintf_vprintf(fmt, args);
+    len = lwprintf_vprintf_ex(&logs, fmt, args);
     va_end(args);
 
-    return len;
+    return (len);
 }
 /******************************************************************************/
 
+
+
+
+int log_printf_console(const char *fmt, ...)
+{
+    va_list args;
+    int len;
+
+    va_start(args, fmt);
+    len = lwprintf_vprintf_ex(&console, fmt, args);
+    va_end(args);
+
+    return (len);
+}
+/******************************************************************************/
 
 
 
@@ -66,7 +116,27 @@ static int lwprintf_logs_out(int ch, lwprintf_t* p)
         return ch;           //to prevent printing '0' in the end of any (char*)
     }
 
-    return uart_send_byte(&huart3, ch);
+    osMessageQueuePut(logsQueueHandle, &ch, 0, 200);
+
+    return (ch);
+}
+/******************************************************************************/
+
+
+
+
+
+static int lwprintf_console_out(int ch, lwprintf_t* p)
+{
+    uint8_t c = (uint8_t)ch;
+
+    if (c == '\0') {
+        return ch;           //to prevent printing '0' in the end of any (char*)
+    }
+
+    osMessageQueuePut(consoleQueueHandle, &ch, 0, 200);
+
+    return (ch);
 }
 /******************************************************************************/
 
