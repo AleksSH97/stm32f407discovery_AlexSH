@@ -22,16 +22,15 @@
 #include "main.h"
 #include "cmsis_os.h"
 
-osThreadId_t LogsInput;
+
+
+
 osThreadId_t ButtonInput;
 osThreadId_t IndicationUpdate;
 osThreadId_t MicrophoneInput;
 
-const osThreadAttr_t LogsTask_attributes = {
-        .name = "LogsTask",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal,
-};
+
+
 
 const osThreadAttr_t ButtonTask_attributes = {
         .name = "ButtonTask",
@@ -48,18 +47,22 @@ const osThreadAttr_t IndicationTask_attributes = {
 const osThreadAttr_t MicrophoneTask_attributes = {
         .name = "MicrophoneTask",
         .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityHigh,
+        .priority = (osPriority_t) osPriorityNormal,
 };
+
+
 
 
 void MX_FREERTOS_Init(void)
 {
-    LogsInput = osThreadNew(LogsTaskStart, NULL, &LogsTask_attributes);
     ButtonInput = osThreadNew(ButtonTaskStart, NULL, &ButtonTask_attributes);
+
     IndicationUpdate = osThreadNew(IndicationUpdateTaskStart, NULL, &IndicationTask_attributes);
+
     MicrophoneInput = osThreadNew(MicrophoneTaskStart, NULL, &MicrophoneTask_attributes);
 }
 /******************************************************************************/
+
 
 
 

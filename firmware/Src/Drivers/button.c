@@ -75,7 +75,7 @@ void ButtonTaskStart(void *argumet)
     for (;;)
     {
         button_check_mode();
-        osDelay(1);
+        osDelay(10);
     }
 }
 /**

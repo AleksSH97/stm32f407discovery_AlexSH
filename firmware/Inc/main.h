@@ -37,16 +37,22 @@ extern "C" {
 #include "tim.h"
 #include "led.h"
 #include "indication.h"
+
 #include "log.h"
+
 #include "uart.h"
 #include "debug_uart.h"
 #include "data_uart.h"
+
 #include "lwprintf/lwprintf.h"
 #include "console.h"
 #include "lwrb.h"
 #include "ring_buf.h"
+
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
+#include "semphr.h"
+
 #include "microphone.h"
 #include "pdm2pcm.h"
 

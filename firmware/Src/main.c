@@ -33,19 +33,16 @@ static void dma_init(void);
 int main(void)
 {
     initialize_mcu();
+
+    osKernelInitialize();
+
     initialize_drivers();
+    MX_FREERTOS_Init();
 
-    log_print_welcome_msg();
-
-    //initialize_rtos();
+    osKernelStart();
 
     for(;;)
     {
-        if (lwrb_get_full(&data_uart.lwrb) != 0) {
-            lwrb_read(&data_uart.lwrb, &data_uart.console_input, sizeof(char));
-            console_insert_char(data_uart.console_input);
-        }
-        microphone_process();
     }
 }
 /******************************************************************************/
@@ -91,15 +88,14 @@ void initialize_drivers(void)
     indication_led_loading();
     initialize_button();
 
-    log_init();
-    console_init();
-
     microphone_init();
+    ring_buf_i2s2_init();
 
     uart_all_init();
     ring_buf_uart_init();
-    ring_buf_i2s2_init();
-    uart_setup_receive_char(&huart3, &data_uart.keyboard);
+    uart_setup_receive_char(&huart3, &data_uart.keyboarb_input);
+
+    io_init();
 }
 /******************************************************************************/
 
@@ -163,10 +159,10 @@ void dma_init(void)
 {
     __HAL_RCC_DMA1_CLK_ENABLE();
 
-    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
 
-    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 }
 
