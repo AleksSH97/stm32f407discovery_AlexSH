@@ -78,6 +78,9 @@ bool uart_setup_receive_char(UART_HandleTypeDef *huart, uint8_t *byte)
 }
 /******************************************************************************/
 
+
+
+
 void uart_send_packet(void)
 {
     msg = data_uart_create_msg(UART_LED_TOGGLE);
@@ -87,6 +90,11 @@ void uart_send_packet(void)
     }
     log_printf_crlf("Here's your msg: %d %d %d", msg.start_byte, msg.payload, msg.stop_byte);
 }
+/******************************************************************************/
+
+
+
+
 /**
  * @brief          Blocking USART2 send/receive functions
  */
@@ -106,6 +114,18 @@ bool uart_receive_byte(UART_HandleTypeDef *huart, uint8_t byte)
 }
 /******************************************************************************/
 
+
+
+bool uart_send_byte_tx_buff(UART_HandleTypeDef *huart)
+{
+    uint8_t msg;
+
+    lwrb_read(&data_uart.lwrb_tx, &msg, sizeof(char));
+
+    return HAL_UART_Transmit(huart, &msg, sizeof(uint8_t), HAL_MAX_DELAY) == HAL_OK;
+}
+/******************************************************************************/
+
 /**
  * @brief          Interrupt callbacks
  *
@@ -118,9 +138,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART3) {
-//       indication_led();
-        lwrb_write(&data_uart.lwrb, &data_uart.keyboard, sizeof(char));
-        uart_setup_receive_char(&huart3, &data_uart.keyboard);
+        indication_led_top();
+        lwrb_write(&data_uart.lwrb_rx, &data_uart.keyboarb_input, sizeof(uint8_t));
+        uart_setup_receive_char(&huart3, &data_uart.keyboarb_input);
     }
 }
 

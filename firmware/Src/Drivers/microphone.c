@@ -14,6 +14,13 @@ static void microphone_visualization(uint16_t data);
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
 
+
+
+
+/**
+ * \brief           Microphone init
+ * \param[in]
+ */
 void microphone_init(void)
 {
     i2s2_init();
@@ -24,11 +31,19 @@ void microphone_init(void)
     microphone.fifo.w_ptr = 0;
     microphone.fifo.r_ptr = 0;
     microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
+    //microphone.visualize = true;
 
     HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx_buff[0], 64);
     HAL_I2S_Receive_DMA(&hi2s2, &microphone.record[0], 64);
 }
+/******************************************************************************/
 
+
+
+/**
+ * \brief           RTOS microphone task
+ * \param[in]
+ */
 void MicrophoneTaskStart(void *argument)
 {
     uint8_t ddd[128] = {0};
@@ -37,10 +52,18 @@ void MicrophoneTaskStart(void *argument)
     for (;;)
     {
         microphone_process();
-        osDelay(10);
+        osDelay(1);
     }
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           Main microphone process
+ * \param[in]
+ */
 void microphone_process(void)
 {
     switch (microphone.state) {
@@ -101,7 +124,15 @@ void microphone_process(void)
             break;
     }
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           CRC init
+ * \param[in]
+ */
 void microphone_crc_init(void)
 {
     hcrc.Instance = CRC;
@@ -112,13 +143,29 @@ void microphone_crc_init(void)
 
     __HAL_CRC_DR_RESET(&hcrc);
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           FIFO buff write
+ * \param[in]
+ */
 void microphone_fifo_write(uint16_t data)
 {
     microphone.fifo.buff[microphone.fifo.w_ptr] = data;
     microphone.fifo.w_ptr++;
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           Audio visualization
+ * \param[in]
+ */
 void microphone_visualization(uint16_t data)
 {
     uint16_t volume = data;
@@ -128,10 +175,10 @@ void microphone_visualization(uint16_t data)
         console_clear_screen_setup();
     }
 
-    if (volume < 100) {
-        log_printf_cont("");
-    }
-    else if ((volume > 800) && (volume < 1200)) {
+//    if (volume < 100) {
+//        console_printf_cont("");
+//    }
+    if ((volume > 800) && (volume < 1200)) {
         log_printf_crlf("|");
     }
     else if ((volume > 1200) && (volume < 1300)) {
@@ -177,7 +224,15 @@ void microphone_visualization(uint16_t data)
         log_printf_cont("");
     }
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * \brief           FIFO buff read
+ * \param[in]
+ */
 uint16_t microphone_fifo_read(void)
 {
     uint16_t val = microphone.fifo.buff[microphone.fifo.r_ptr];
@@ -185,3 +240,4 @@ uint16_t microphone_fifo_read(void)
 
     return val;
 }
+/******************************************************************************/

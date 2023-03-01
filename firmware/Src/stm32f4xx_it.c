@@ -88,24 +88,19 @@ void DMA1_Stream5_IRQHandler(void)
     HAL_DMA_IRQHandler(&hdma_spi3_tx);
 }
 
-//void SPI2_IRQHandler(void)
-//{
-//    HAL_I2S_IRQHandler(&hi2s2);
-//}
-
 void SysTick_Handler(void)
 {
 	HAL_IncTick();
-	indication_leds_update();
+	//indication_leds_update();
 
-//#if (INCLUDE_xTaskGetSchedulerState == 1 )
-//  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
-//  {
-//#endif /* INCLUDE_xTaskGetSchedulerState */
-//  xPortSysTickHandler();
-//#if (INCLUDE_xTaskGetSchedulerState == 1 )
-//  }
-//#endif /* INCLUDE_xTaskGetSchedulerState */
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+  {
+#endif /* INCLUDE_xTaskGetSchedulerState */
+  xPortSysTickHandler();
+#if (INCLUDE_xTaskGetSchedulerState == 1 )
+  }
+#endif /* INCLUDE_xTaskGetSchedulerState */
 }
 
 /******************************************************************************/
