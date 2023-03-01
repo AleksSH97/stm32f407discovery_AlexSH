@@ -32,10 +32,13 @@ struct __attribute__ ((__packed__)) msg {
 };
 
 struct uart {
-    lwrb_t        lwrb;
-    uint8_t       buff[UART_BUFF_SIZE];
+    lwrb_t        lwrb_rx;
+    lwrb_t        lwrb_tx;
 
-    uint8_t       keyboard;
+    uint8_t       buff_rx[UART_BUFF_SIZE];
+    uint8_t       buff_tx[UART_BUFF_SIZE];
+
+    uint8_t       keyboarb_input;
     uint8_t       console_input;
 
     struct msg    msg;
@@ -50,6 +53,7 @@ bool uart_setup_receive_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
 bool uart_setup_receive_byte(UART_HandleTypeDef *huart, uint8_t *byte);
 bool uart_setup_receive_char(UART_HandleTypeDef *huart, uint8_t *byte);
 bool uart_send_byte(UART_HandleTypeDef *huart, uint8_t byte);
+bool uart_send_byte_tx_buff(UART_HandleTypeDef *huart);
 bool uart_receive_byte(UART_HandleTypeDef *huart,uint8_t byte);
 bool uart_send_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
 bool uart_setup_receive_msg_dma(UART_HandleTypeDef *huart, struct msg *msg_ptr);
