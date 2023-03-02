@@ -72,8 +72,8 @@ all: main-build
 main-build: free_rtos_stm32.elf secondary-outputs
 
 # Tool invocations
-free_rtos_stm32.elf free_rtos_stm32.map: $(OBJS) $(USER_OBJS) ../../../../firmware/ld/STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "free_rtos_stm32.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"../../../../firmware/ld/STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="free_rtos_stm32.map" -Wl,--gc-sections -static -L../../../../firmware/lib/PDM/Lib --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+free_rtos_stm32.elf free_rtos_stm32.map: $(OBJS) $(USER_OBJS) C:\Workspaces\free_rtos_stm32\firmware\ld\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "free_rtos_stm32.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Workspaces\free_rtos_stm32\firmware\ld\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="free_rtos_stm32.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
