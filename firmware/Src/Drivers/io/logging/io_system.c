@@ -101,7 +101,7 @@ void IO_RxTask(void *argument)
     {
         if (lwrb_get_free(&data_uart.lwrb_rx) != 0) {
             lwrb_read(&data_uart.lwrb_rx, &data, sizeof(char));
-            osMessageQueuePut(uartRxQueueHandle, &data, 0, 200);
+            osMessageQueuePut(uartRxQueueHandle, &data, 0, 100);
         }
 
         if (!(io_get_byte(&rx, 100))) {
@@ -128,7 +128,7 @@ void IO_TxTask(void *argument)
     for(;;)
     {
         if (io_get_mode() == IO_CONSOLE) {
-            if (lwrb_get_free(&data_uart.lwrb_rx) != 0) {
+            if (!(io_is_tx_buffer_full())) {
 
                 uint8_t msg = 0x00;
                 osStatus_t event = osMessageQueueGet(consoleQueueHandle, &msg, NULL, 200);
@@ -136,12 +136,12 @@ void IO_TxTask(void *argument)
                 if (event != osOK) {
                     continue;
                 }
-                lwrb_write(&data_uart.lwrb_tx, &msg, sizeof(uint8_t));
+                io_put_data_to_tx_buffer(&msg, sizeof(uint8_t));
             }
             uart_send_byte_tx_buff(&huart3);
         }
         else if (io_get_mode() == IO_LOGS) {
-            if (lwrb_get_free(&data_uart.lwrb_rx) != 0) {
+            if (!(io_is_tx_buffer_full())) {
 
                 uint8_t msg = 0x00;
                 osStatus_t event = osMessageQueueGet(logsQueueHandle, &msg, NULL, 200);
@@ -149,7 +149,7 @@ void IO_TxTask(void *argument)
                 if (event != osOK) {
                     continue;
                 }
-                lwrb_write(&data_uart.lwrb_tx, &msg, sizeof(uint8_t));
+                io_put_data_to_tx_buffer(&msg, sizeof(uint8_t));
             }
             uart_send_byte_tx_buff(&huart3);
         }
@@ -188,17 +188,13 @@ void io_set_rx_handler(char rx)
         return;
     }
 
-    if (io_get_mode() == IO_IDLE) {
-        return;
-    }
+//    if (io_get_mode() == IO_LOGS) {
+//        io_system.rx_handler = io_logs_rx_handler;
+//        return;
+//    }
 
-    if (io_get_mode() == IO_LOGS) {
-        io_system.rx_handler = io_logs_rx_handler;
-        return;
-    }
-
-    io_set_mode(IO_IDLE);
-    osTimerStart(io_system.soft_timeout, SOFT_TIMEOUT_MS);
+    io_set_mode(IO_LOGS);
+    io_system.rx_handler = io_logs_rx_handler;
 }
 /******************************************************************************/
 
@@ -207,7 +203,13 @@ void io_set_rx_handler(char rx)
 
 void io_console_rx_handler(char rx)
 {
+    if (!data_uart.flag) {
+        return;
+    }
+
     console_insert_char(rx);
+
+    data_uart.flag = false;
 }
 /******************************************************************************/
 
@@ -221,7 +223,17 @@ void io_logs_rx_handler(char rx)
         console_start();
         return;
     }
+
+    if ((rx == 'L') || (rx == 'l')) {
+        io_set_mode(IO_LOGS);
+    }
+//    else if ((rx == 'X') || (rx == 'x')) {
+//        io_set_mode(IO_IDLE);
+//        log_clear_queues();
+//    }
 }
+/******************************************************************************/
+
 
 
 
@@ -229,13 +241,40 @@ void io_clear_rx_queue(void)
 {
     osMessageQueueReset(uartRxQueueHandle);
 }
+/******************************************************************************/
 
 
 
 
+bool io_is_tx_buffer_full(void)
+{
+    return (lwrb_get_free(&data_uart.lwrb_tx) == 0 ? true : false);
+}
+/******************************************************************************/
 
 
 
 
+bool io_put_data_to_tx_buffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&data_uart.lwrb_tx) == 0) {
+        return false;
+    }
 
+    return (lwrb_write(&data_uart.lwrb_tx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+bool io_put_data_to_rx_buffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&data_uart.lwrb_rx) == 0) {
+        return false;
+    }
+
+    return (lwrb_write(&data_uart.lwrb_rx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
 
