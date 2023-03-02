@@ -78,7 +78,7 @@ void microphone_process(void)
             }
 
             if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > MICROPHONE_BUFF_SIZE) {
-                indication_led_bottom();
+                IndicationLedBottom();
                 microphone.read = true;
             }
 
@@ -168,60 +168,57 @@ void microphone_fifo_write(uint16_t data)
  */
 void microphone_visualization(uint16_t data)
 {
-    uint16_t volume = data;
+//    uint16_t data = data;
 
     if ((HAL_GetTick() - microphone.timestamp_ms) > microphone.timeout_ms) {
         microphone.timestamp_ms = HAL_GetTick();
         console_clear_screen_setup();
     }
 
-//    if (volume < 100) {
-//        console_printf_cont("");
-//    }
-    if ((volume > 800) && (volume < 1200)) {
-        log_printf_crlf("|");
+    if ((data > 800) && (data < 1200)) {
+        console_printf_crlf("|");
     }
-    else if ((volume > 1200) && (volume < 1300)) {
-        log_printf_crlf("||");
+    else if ((data > 1200) && (data < 1300)) {
+        console_printf_crlf("||");
     }
-    else if ((volume > 1300) && (volume < 1500)) {
-        log_printf_crlf("|||");
+    else if ((data > 1300) && (data < 1500)) {
+        console_printf_crlf("|||");
     }
-    else if ((volume > 1500) && (volume < 1800)) {
-        log_printf_crlf("||||");
+    else if ((data > 1500) && (data < 1800)) {
+        console_printf_crlf("||||");
     }
-    else if ((volume > 1800) && (volume < 2000)) {
-        log_printf_crlf("|||||");
+    else if ((data > 1800) && (data < 2000)) {
+        console_printf_crlf("|||||");
     }
-    else if ((volume > 2000) && (volume < 3000)) {
-        log_printf_crlf("||||||");
+    else if ((data > 2000) && (data < 3000)) {
+        console_printf_crlf("||||||");
     }
-    else if ((volume > 3000) && (volume < 4000)) {
-        log_printf_crlf("|||||||");
+    else if ((data > 3000) && (data < 4000)) {
+        console_printf_crlf("|||||||");
     }
-    else if ((volume > 4000) && (volume < 5000)) {
-        log_printf_crlf("||||||||");
+    else if ((data > 4000) && (data < 5000)) {
+        console_printf_crlf("||||||||");
     }
-    else if ((volume > 5000) && (volume < 10000)) {
-        log_printf_crlf("|||||||||");
+    else if ((data > 5000) && (data < 10000)) {
+        console_printf_crlf("|||||||||");
     }
-    else if ((volume > 10000) && (volume < 15000)) {
-        log_printf_crlf("||||||||||");
+    else if ((data > 10000) && (data < 15000)) {
+        console_printf_crlf("||||||||||");
     }
-    else if ((volume > 15000) && (volume < 20000)) {
-        log_printf_crlf("|||||||||||");
+    else if ((data > 15000) && (data < 20000)) {
+        console_printf_crlf("|||||||||||");
     }
-    else if ((volume > 20000) && (volume < 25000)) {
-        log_printf_crlf("||||||||||||");
+    else if ((data > 20000) && (data < 25000)) {
+        console_printf_crlf("||||||||||||");
     }
-    else if ((volume > 25000) && (volume < 30000)) {
-        log_printf_crlf("|||||||||||||");
+    else if ((data > 25000) && (data < 30000)) {
+        console_printf_crlf("|||||||||||||");
     }
-    else if ((volume > 30000) && (volume < 35000)) {
-        log_printf_crlf("||||||||||||||");
+    else if ((data > 30000) && (data < 35000)) {
+        console_printf_crlf("||||||||||||||");
     }
     else {
-        log_printf_cont("");
+        console_printf_cont("");
     }
 }
 /******************************************************************************/

@@ -77,6 +77,8 @@ void log_clear_queues(void)
 /******************************************************************************/
 
 
+
+
 int log_printf_logs(const char *fmt, ...)
 {
     va_list args;
@@ -145,7 +147,11 @@ static int lwprintf_console_out(int ch, lwprintf_t* p)
 
 void log_print_welcome_msg(void)
 {
-    log_printf_crlf("Welcome to STM32F407 Discovery firmware with FreeRTOS");
+    log_printf_crlf("");
+    log_printf_crlf("");
+    log_printf_crlf("\tWelcome to STM32F407 Discovery firmware with FreeRTOS");
+    log_printf_crlf("");
+    log_printf_crlf("");
 }
 /******************************************************************************/
 
