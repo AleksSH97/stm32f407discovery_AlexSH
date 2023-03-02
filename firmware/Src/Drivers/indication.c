@@ -23,18 +23,18 @@ mculed_t mculed[N_LED];
 /******************************************************************************/
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
-static void indication_led_loading_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_button_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_button_hold_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_error_setup(mculed_t *led_ptr);
-static void indication_led_button_double_click_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_top_setup(mculed_t *led_ptr, int led_index);
-static void indication_led_bottom_setup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedLoadingSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedButtonSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedButtonHoldSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedErrorSetup(mculed_t *led_ptr);
+static void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedTopSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedBottomSetup(mculed_t *led_ptr, int led_index);
 
 /**
  * @brief          Initialization off led CLK, Pins, hardware, fns and init of each led fns
  */
-void initialize_led_indication(void)
+void IndicationInit(void)
 {
 	mculed_ctrl_t fns = {0};
 
@@ -61,9 +61,9 @@ void initialize_led_indication(void)
 	mculed[LED_RIGHT].hardware.port  =    (uint32_t) LED_RIGHT_GPIO_Port;
 	mculed[LED_RIGHT].hardware.pin   =    (uint32_t) LED_RIGHT_Pin;
 
-	fns.turn_on = indication_led_turn_on;
-	fns.turn_off = indication_led_turn_off;
-	fns.toggle = indication_led_toggle;
+	fns.turn_on = IndicationLedTurnOn;
+	fns.turn_off = IndicationLedTurnOff;
+	fns.toggle = IndicationLedToggle;
 
 	mculed_init(&mculed[LED_TOP], &fns);
 	mculed_init(&mculed[LED_LEFT], &fns);
@@ -82,7 +82,7 @@ void IndicationUpdateTaskStart(void *argument)
 
     for (;;)
     {
-        indication_leds_update();
+        IndicationLedsUpdate();
 
         osDelay(10);
     }
@@ -95,17 +95,17 @@ void IndicationUpdateTaskStart(void *argument)
 /**
  * @brief          Led actions fns
  */
-void indication_led_turn_on(mculed_t *self)
+void IndicationLedTurnOn(mculed_t *self)
 {
 	HAL_GPIO_WritePin((GPIO_TypeDef *) self->hardware.port, self->hardware.pin, GPIO_PIN_SET);
 }
 
-void indication_led_turn_off(mculed_t *self)
+void IndicationLedTurnOff(mculed_t *self)
 {
 	HAL_GPIO_WritePin((GPIO_TypeDef *) self->hardware.port, self->hardware.pin, GPIO_PIN_RESET);
 }
 
-void indication_led_toggle(mculed_t *self)
+void IndicationLedToggle(mculed_t *self)
 {
 	HAL_GPIO_TogglePin((GPIO_TypeDef *)self->hardware.port, self->hardware.pin);
 }
@@ -117,10 +117,10 @@ void indication_led_toggle(mculed_t *self)
 /**
  * @brief          Loading led animation function
  */
-void indication_led_loading(void)
+void IndicationLedLoading(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		indication_led_loading_setup(&mculed[led_index], led_index);
+	    prvIndicationLedLoadingSetup(&mculed[led_index], led_index);
 		led_function(&mculed[led_index]);
 	}
 }
@@ -132,10 +132,10 @@ void indication_led_loading(void)
 /**
  * @brief          LED top on
  */
-void indication_led_top(void)
+void IndicationLedTop(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-	    indication_led_top_setup(&mculed[led_index], led_index);
+	    prvIndicationLedTopSetup(&mculed[led_index], led_index);
 		led_function(&mculed[led_index]);
 	}
 }
@@ -147,10 +147,10 @@ void indication_led_top(void)
 /**
  * @brief          LED bottom on
  */
-void indication_led_bottom(void)
+void IndicationLedBottom(void)
 {
     for (int led_index = 0; led_index < N_LED; led_index++) {
-        indication_led_bottom_setup(&mculed[led_index], led_index);
+        prvIndicationLedBottomSetup(&mculed[led_index], led_index);
         led_function(&mculed[led_index]);
     }
 }
@@ -162,10 +162,10 @@ void indication_led_bottom(void)
 /**
  * @brief          Button led function
  */
-void indication_led_button(void)
+void IndicationLedButton(void)
 {
     for (int led_index = 0; led_index < N_LED; led_index++) {
-        indication_led_button_setup(&mculed[led_index], led_index);
+        prvIndicationLedButtonSetup(&mculed[led_index], led_index);
         led_function(&mculed[led_index]);
     }
 }
@@ -176,10 +176,10 @@ void indication_led_button(void)
 /**
  * @brief          Hold button led function
  */
-void indication_led_button_hold(void)
+void IndicationLedButtonHold(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		indication_led_button_hold_setup(&mculed[led_index], led_index);
+	    prvIndicationLedButtonHoldSetup(&mculed[led_index], led_index);
 		led_function(&mculed[led_index]);
 	}
 }
@@ -191,10 +191,10 @@ void indication_led_button_hold(void)
 /**
  * @brief          Double click button led function
  */
-void indication_led_button_double_click(void)
+void IndicationLedButtonDoubleClick(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		indication_led_button_double_click_setup(&mculed[led_index], led_index);
+	    prvIndicationLedButtonDoubleClickSetup(&mculed[led_index], led_index);
 		led_function(&mculed[led_index]);
 	}
 }
@@ -206,10 +206,10 @@ void indication_led_button_double_click(void)
 /**
  * @brief          Error led function
  */
-void indication_led_error(void)
+void IndicationLedError(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		indication_led_error_setup(&mculed[led_index]);
+	    prvIndicationLedErrorSetup(&mculed[led_index]);
 		led_function(&mculed[led_index]);
 	}
 }
@@ -229,7 +229,7 @@ void indication_led_accelerometer(void)
 /**
  * @brief          Loading led top animation setup
  */
-void indication_led_top_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedTopSetup(mculed_t *led_ptr, int led_index)
 {
     led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
 
@@ -273,7 +273,7 @@ void indication_led_top_setup(mculed_t *led_ptr, int led_index)
 /**
  * @brief          Loading led bottom animation setup
  */
-void indication_led_bottom_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedBottomSetup(mculed_t *led_ptr, int led_index)
 {
     led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
 
@@ -318,7 +318,7 @@ void indication_led_bottom_setup(mculed_t *led_ptr, int led_index)
 /**
  * @brief          Loading led animation setup
  */
-void indication_led_loading_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedLoadingSetup(mculed_t *led_ptr, int led_index)
 {
 	led_ptr->hardware.mode = MCULED_LED_LOADING;
 	led_ptr->setup.iterations_num = INDICATION_LED_LOADING_NUM;
@@ -359,7 +359,7 @@ void indication_led_loading_setup(mculed_t *led_ptr, int led_index)
 /**
  * @brief          Button led setup
  */
-void indication_led_button_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedButtonSetup(mculed_t *led_ptr, int led_index)
 {
 	switch (led_index) {
 		case LED_TOP:
@@ -399,7 +399,7 @@ void indication_led_button_setup(mculed_t *led_ptr, int led_index)
 /**
  * @brief          Button hold led setup
  */
-void indication_led_button_hold_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedButtonHoldSetup(mculed_t *led_ptr, int led_index)
 {
 	switch (led_index) {
 		case LED_TOP:
@@ -441,7 +441,7 @@ void indication_led_button_hold_setup(mculed_t *led_ptr, int led_index)
 
 
 
-void indication_led_button_double_click_setup(mculed_t *led_ptr, int led_index)
+void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index)
 {
 	switch (led_index) {
 		case LED_TOP:
@@ -484,7 +484,7 @@ void indication_led_button_double_click_setup(mculed_t *led_ptr, int led_index)
 /**
  * @brief          Error led setup
  */
-void indication_led_error_setup(mculed_t *led_ptr)
+void prvIndicationLedErrorSetup(mculed_t *led_ptr)
 {
 	led_ptr->hardware.mode = MCULED_ON_STATE;
 	led_ptr->setup.iterations_num = INDICATION_LED_ERROR_NUM;
@@ -504,7 +504,7 @@ void indication_led_error_setup(mculed_t *led_ptr)
 /**
  * @brief          Led update from SysTick_Handler
  */
-void indication_leds_update(void)
+void IndicationLedsUpdate(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 		led_update(&mculed[led_index]);

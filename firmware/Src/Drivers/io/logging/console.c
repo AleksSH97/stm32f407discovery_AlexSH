@@ -24,7 +24,7 @@
 #define _CMD_RESET                  "reset"
 #define _CMD_FREE                   "free"
 #define _CMD_CHECK                  "check"
-#define _CMD_EXIT                   "exit"
+#define _CMD_BACK                   "back"
 /* Arguments for set/clear */
 #define _SCMD_RD                    "?"
 #define _SCMD_SAVE                  "save"
@@ -60,7 +60,7 @@ microrl_t *microrl_ptr = &microrl;
 
 
 
-char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE, _CMD_EXIT};    //available  commands
+char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE, _CMD_BACK};    //available  commands
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
 char *compl_word [_NUM_OF_CMD + 1];                        // array for completion
 /******************************************************************************/
@@ -94,7 +94,7 @@ void console_start(void)
     console_init();
 
     log_printf_console(CLR_CLR);
-    console_print_help(microrl_ptr);
+    console_print_welcome(microrl_ptr);
 }
 /******************************************************************************/
 
@@ -148,6 +148,7 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
         else if (strcmp(argv[i], _CMD_LOGOUT) == 0) {
             console_print(microrl_ptr, "\tBye!" _ENDLINE_SEQ);
             microrl_set_execute_callback(microrl_ptr, console_execute);
+            io_set_mode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BUFF) == 0) {
             console_print(microrl_ptr, "\tChoose your action with buffer: " _ENDLINE_SEQ);
@@ -181,7 +182,6 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv) 
 int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
 {
     int i = 0;
-    console_clear_screen(microrl_ptr);
 
     while (i < argc) {
         if (strcmp(argv[i], _CMD_LOGIN) == 0) {
@@ -194,7 +194,7 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
                 }
                 else {
                     console_print(microrl_ptr, "\tLogin name doesn't registered. Try again." _ENDLINE_SEQ);
-                    indication_led_error();
+                    IndicationLedError();
                     return 1;
                 }
             }
@@ -208,12 +208,13 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
                 console_print(microrl_ptr, "\tLogged in successfully." _ENDLINE_SEQ);
                 passw_in = 0;
                 logged_in = 1;
+                console_print_help(microrl_ptr);
                 microrl_set_execute_callback(microrl_ptr, console_execute_main);
                 return 0;
             }
             else {
                 console_print(microrl_ptr, "\tWrong password. Try again." _ENDLINE_SEQ);
-                indication_led_error();
+                IndicationLedError();
                 passw_in = 0;
                 return 1;
             }
@@ -221,7 +222,7 @@ int console_execute(microrl_t *microrl_ptr, int argc, const char * const *argv)
         else {
             console_print(microrl_ptr, "\tYou need to login first!" _ENDLINE_SEQ);
             console_print(microrl_ptr, "\tlogin YOUR_LOGIN"_ENDLINE_SEQ);
-            indication_led_error();
+            IndicationLedError();
             return 1;
         }
         i++;
@@ -256,14 +257,14 @@ int console_buff(microrl_t *microrl_ptr, int argc, const char * const *argv)
             // TODO insert buffer to show
             console_print(microrl_ptr, "\t " _ENDLINE_SEQ);
         }
-        else if (strcmp(argv[i], _CMD_EXIT) == 0) {
+        else if (strcmp(argv[i], _CMD_BACK) == 0) {
             console_print(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
             console_print_help(microrl_ptr);
             microrl_set_execute_callback(microrl_ptr, console_execute_main);
         }
         else {
             console_print(microrl_ptr, "\tUndefined command" _ENDLINE_SEQ);
-            indication_led_error();
+            IndicationLedError();
             console_print_buff(microrl_ptr);
         }
         i++;
@@ -289,14 +290,14 @@ int console_visualizer(microrl_t *microrl_ptr, int argc, const char * const *arg
             microphone.timestamp_ms = HAL_GetTick();
             microphone.visualize = true;
         }
-        else if (strcmp(argv[i], _CMD_EXIT) == 0) {
+        else if (strcmp(argv[i], _CMD_BACK) == 0) {
             console_print(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
             console_print_help(microrl_ptr);
             microrl_set_execute_callback(microrl_ptr, console_execute_main);
         }
         else {
             console_print(microrl_ptr, "\tUndefined command" _ENDLINE_SEQ);
-            indication_led_error();
+            IndicationLedError();
             console_print_visualizer(microrl_ptr);
         }
         i++;
@@ -427,6 +428,7 @@ void console_print_help(microrl_t *microrl_ptr)
     console_print(microrl_ptr, "Use TAB key for completion"_ENDLINE_SEQ _ENDLINE_SEQ);
 #endif /* MICRORL_CFG_USE_COMPLETE */
 }
+/******************************************************************************/
 
 
 
@@ -438,8 +440,9 @@ void console_print_buff(microrl_t *microrl_ptr)
     console_print(microrl_ptr, "\treset               - reset buffer"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tfree                - free buff memory"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tcheck               - check your buff"_ENDLINE_SEQ);
-    console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tback                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
+/******************************************************************************/
 
 
 
@@ -449,8 +452,20 @@ void console_print_visualizer(microrl_t *microrl_ptr)
     console_print(microrl_ptr, _ENDLINE_SEQ);
     console_print(microrl_ptr, "List of audio visualizer commands:"_ENDLINE_SEQ);
     console_print(microrl_ptr, "\tshow               -  show visualization"_ENDLINE_SEQ);
-    console_print(microrl_ptr, "\texit                - back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tback               -  back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
+/******************************************************************************/
+
+
+
+
+void console_print_welcome(microrl_t *microrl_ptr)
+{
+    console_print(microrl_ptr, _ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tWelcome to console!"_ENDLINE_SEQ);
+    console_print(microrl_ptr, "\tEnter your login, than your password please"_ENDLINE_SEQ);
+}
+/******************************************************************************/
 
 
 
@@ -465,4 +480,4 @@ void console_get_version(char* ver_str)
     ver_str[3] = '.';
     ver_str[4] = (char)(ver & 0x000000FF) + '0';
 }
-
+/******************************************************************************/

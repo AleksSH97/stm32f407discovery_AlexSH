@@ -41,7 +41,6 @@ void debug_uart_init(void)
 
     if (HAL_UART_Init(&huart2) != HAL_OK)
     {
-      indication_led_error();
       Error_Handler();
     }
 }

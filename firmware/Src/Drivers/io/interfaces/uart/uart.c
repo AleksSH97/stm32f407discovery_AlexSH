@@ -86,7 +86,7 @@ void uart_send_packet(void)
     msg = data_uart_create_msg(UART_LED_TOGGLE);
     if (!uart_send_msg(&huart3, &msg)) {
         log_printf_crlf("Sending msg error!");
-        indication_led_error();
+        IndicationLedError();
     }
     log_printf_crlf("Here's your msg: %d %d %d", msg.start_byte, msg.payload, msg.stop_byte);
 }
@@ -138,8 +138,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART3) {
-        indication_led_top();
-        lwrb_write(&data_uart.lwrb_rx, &data_uart.keyboarb_input, sizeof(uint8_t));
+        IndicationLedTop();
+        io_put_data_to_rx_buffer(&data_uart.keyboarb_input, sizeof(uint8_t));
+        data_uart.flag = true;
         uart_setup_receive_char(&huart3, &data_uart.keyboarb_input);
     }
 }
