@@ -66,18 +66,20 @@ extern enum indication_led_speed speed;
 
 extern mculed_t mculed[N_LED];
 
-void initialize_led_indication(void);
-void indication_led_top(void);
-void indication_led_bottom(void);
-void indication_led_loading(void);
-void indication_led_error(void);
-void indication_led_button(void);
-void indication_led_turn_on(mculed_t *self);
-void indication_led_turn_off(mculed_t *self);
-void indication_led_toggle(mculed_t *self);
-void indication_leds_update(void);
-void indication_led_button_hold(void);
-void indication_led_button_double_click(void);
+void IndicationInit(void);
+void IndicationLedTop(void);
+void IndicationLedBottom(void);
+void IndicationLedLoading(void);
+void IndicationLedError(void);
+void IndicationLedButton(void);
+
+void IndicationLedTurnOn(mculed_t *self);
+void IndicationLedTurnOff(mculed_t *self);
+void IndicationLedToggle(mculed_t *self);
+
+void IndicationLedsUpdate(void);
+void IndicationLedButtonHold(void);
+void IndicationLedButtonDoubleClick(void);
 void IndicationUpdateTaskStart(void *argument);
 
 #endif /* INDICATION_H_ */

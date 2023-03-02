@@ -91,7 +91,6 @@ void DMA1_Stream5_IRQHandler(void)
 void SysTick_Handler(void)
 {
 	HAL_IncTick();
-	//indication_leds_update();
 
 #if (INCLUDE_xTaskGetSchedulerState == 1 )
   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)

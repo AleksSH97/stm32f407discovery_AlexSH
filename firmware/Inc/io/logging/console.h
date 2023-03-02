@@ -37,6 +37,7 @@ void console_insert_char(char ch);
 
 void console_print_help(microrl_t *microrl_ptr);
 void console_print_buff(microrl_t *microrl_ptr);
+void console_print_welcome(microrl_t *microrl_ptr);
 void console_print_visualizer(microrl_t *microrl_ptr);
 void console_sigint(microrl_t *microrl_ptr);
 

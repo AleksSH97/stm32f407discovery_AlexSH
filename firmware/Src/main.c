@@ -18,11 +18,11 @@
 
 #include "main.h"
 
-static void initialize_mcu(void);
-static void system_clock_config(void);
-static void initialize_rtos(void);
-static void initialize_drivers(void);
-static void dma_init(void);
+static void prvInitializeMCU(void);
+static void prvSystemClockConfig(void);
+static void prvInitRTOS(void);
+static void prvInitializeDrivers(void);
+static void prvDMAInit(void);
 
 
 
@@ -32,11 +32,12 @@ static void dma_init(void);
  */
 int main(void)
 {
-    initialize_mcu();
+    prvInitializeMCU();
 
     osKernelInitialize();
 
-    initialize_drivers();
+    prvInitializeDrivers();
+
     MX_FREERTOS_Init();
 
     osKernelStart();
@@ -53,11 +54,11 @@ int main(void)
 /**
  * @brief          MCU initialization fns
  */
-void initialize_mcu(void)
+void prvInitializeMCU(void)
 {
     HAL_Init();
-    system_clock_config();
-    dma_init();
+    prvSystemClockConfig();
+    prvDMAInit();
     MX_TIM1_Init();
 }
 /******************************************************************************/
@@ -68,7 +69,7 @@ void initialize_mcu(void)
 /**
  * @brief          FreeRTOS init fns
  */
-void initialize_rtos(void)
+void prvInitRTOS(void)
 {
     osKernelInitialize();
     MX_FREERTOS_Init();
@@ -82,11 +83,11 @@ void initialize_rtos(void)
 /**
  * @brief          Drivers init fns
  */
-void initialize_drivers(void)
+void prvInitializeDrivers(void)
 {
-    initialize_led_indication();
-    indication_led_loading();
-    initialize_button();
+    IndicationInit();
+    IndicationLedLoading();
+    ButtonInit();
 
     microphone_init();
     ring_buf_i2s2_init();
@@ -106,7 +107,7 @@ void initialize_drivers(void)
 /**
  * @brief          System clock configuration
  */
-void system_clock_config(void)
+void prvSystemClockConfig(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -155,7 +156,7 @@ void system_clock_config(void)
 
 
 
-void dma_init(void)
+void prvDMAInit(void)
 {
     __HAL_RCC_DMA1_CLK_ENABLE();
 

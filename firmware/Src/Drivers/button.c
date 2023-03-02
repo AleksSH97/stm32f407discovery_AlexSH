@@ -12,14 +12,10 @@
 /******************************************************************************/
 /* Includes ----------------------------------------------------------------- */
 /******************************************************************************/
-#include <stdbool.h>
-
-#include "stm32f4xx_hal.h"
-#include "tim.h"
 #include "button.h"
-#include "log.h"
-#include "indication.h"
-#include "uart.h"
+
+
+
 
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
@@ -34,8 +30,8 @@ struct user_button {
 /******************************************************************************/
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
-static void button_check_algorithm(struct user_button *user_button_ptr);
-static void button_activate(struct user_button *user_button_ptr);
+static void prvButtonCheckAlgorithm(struct user_button *user_button_ptr);
+static void prvButtonActivate(struct user_button *user_button_ptr);
 
 struct user_button user_button;
 //struct msg msg;
@@ -46,7 +42,7 @@ struct user_button user_button;
 /**
  * @brief          Button initialization (CLK, GPIO, NVIC)
  */
-void initialize_button(void)
+void ButtonInit(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -74,7 +70,7 @@ void ButtonTaskStart(void *argumet)
 
     for (;;)
     {
-        button_check_mode();
+        ButtonCheckMode();
         osDelay(10);
     }
 }
@@ -82,7 +78,7 @@ void ButtonTaskStart(void *argumet)
  * @brief          Button bool pushed status. Returns false if button has not been pushed,
  *                 returns 1 if button has been pushed
  */
-bool button_is_pushed(void)
+bool ButtonIsPushed(void)
 {
 	if (!timeout_started(&user_button.debounce_timeout)) {
 		return false;
@@ -102,7 +98,7 @@ bool button_is_pushed(void)
 /**
  * @brief          Button activation from EXTI Callback
  */
-void button_activate(struct user_button *user_button_ptr)
+void prvButtonActivate(struct user_button *user_button_ptr)
 {
 	user_button_ptr->activate = true;
 }
@@ -112,11 +108,11 @@ void button_activate(struct user_button *user_button_ptr)
 
 
 /**
- * @brief          This functions calls from SysTick constantly to check button mode
+ * @brief          This functions calls constantly to check button mode
  */
-void button_check_mode(void)
+void ButtonCheckMode(void)
 {
-	button_check_algorithm(&user_button);
+    prvButtonCheckAlgorithm(&user_button);
 }
 /******************************************************************************/
 
@@ -126,7 +122,7 @@ void button_check_mode(void)
 /**
  * @brief          Button check algorithm (for singlne, double and hold modes)
  */
-void button_check_algorithm(struct user_button *user_button_ptr)
+void prvButtonCheckAlgorithm(struct user_button *user_button_ptr)
 {
 	if (user_button_ptr->activate) {
 		if (!timeout_started(&user_button.debounce_timeout)) {
@@ -150,15 +146,15 @@ void button_check_algorithm(struct user_button *user_button_ptr)
 		switch (user_button_ptr->mode) {
 		    case BUTTON_ONE_CLICK:
 		        if(!uart_send_byte(&huart3, 0x02)) {
-		            indication_led_error();
+		            IndicationLedError();
 		        }
-		    	indication_led_button();
+		        IndicationLedButton();
 			   	break;
 		    case BUTTON_DOUBLE_CLICK:
-			 	indication_led_button_double_click();
+		        IndicationLedButtonDoubleClick();
 			   	break;
 			case BUTTON_HELD_PRESSED:
-			    indication_led_button_hold();
+			    IndicationLedButtonHold();
 			    break;
 		}
 		user_button_ptr->held_pressed_counter = 0;
@@ -189,7 +185,7 @@ void EXTI0_IRQHandler(void)
 void HAL_GPIO_EXTI_Callback(uint16_t gpio_pin)
 {
 	if (gpio_pin == BUTTON_Pin) {
-		button_activate(&user_button);
+	    prvButtonActivate(&user_button);
 	}
 }
 /******************************************************************************/

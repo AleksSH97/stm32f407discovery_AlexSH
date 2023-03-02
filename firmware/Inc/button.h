@@ -20,6 +20,9 @@
 #include "main.h"
 #include "tim.h"
 #include "stm32f4xx_hal.h"
+#include "log.h"
+#include "indication.h"
+#include "uart.h"
 
 
 
@@ -50,9 +53,9 @@ enum button_mode {
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
-void initialize_button(void);
-bool button_is_pushed(void);
-void button_check_mode(void);
+void ButtonInit(void);
+bool ButtonIsPushed(void);
+void ButtonCheckMode(void);
 void ButtonTaskStart(void *argumet);
 
 /******************************************************************************/
