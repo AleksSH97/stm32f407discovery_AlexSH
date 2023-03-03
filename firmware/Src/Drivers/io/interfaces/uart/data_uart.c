@@ -12,7 +12,7 @@ UART_HandleTypeDef huart3;
 /**
  * @brief          Data uart init function
  */
-void data_uart_init(void)
+void DataUartInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -57,7 +57,7 @@ void data_uart_init(void)
 /**
  * @brief          Create message for data uart to send
  */
-struct msg data_uart_create_msg(enum uart_commands command)
+struct msg DataUartCreateMsg(enum uart_commands command)
 {
     struct msg msg = {0};
     msg.start_byte = START_BYTE;

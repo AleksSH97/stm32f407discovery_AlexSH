@@ -21,23 +21,23 @@ struct uart data_uart;
 /**
  * @brief          Initialization of all uarts
  */
-void uart_all_init(void)
+void UARTAllInit(void)
 {
-    //debug_uart_init();
-    data_uart_init();
+    //DebugUartInit();
+    DataUartInit();
 }
 /******************************************************************************/
 
 /**
  * @brief          Check and validate message
  */
-void uart_check_msg(void)
+void UARTCheckMsg(void)
 {
     if (debug_uart.flag) {
         if(!debug_uart_validate_msg(&debug_uart.msg)) {
-            log_printf_crlf("Received incorrect msg");
+            PrintfLogsCRLF("Received incorrect msg");
             for (int i = 0; i < sizeof(struct msg); i++) {
-              //  printf("0x%x ", info_uart.msg.payload[i]);
+
             }
         }
         else {
@@ -48,7 +48,7 @@ void uart_check_msg(void)
                 case UART_BLINK_LED:
                     break; // TODO implement command
                 default:
-                    log_printf_crlf("Received incorrect command 0x%x", debug_uart.msg.payload);
+                    PrintfLogsCRLF("Received incorrect command 0x%x", debug_uart.msg.payload);
                     break;
             }
         }
@@ -62,17 +62,17 @@ void uart_check_msg(void)
 /**
  * @brief          Enable interrupt receiving message
  */
-bool uart_setup_receive_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr)
+bool UARTSetupReceiveMsg(UART_HandleTypeDef *huart, struct msg *msg_ptr)
 {
     return HAL_UART_Receive_IT(huart, (uint8_t*)msg_ptr, sizeof(msg_ptr)) == HAL_OK;
 }
 
-bool uart_setup_receive_byte(UART_HandleTypeDef *huart, uint8_t *byte)
+bool UARTSetupReceiveByte(UART_HandleTypeDef *huart, uint8_t *byte)
 {
     return HAL_UART_Receive_IT(huart, (uint8_t*)byte, sizeof(byte)) == HAL_OK;
 }
 
-bool uart_setup_receive_char(UART_HandleTypeDef *huart, uint8_t *byte)
+bool UARTSetupReceiveChar(UART_HandleTypeDef *huart, uint8_t *byte)
 {
     return HAL_UART_Receive_IT(huart, (uint8_t*)byte, sizeof(char)) == HAL_OK;
 }
@@ -81,14 +81,14 @@ bool uart_setup_receive_char(UART_HandleTypeDef *huart, uint8_t *byte)
 
 
 
-void uart_send_packet(void)
+void UARTSendPacket(void)
 {
-    msg = data_uart_create_msg(UART_LED_TOGGLE);
-    if (!uart_send_msg(&huart3, &msg)) {
-        log_printf_crlf("Sending msg error!");
+    msg = DataUartCreateMsg(UART_LED_TOGGLE);
+    if (!UARTSendMsg(&huart3, &msg)) {
+        PrintfLogsCRLF("Sending msg error!");
         IndicationLedError();
     }
-    log_printf_crlf("Here's your msg: %d %d %d", msg.start_byte, msg.payload, msg.stop_byte);
+    PrintfLogsCRLF("Here's your msg: %d %d %d", msg.start_byte, msg.payload, msg.stop_byte);
 }
 /******************************************************************************/
 
@@ -98,17 +98,17 @@ void uart_send_packet(void)
 /**
  * @brief          Blocking USART2 send/receive functions
  */
-bool uart_send_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr)
+bool UARTSendMsg(UART_HandleTypeDef *huart, struct msg *msg_ptr)
 {
     return HAL_UART_Transmit(huart, (uint8_t*)msg_ptr, sizeof(msg_ptr), HAL_MAX_DELAY) == HAL_OK;
 }
 
-bool uart_send_byte(UART_HandleTypeDef *huart, uint8_t byte)
+bool UARTSendByte(UART_HandleTypeDef *huart, uint8_t byte)
 {
     return HAL_UART_Transmit(huart, &byte, sizeof(byte), HAL_MAX_DELAY) == HAL_OK;
 }
 
-bool uart_receive_byte(UART_HandleTypeDef *huart, uint8_t byte)
+bool UARTReceiveByte(UART_HandleTypeDef *huart, uint8_t byte)
 {
     return HAL_UART_Receive(huart, &byte, sizeof(byte), HAL_MAX_DELAY) == HAL_OK;
 }
@@ -116,7 +116,7 @@ bool uart_receive_byte(UART_HandleTypeDef *huart, uint8_t byte)
 
 
 
-bool uart_send_byte_tx_buff(UART_HandleTypeDef *huart)
+bool UARTSendByteTxBuff(UART_HandleTypeDef *huart)
 {
     uint8_t msg;
 
@@ -139,9 +139,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART3) {
         IndicationLedTop();
-        io_put_data_to_rx_buffer(&data_uart.keyboarb_input, sizeof(uint8_t));
+        IoSystemPutDataToRxBuffer(&data_uart.keyboarb_input, sizeof(uint8_t));
         data_uart.flag = true;
-        uart_setup_receive_char(&huart3, &data_uart.keyboarb_input);
+        UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
     }
 }
 

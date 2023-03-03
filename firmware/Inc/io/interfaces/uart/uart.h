@@ -45,18 +45,15 @@ struct uart {
     volatile bool flag;
 };
 
-void uart_all_init(void);
-void uart_check_msg(void);
-void uart_send_packet(void);
-void uart_disable_it_ht(void);
-bool uart_setup_receive_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
-bool uart_setup_receive_byte(UART_HandleTypeDef *huart, uint8_t *byte);
-bool uart_setup_receive_char(UART_HandleTypeDef *huart, uint8_t *byte);
-bool uart_send_byte(UART_HandleTypeDef *huart, uint8_t byte);
-bool uart_send_byte_tx_buff(UART_HandleTypeDef *huart);
-bool uart_receive_byte(UART_HandleTypeDef *huart,uint8_t byte);
-bool uart_send_msg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
-bool uart_setup_receive_msg_dma(UART_HandleTypeDef *huart, struct msg *msg_ptr);
-bool uart_setup_receive_msg_dma_buf(UART_HandleTypeDef *huart, uint8_t *RxBuf, uint8_t Size);
+void UARTAllInit(void);
+void UARTCheckMsg(void);
+void UARTSendPacket(void);
+bool UARTSetupReceiveMsg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
+bool UARTSetupReceiveByte(UART_HandleTypeDef *huart, uint8_t *byte);
+bool UARTSetupReceiveChar(UART_HandleTypeDef *huart, uint8_t *byte);
+bool UARTSendByte(UART_HandleTypeDef *huart, uint8_t byte);
+bool UARTSendByteTxBuff(UART_HandleTypeDef *huart);
+bool UARTReceiveByte(UART_HandleTypeDef *huart,uint8_t byte);
+bool UARTSendMsg(UART_HandleTypeDef *huart, struct msg *msg_ptr);
 
 #endif /* UART_H_ */

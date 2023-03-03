@@ -51,20 +51,20 @@ extern osMessageQueueId_t logsQueueHandle;
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
-#define    log_printf_crlf(fmt, ...)               do { log_printf_logs((fmt), ## __VA_ARGS__); log_printf_logs("\r\n"); } while (0)
+#define    PrintfLogsCRLF(fmt, ...)               do { PrintfLogs((fmt), ## __VA_ARGS__); PrintfLogs("\r\n"); } while (0)
 
-#define    log_printf_cont(fmt, ...)               log_printf_logs((fmt), ## __VA_ARGS__)
+#define    PrintfLogsCont(fmt, ...)               PrintfLogs((fmt), ## __VA_ARGS__)
 
-#define    console_printf_crlf(fmt, ...)           do { log_printf_console((fmt), ## __VA_ARGS__); log_printf_console("\r\n"); } while (0)
+#define    PrintfConsoleCRLF(fmt, ...)           do { PrintfConsole((fmt), ## __VA_ARGS__); PrintfConsole("\r\n"); } while (0)
 
-#define    console_printf_cont(fmt, ...)           log_printf_console((fmt), ## __VA_ARGS__)
+#define    PrintfConsoleCont(fmt, ...)           PrintfConsole((fmt), ## __VA_ARGS__)
 
 void LogsTaskStart(void *argument);
-void log_clear_queues(void);
-void log_init(void);
-void log_print_welcome_msg(void);
-int log_printf_logs(const char *fmt, ...);
-int log_printf_console(const char *fmt, ...);
+void LogClearQueues(void);
+void LogInit(void);
+void LogPrintWelcomeMsg(void);
+int PrintfLogs(const char *fmt, ...);
+int PrintfConsole(const char *fmt, ...);
 
 #ifdef __cplusplus
 }

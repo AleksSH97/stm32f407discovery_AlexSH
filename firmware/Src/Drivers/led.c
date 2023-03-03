@@ -22,7 +22,7 @@
 /**
  * @brief          Initialization of each led
  */
-mculedr_t mculed_init(mculed_t *self, mculed_ctrl_t *fns)
+mculedr_t McuLedInit(mculed_t *self, mculed_ctrl_t *fns)
 {
 	if (self == NULL || fns == NULL || fns->turn_on == NULL || fns->turn_off == NULL) {
 		return MCULED_ERROR;
@@ -47,7 +47,7 @@ mculedr_t mculed_init(mculed_t *self, mculed_ctrl_t *fns)
 /**
  * @brief          Led function for different modes of work
  */
-void led_function(mculed_t *self)
+void LedFunction(mculed_t *self)
 {
 	if (self->hardware.mode == MCULED_OFF_STATE) {
 		self->fns.turn_off(self);
@@ -66,7 +66,7 @@ void led_function(mculed_t *self)
 /**
  * @brief          Led update from SysTick_Handler for each led
  */
-void led_update(mculed_t *self)
+void LedUpdate(mculed_t *self)
 {
 	if (self->status.on_timeout) {
 		if (!--self->status.on_timeout) {

@@ -39,15 +39,15 @@ typedef struct {
     bool flag;
 } IO_SYSTEM;
 
-void io_set_mode(IOSYS_MODE mode);
-void io_init(void);
-IOSYS_MODE io_get_mode(void);
-void io_clear_rx_queue(void);
-bool io_get_byte(uint8_t *data, uint32_t timeout_ms);
-bool io_is_tx_buffer_full(void);
-bool io_put_data_to_rx_buffer(const void* data, size_t len);
-bool io_put_data_to_tx_buffer(const void* data, size_t len);
-void IO_TxTask(void *argument);
-void IO_RxTask(void *argument);
+void IoSystemSetMode(IOSYS_MODE mode);
+void IoSystemInit(void);
+IOSYS_MODE IoSystemGetMode(void);
+void IoSystemClearRxQueue(void);
+bool IoSystemGetByte(uint8_t *data, uint32_t timeout_ms);
+bool IoSystemIsTxBufferFull(void);
+bool IoSystemPutDataToRxBuffer(const void* data, size_t len);
+bool IoSystemPutDataToTxBuffer(const void* data, size_t len);
+void IoSystemTxTask(void *argument);
+void IoSystemRxTask(void *argument);
 
 #endif /* IO_LOGGING_IO_SYSTEM_H_ */

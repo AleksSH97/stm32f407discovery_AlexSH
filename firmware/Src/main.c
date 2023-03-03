@@ -33,13 +33,9 @@ static void prvDMAInit(void);
 int main(void)
 {
     prvInitializeMCU();
-
     osKernelInitialize();
-
     prvInitializeDrivers();
-
     MX_FREERTOS_Init();
-
     osKernelStart();
 
     for(;;)
@@ -89,14 +85,14 @@ void prvInitializeDrivers(void)
     IndicationLedLoading();
     ButtonInit();
 
-    microphone_init();
-    ring_buf_i2s2_init();
+    MicrophoneInit();
+    RingBufI2S2Init();
 
-    uart_all_init();
-    ring_buf_uart_init();
-    uart_setup_receive_char(&huart3, &data_uart.keyboarb_input);
+    UARTAllInit();
+    RingBufUARTInit();
+    UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
 
-    io_init();
+    IoSystemInit();
 }
 /******************************************************************************/
 

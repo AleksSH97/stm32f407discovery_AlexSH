@@ -7,12 +7,22 @@
 
 #include "microphone.h"
 
-static void microphone_crc_init(void);
-static void microphone_fifo_write(uint16_t data);
-static void microphone_visualization(uint16_t data);
+
+
+
+
+static void prvMicrophoneCRCInit(void);
+static void prvMicrophoneFifoWrite(uint16_t data);
+uint16_t prvMicrophoneFifoRead(void);
+static void prvMicrophoneVisualization(uint16_t data);
+/******************************************************************************/
+
+
+
 
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
+/******************************************************************************/
 
 
 
@@ -21,11 +31,11 @@ microphone_status_t microphone_status;
  * \brief           Microphone init
  * \param[in]
  */
-void microphone_init(void)
+void MicrophoneInit(void)
 {
-    i2s2_init();
-    i2s3_init();
-    microphone_crc_init();
+    I2S2Init();
+    I2S3Init();
+    prvMicrophoneCRCInit();
     PDM2PCM_init();
 
     microphone.fifo.w_ptr = 0;
@@ -51,7 +61,7 @@ void MicrophoneTaskStart(void *argument)
 
     for (;;)
     {
-        microphone_process();
+        MicrophoneProcess();
         osDelay(1);
     }
 }
@@ -64,16 +74,16 @@ void MicrophoneTaskStart(void *argument)
  * \brief           Main microphone process
  * \param[in]
  */
-void microphone_process(void)
+void MicrophoneProcess(void)
 {
     switch (microphone.state) {
         case MICROPHONE_RX_STATE_1:
             PDM_Filter(&microphone.record[0], &microphone.mid_buff[0], &PDM1_filter_handler);
 
             for (int i = 0; i < 16; i++) {
-                microphone_fifo_write(microphone.mid_buff[i]);
+                prvMicrophoneFifoWrite(microphone.mid_buff[i]);
                 if (microphone.visualize) {
-                    microphone_visualization(microphone.mid_buff[i]);
+                    prvMicrophoneVisualization(microphone.mid_buff[i]);
                 }
             }
 
@@ -88,9 +98,9 @@ void microphone_process(void)
             PDM_Filter(&microphone.record[64], &microphone.mid_buff[0], &PDM1_filter_handler);
 
             for (int i = 0; i < 16; i++) {
-                microphone_fifo_write(microphone.mid_buff[i]);
+                prvMicrophoneFifoWrite(microphone.mid_buff[i]);
                 if (microphone.visualize) {
-                    microphone_visualization(microphone.mid_buff[i]);
+                    prvMicrophoneVisualization(microphone.mid_buff[i]);
                 }
             }
 
@@ -99,7 +109,7 @@ void microphone_process(void)
         case MICROPHONE_TX_STATE_1:
             if (microphone.read) {
                 for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
-                    uint16_t data = microphone_fifo_read();
+                    uint16_t data = prvMicrophoneFifoRead();
                     microphone.tx_buff[i] = data;
                     microphone.tx_buff[i + 2] = data;
                 }
@@ -108,7 +118,7 @@ void microphone_process(void)
         case MICROPHONE_TX_STATE_2:
             if (microphone.read) {
                 for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
-                    uint16_t data = microphone_fifo_read();
+                    uint16_t data = prvMicrophoneFifoRead();
                     microphone.tx_buff[i] = data;
                     microphone.tx_buff[i + 2] = data;
                 }
@@ -117,10 +127,10 @@ void microphone_process(void)
         case MICROPHONE_READY:
             break;
         case MICROPHONE_PROCESS_ERROR:
-            log_printf_crlf("Error: microphone process error!");
+            PrintfLogsCRLF("Error: microphone process error!");
             break;
         case MICROPHONE_INIT_ERROR:
-            log_printf_crlf("Error: initialization of DMA I2S for microphone");
+            PrintfLogsCRLF("Error: initialization of DMA I2S for microphone");
             break;
     }
 }
@@ -133,7 +143,7 @@ void microphone_process(void)
  * \brief           CRC init
  * \param[in]
  */
-void microphone_crc_init(void)
+void prvMicrophoneCRCInit(void)
 {
     hcrc.Instance = CRC;
 
@@ -148,11 +158,76 @@ void microphone_crc_init(void)
 
 
 
+
+/**
+ * \brief           Audio visualization
+ * \param[in]
+ */
+void prvMicrophoneVisualization(uint16_t data)
+{
+//    uint16_t data = data;
+
+    if ((HAL_GetTick() - microphone.timestamp_ms) > microphone.timeout_ms) {
+        microphone.timestamp_ms = HAL_GetTick();
+        ConsoleClearScreenSetup();
+    }
+
+    if ((data > 800) && (data < 1200)) {
+        PrintfConsoleCRLF("|");
+    }
+    else if ((data > 1200) && (data < 1300)) {
+        PrintfConsoleCRLF("||");
+    }
+    else if ((data > 1300) && (data < 1500)) {
+        PrintfConsoleCRLF("|||");
+    }
+    else if ((data > 1500) && (data < 1800)) {
+        PrintfConsoleCRLF("||||");
+    }
+    else if ((data > 1800) && (data < 2000)) {
+        PrintfConsoleCRLF("|||||");
+    }
+    else if ((data > 2000) && (data < 3000)) {
+        PrintfConsoleCRLF("||||||");
+    }
+    else if ((data > 3000) && (data < 4000)) {
+        PrintfConsoleCRLF("|||||||");
+    }
+    else if ((data > 4000) && (data < 5000)) {
+        PrintfConsoleCRLF("||||||||");
+    }
+    else if ((data > 5000) && (data < 10000)) {
+        PrintfConsoleCRLF("|||||||||");
+    }
+    else if ((data > 10000) && (data < 15000)) {
+        PrintfConsoleCRLF("||||||||||");
+    }
+    else if ((data > 15000) && (data < 20000)) {
+        PrintfConsoleCRLF("|||||||||||");
+    }
+    else if ((data > 20000) && (data < 25000)) {
+        PrintfConsoleCRLF("||||||||||||");
+    }
+    else if ((data > 25000) && (data < 30000)) {
+        PrintfConsoleCRLF("|||||||||||||");
+    }
+    else if ((data > 30000) && (data < 35000)) {
+        PrintfConsoleCRLF("||||||||||||||");
+    }
+    else {
+        PrintfConsoleCont("");
+    }
+}
+/******************************************************************************/
+
+
+
+
 /**
  * \brief           FIFO buff write
  * \param[in]
  */
-void microphone_fifo_write(uint16_t data)
+void prvMicrophoneFifoWrite(uint16_t data)
 {
     microphone.fifo.buff[microphone.fifo.w_ptr] = data;
     microphone.fifo.w_ptr++;
@@ -163,74 +238,10 @@ void microphone_fifo_write(uint16_t data)
 
 
 /**
- * \brief           Audio visualization
- * \param[in]
- */
-void microphone_visualization(uint16_t data)
-{
-//    uint16_t data = data;
-
-    if ((HAL_GetTick() - microphone.timestamp_ms) > microphone.timeout_ms) {
-        microphone.timestamp_ms = HAL_GetTick();
-        console_clear_screen_setup();
-    }
-
-    if ((data > 800) && (data < 1200)) {
-        console_printf_crlf("|");
-    }
-    else if ((data > 1200) && (data < 1300)) {
-        console_printf_crlf("||");
-    }
-    else if ((data > 1300) && (data < 1500)) {
-        console_printf_crlf("|||");
-    }
-    else if ((data > 1500) && (data < 1800)) {
-        console_printf_crlf("||||");
-    }
-    else if ((data > 1800) && (data < 2000)) {
-        console_printf_crlf("|||||");
-    }
-    else if ((data > 2000) && (data < 3000)) {
-        console_printf_crlf("||||||");
-    }
-    else if ((data > 3000) && (data < 4000)) {
-        console_printf_crlf("|||||||");
-    }
-    else if ((data > 4000) && (data < 5000)) {
-        console_printf_crlf("||||||||");
-    }
-    else if ((data > 5000) && (data < 10000)) {
-        console_printf_crlf("|||||||||");
-    }
-    else if ((data > 10000) && (data < 15000)) {
-        console_printf_crlf("||||||||||");
-    }
-    else if ((data > 15000) && (data < 20000)) {
-        console_printf_crlf("|||||||||||");
-    }
-    else if ((data > 20000) && (data < 25000)) {
-        console_printf_crlf("||||||||||||");
-    }
-    else if ((data > 25000) && (data < 30000)) {
-        console_printf_crlf("|||||||||||||");
-    }
-    else if ((data > 30000) && (data < 35000)) {
-        console_printf_crlf("||||||||||||||");
-    }
-    else {
-        console_printf_cont("");
-    }
-}
-/******************************************************************************/
-
-
-
-
-/**
  * \brief           FIFO buff read
  * \param[in]
  */
-uint16_t microphone_fifo_read(void)
+uint16_t prvMicrophoneFifoRead(void)
 {
     uint16_t val = microphone.fifo.buff[microphone.fifo.r_ptr];
     microphone.fifo.r_ptr++;

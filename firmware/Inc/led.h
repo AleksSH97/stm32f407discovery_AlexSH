@@ -81,9 +81,9 @@ typedef struct mculed {
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
-extern void led_function(mculed_t *led_ptr);
-extern mculedr_t mculed_init(mculed_t *self, mculed_ctrl_t *fns);
-extern void led_update(mculed_t *self);
+void LedFunction(mculed_t *led_ptr);
+mculedr_t McuLedInit(mculed_t *self, mculed_ctrl_t *fns);
+void LedUpdate(mculed_t *self);
 
 /******************************************************************************/
 

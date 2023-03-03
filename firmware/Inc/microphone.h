@@ -62,9 +62,8 @@ struct microphone {
     bool read;
 };
 
-void microphone_init(void);
-uint16_t microphone_fifo_read(void);
-void microphone_process(void);
+void MicrophoneInit(void);
+void MicrophoneProcess(void);
 void MicrophoneTaskStart(void *argument);
 
 #endif /* MICROPHONE_H_ */

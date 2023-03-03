@@ -11,7 +11,7 @@ I2S_HandleTypeDef hi2s2;
 
 struct microphone microphone;
 
-void i2s2_init(void)
+void I2S2Init(void)
 {
     hi2s2.Instance = SPI2;
     hi2s2.Init.Mode = I2S_MODE_SLAVE_RX;
@@ -28,7 +28,7 @@ void i2s2_init(void)
     }
 }
 
-bool i2s2_receive_dma(I2S_HandleTypeDef *hi2s, uint16_t *buff)
+bool I2S2ReceiveDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff)
 {
     return HAL_I2S_Receive_DMA(hi2s, buff, 64) == HAL_OK;
 }
