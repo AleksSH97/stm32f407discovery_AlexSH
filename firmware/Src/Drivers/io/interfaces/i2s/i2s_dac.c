@@ -9,7 +9,7 @@
 
 I2S_HandleTypeDef hi2s3;
 
-void i2s3_init(void)
+void I2S3Init(void)
 {
     hi2s3.Instance = SPI3;
     hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
@@ -27,7 +27,7 @@ void i2s3_init(void)
     }
 }
 
-bool i2s3_transmit_dma(I2S_HandleTypeDef *hi2s, uint16_t *buff)
+bool I2S3TransmitDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff)
 {
     return HAL_I2S_Transmit_DMA(hi2s, buff, 64) == HAL_OK;
 }

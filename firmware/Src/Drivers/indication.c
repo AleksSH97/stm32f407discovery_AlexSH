@@ -65,10 +65,10 @@ void IndicationInit(void)
 	fns.turn_off = IndicationLedTurnOff;
 	fns.toggle = IndicationLedToggle;
 
-	mculed_init(&mculed[LED_TOP], &fns);
-	mculed_init(&mculed[LED_LEFT], &fns);
-	mculed_init(&mculed[LED_BOTTOM], &fns);
-	mculed_init(&mculed[LED_RIGHT], &fns);
+	McuLedInit(&mculed[LED_TOP], &fns);
+	McuLedInit(&mculed[LED_LEFT], &fns);
+	McuLedInit(&mculed[LED_BOTTOM], &fns);
+	McuLedInit(&mculed[LED_RIGHT], &fns);
 }
 /******************************************************************************/
 
@@ -121,7 +121,7 @@ void IndicationLedLoading(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 	    prvIndicationLedLoadingSetup(&mculed[led_index], led_index);
-		led_function(&mculed[led_index]);
+	    LedFunction(&mculed[led_index]);
 	}
 }
 /******************************************************************************/
@@ -136,7 +136,7 @@ void IndicationLedTop(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 	    prvIndicationLedTopSetup(&mculed[led_index], led_index);
-		led_function(&mculed[led_index]);
+	    LedFunction(&mculed[led_index]);
 	}
 }
 /******************************************************************************/
@@ -151,7 +151,7 @@ void IndicationLedBottom(void)
 {
     for (int led_index = 0; led_index < N_LED; led_index++) {
         prvIndicationLedBottomSetup(&mculed[led_index], led_index);
-        led_function(&mculed[led_index]);
+        LedFunction(&mculed[led_index]);
     }
 }
 /******************************************************************************/
@@ -166,7 +166,7 @@ void IndicationLedButton(void)
 {
     for (int led_index = 0; led_index < N_LED; led_index++) {
         prvIndicationLedButtonSetup(&mculed[led_index], led_index);
-        led_function(&mculed[led_index]);
+        LedFunction(&mculed[led_index]);
     }
 }
 
@@ -180,7 +180,7 @@ void IndicationLedButtonHold(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 	    prvIndicationLedButtonHoldSetup(&mculed[led_index], led_index);
-		led_function(&mculed[led_index]);
+	    LedFunction(&mculed[led_index]);
 	}
 }
 /******************************************************************************/
@@ -195,7 +195,7 @@ void IndicationLedButtonDoubleClick(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 	    prvIndicationLedButtonDoubleClickSetup(&mculed[led_index], led_index);
-		led_function(&mculed[led_index]);
+	    LedFunction(&mculed[led_index]);
 	}
 }
 /******************************************************************************/
@@ -210,7 +210,7 @@ void IndicationLedError(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
 	    prvIndicationLedErrorSetup(&mculed[led_index]);
-		led_function(&mculed[led_index]);
+	    LedFunction(&mculed[led_index]);
 	}
 }
 /******************************************************************************/
@@ -507,7 +507,7 @@ void prvIndicationLedErrorSetup(mculed_t *led_ptr)
 void IndicationLedsUpdate(void)
 {
 	for (int led_index = 0; led_index < N_LED; led_index++) {
-		led_update(&mculed[led_index]);
+	    LedUpdate(&mculed[led_index]);
 	}
 }
 /******************************************************************************/

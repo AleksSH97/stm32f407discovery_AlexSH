@@ -80,11 +80,11 @@ void ButtonTaskStart(void *argumet)
  */
 bool ButtonIsPushed(void)
 {
-	if (!timeout_started(&user_button.debounce_timeout)) {
+	if (!TimStarted(&user_button.debounce_timeout)) {
 		return false;
 	}
 
-	if (!timeout_elapsed(&user_button.debounce_timeout)) {
+	if (!TimElapsed(&user_button.debounce_timeout)) {
 		return false;
 	}
 
@@ -125,27 +125,27 @@ void ButtonCheckMode(void)
 void prvButtonCheckAlgorithm(struct user_button *user_button_ptr)
 {
 	if (user_button_ptr->activate) {
-		if (!timeout_started(&user_button.debounce_timeout)) {
+		if (!TimStarted(&user_button.debounce_timeout)) {
 			user_button_ptr->mode = BUTTON_ONE_CLICK;
 			user_button_ptr->activate = false;
-			timeout_start(&user_button.debounce_timeout, BUTTON_DEBOUNCE_TIME_MS);
+			TimStart(&user_button.debounce_timeout, BUTTON_DEBOUNCE_TIME_MS);
 		}
 		else {
 			user_button_ptr->mode = BUTTON_DOUBLE_CLICK;
 		}
 	}
 
-	if ((timeout_started(&user_button.debounce_timeout)) && (timeout_check(&user_button.debounce_timeout, (5 * user_button_ptr->held_pressed_counter)))) {
+	if ((TimStarted(&user_button.debounce_timeout)) && (TimCheck(&user_button.debounce_timeout, (5 * user_button_ptr->held_pressed_counter)))) {
 		if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_SET) {
 			++user_button_ptr->held_pressed_counter;
 		}
 		user_button_ptr->mode = (user_button_ptr->held_pressed_counter >= 71) ? BUTTON_HELD_PRESSED : user_button_ptr->mode;
 	}
 
-	if ((timeout_started(&user_button.debounce_timeout)) && (timeout_check(&user_button.debounce_timeout, 350))) {
+	if ((TimStarted(&user_button.debounce_timeout)) && (TimCheck(&user_button.debounce_timeout, 350))) {
 		switch (user_button_ptr->mode) {
 		    case BUTTON_ONE_CLICK:
-		        if(!uart_send_byte(&huart3, 0x02)) {
+		        if(!UARTSendByte(&huart3, 0x02)) {
 		            IndicationLedError();
 		        }
 		        IndicationLedButton();
@@ -158,7 +158,7 @@ void prvButtonCheckAlgorithm(struct user_button *user_button_ptr)
 			    break;
 		}
 		user_button_ptr->held_pressed_counter = 0;
-		timeout_stop(&user_button.debounce_timeout);
+		TimStop(&user_button.debounce_timeout);
 		user_button_ptr->activate = false;
 	}
 }

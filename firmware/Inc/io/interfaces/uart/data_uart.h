@@ -30,8 +30,8 @@ enum uart_commands {
     UART_LED_TOGGLE   = 0x03,
 };
 
-void data_uart_init(void);
-struct msg data_uart_create_msg(enum uart_commands command);
+void DataUartInit(void);
+struct msg DataUartCreateMsg(enum uart_commands command);
 
 #ifdef __cplusplus
 }

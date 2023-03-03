@@ -21,7 +21,7 @@
 extern I2S_HandleTypeDef hi2s2;
 
 void i2s_microphone_init(void);
-void i2s2_init(void);
-bool i2s2_receive_dma(I2S_HandleTypeDef *hi2s, uint16_t *buff);
+void I2S2Init(void);
+bool I2S2ReceiveDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff);
 
 #endif /* I2S_MICROPHONE_H_ */

@@ -12,7 +12,7 @@ UART_HandleTypeDef    huart2;
 /**
  * @brief          Debug uart init function
  */
-void debug_uart_init(void)
+void DebugUartInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 

@@ -52,25 +52,25 @@ const osMessageQueueAttr_t uartRxQueueAttributes = {
 
 
 
-static void io_set_rx_handler(char rx);
-static void io_logs_rx_handler(char rx);
-static void io_console_rx_handler(char rx);
+static void prvIoSystemSetRxHandler(char rx);
+static void prvIoLogsRxHandler(char rx);
+static void prvIoConsoleRxHandler(char rx);
 /******************************************************************************/
 
 
 
 
-void io_init(void)
+void IoSystemInit(void)
 {
-    io_set_mode(IO_LOGS);
+    IoSystemSetMode(IO_LOGS);
 
-    RxTaskHandle = osThreadNew(IO_RxTask, NULL, &RxTask_attributes);
-    TxTaskHandle = osThreadNew(IO_TxTask, NULL, &TxTask_attributes);
+    RxTaskHandle = osThreadNew(IoSystemRxTask, NULL, &RxTask_attributes);
+    TxTaskHandle = osThreadNew(IoSystemTxTask, NULL, &TxTask_attributes);
     uartRxQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &uartRxQueueAttributes);
 }
 
 
-void io_set_mode(IOSYS_MODE mode)
+void IoSystemSetMode(IOSYS_MODE mode)
 {
     io_system.mode = mode;
 }
@@ -79,7 +79,7 @@ void io_set_mode(IOSYS_MODE mode)
 
 
 
-IOSYS_MODE io_get_mode(void)
+IOSYS_MODE IoSystemGetMode(void)
 {
     return io_system.mode;
 }
@@ -88,14 +88,14 @@ IOSYS_MODE io_get_mode(void)
 
 
 
-void IO_RxTask(void *argument)
+void IoSystemRxTask(void *argument)
 {
     uint8_t rx = 0;
     uint8_t data = 0;
 
-    log_init();
-    console_init();
-    log_print_welcome_msg();
+    LogInit();
+    ConsoleInit();
+    LogPrintWelcomeMsg();
 
     for(;;)
     {
@@ -104,11 +104,11 @@ void IO_RxTask(void *argument)
             osMessageQueuePut(uartRxQueueHandle, &data, 0, 100);
         }
 
-        if (!(io_get_byte(&rx, 100))) {
+        if (!(IoSystemGetByte(&rx, 100))) {
             continue;
         }
 
-        io_set_rx_handler(rx);
+        prvIoSystemSetRxHandler(rx);
         if (io_system.rx_handler != NULL) {
             io_system.rx_handler(rx);
         }
@@ -123,12 +123,12 @@ void IO_RxTask(void *argument)
 
 
 
-void IO_TxTask(void *argument)
+void IoSystemTxTask(void *argument)
 {
     for(;;)
     {
-        if (io_get_mode() == IO_CONSOLE) {
-            if (!(io_is_tx_buffer_full())) {
+        if (IoSystemGetMode() == IO_CONSOLE) {
+            if (!(IoSystemIsTxBufferFull())) {
 
                 uint8_t msg = 0x00;
                 osStatus_t event = osMessageQueueGet(consoleQueueHandle, &msg, NULL, 200);
@@ -136,12 +136,12 @@ void IO_TxTask(void *argument)
                 if (event != osOK) {
                     continue;
                 }
-                io_put_data_to_tx_buffer(&msg, sizeof(uint8_t));
+                IoSystemPutDataToTxBuffer(&msg, sizeof(uint8_t));
             }
-            uart_send_byte_tx_buff(&huart3);
+            UARTSendByteTxBuff(&huart3);
         }
-        else if (io_get_mode() == IO_LOGS) {
-            if (!(io_is_tx_buffer_full())) {
+        else if (IoSystemGetMode() == IO_LOGS) {
+            if (!(IoSystemIsTxBufferFull())) {
 
                 uint8_t msg = 0x00;
                 osStatus_t event = osMessageQueueGet(logsQueueHandle, &msg, NULL, 200);
@@ -149,9 +149,9 @@ void IO_TxTask(void *argument)
                 if (event != osOK) {
                     continue;
                 }
-                io_put_data_to_tx_buffer(&msg, sizeof(uint8_t));
+                IoSystemPutDataToTxBuffer(&msg, sizeof(uint8_t));
             }
-            uart_send_byte_tx_buff(&huart3);
+            UARTSendByteTxBuff(&huart3);
         }
         osDelay(1);
     }
@@ -163,7 +163,7 @@ void IO_TxTask(void *argument)
 
 
 
-bool io_get_byte(uint8_t *data, uint32_t timeout_ms)
+bool IoSystemGetByte(uint8_t *data, uint32_t timeout_ms)
 {
     *data = 0x00;
 
@@ -181,33 +181,33 @@ bool io_get_byte(uint8_t *data, uint32_t timeout_ms)
 
 
 
-void io_set_rx_handler(char rx)
+void prvIoSystemSetRxHandler(char rx)
 {
-    if (io_get_mode() == IO_CONSOLE) {
-        io_system.rx_handler = io_console_rx_handler;
+    if (IoSystemGetMode() == IO_CONSOLE) {
+        io_system.rx_handler = prvIoConsoleRxHandler;
         return;
     }
 
-//    if (io_get_mode() == IO_LOGS) {
+//    if (IoSystemGetMode() == IO_LOGS) {
 //        io_system.rx_handler = io_logs_rx_handler;
 //        return;
 //    }
 
-    io_set_mode(IO_LOGS);
-    io_system.rx_handler = io_logs_rx_handler;
+    IoSystemSetMode(IO_LOGS);
+    io_system.rx_handler = prvIoLogsRxHandler;
 }
 /******************************************************************************/
 
 
 
 
-void io_console_rx_handler(char rx)
+void prvIoConsoleRxHandler(char rx)
 {
     if (!data_uart.flag) {
         return;
     }
 
-    console_insert_char(rx);
+    ConsoleInsertChar(rx);
 
     data_uart.flag = false;
 }
@@ -216,16 +216,16 @@ void io_console_rx_handler(char rx)
 
 
 
-void io_logs_rx_handler(char rx)
+void prvIoLogsRxHandler(char rx)
 {
     if ((rx == 'T') || (rx == 't')) {
-        io_set_mode(IO_CONSOLE);
-        console_start();
+        IoSystemSetMode(IO_CONSOLE);
+        ConsoleStart();
         return;
     }
 
     if ((rx == 'L') || (rx == 'l')) {
-        io_set_mode(IO_LOGS);
+        IoSystemSetMode(IO_LOGS);
     }
 //    else if ((rx == 'X') || (rx == 'x')) {
 //        io_set_mode(IO_IDLE);
@@ -237,7 +237,7 @@ void io_logs_rx_handler(char rx)
 
 
 
-void io_clear_rx_queue(void)
+void IoSystemClearRxQueue(void)
 {
     osMessageQueueReset(uartRxQueueHandle);
 }
@@ -246,7 +246,7 @@ void io_clear_rx_queue(void)
 
 
 
-bool io_is_tx_buffer_full(void)
+bool IoSystemIsTxBufferFull(void)
 {
     return (lwrb_get_free(&data_uart.lwrb_tx) == 0 ? true : false);
 }
@@ -255,7 +255,7 @@ bool io_is_tx_buffer_full(void)
 
 
 
-bool io_put_data_to_tx_buffer(const void* data, size_t len)
+bool IoSystemPutDataToTxBuffer(const void* data, size_t len)
 {
     if (lwrb_get_free(&data_uart.lwrb_tx) == 0) {
         return false;
@@ -268,7 +268,7 @@ bool io_put_data_to_tx_buffer(const void* data, size_t len)
 
 
 
-bool io_put_data_to_rx_buffer(const void* data, size_t len)
+bool IoSystemPutDataToRxBuffer(const void* data, size_t len)
 {
     if (lwrb_get_free(&data_uart.lwrb_rx) == 0) {
         return false;

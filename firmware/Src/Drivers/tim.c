@@ -24,7 +24,7 @@
 
 TIM_HandleTypeDef htim1;
 
-void timeout_start(struct timeout *timeout, uint32_t timeout_ms)
+void TimStart(struct timeout *timeout, uint32_t timeout_ms)
 {
 	if (timeout == NULL) {
 		Error_Handler();
@@ -35,7 +35,7 @@ void timeout_start(struct timeout *timeout, uint32_t timeout_ms)
 	timeout->start_flag = true;
 }
 
-void timeout_stop(struct timeout *timeout)
+void TimStop(struct timeout *timeout)
 {
 	if (timeout == NULL) {
 		Error_Handler();
@@ -44,7 +44,7 @@ void timeout_stop(struct timeout *timeout)
 	timeout->start_flag = false;
 }
 
-bool timeout_started(struct timeout *timeout)
+bool TimStarted(struct timeout *timeout)
 {
 	if (timeout == NULL) {
 		Error_Handler();
@@ -53,7 +53,7 @@ bool timeout_started(struct timeout *timeout)
 	return timeout->start_flag;
 }
 
-bool timeout_elapsed(struct timeout *timeout)
+bool TimElapsed(struct timeout *timeout)
 {
 	if (timeout == NULL) {
 		Error_Handler();
@@ -71,7 +71,7 @@ bool timeout_elapsed(struct timeout *timeout)
 	return false;
 }
 
-bool timeout_check(struct timeout *timeout, uint32_t msTime)
+bool TimCheck(struct timeout *timeout, uint32_t msTime)
 {
 	if ((HAL_GetTick() - timeout->timestamp_ms) > msTime) {
 		return true;

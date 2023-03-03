@@ -16,7 +16,7 @@
 
 extern I2S_HandleTypeDef hi2s3;
 
-bool i2s3_transmit_dma(I2S_HandleTypeDef *hi2s, uint16_t *buff);
-void i2s3_init(void);
+bool I2S3TransmitDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff);
+void I2S3Init(void);
 
 #endif /* IO_INTERFACES_I2S_I2S_DAC_H_ */

@@ -21,8 +21,8 @@
 
 
 
-static int lwprintf_logs_out(int ch, lwprintf_t* p);
-static int lwprintf_console_out(int ch, lwprintf_t* p);
+static int prvLwprintfLogsOut(int ch, lwprintf_t* p);
+static int prvLwprintfConsoleOut(int ch, lwprintf_t* p);
 /******************************************************************************/
 
 
@@ -56,20 +56,20 @@ static lwprintf_t logs;
 
 
 
-void log_init(void)
+void LogInit(void)
 {
     consoleQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &consoleQueueAttributes);
     logsQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &logsQueueAttributes);
 
-    lwprintf_init_ex(&console, lwprintf_console_out);
-    lwprintf_init_ex(&logs, lwprintf_logs_out);
+    lwprintf_init_ex(&console, prvLwprintfConsoleOut);
+    lwprintf_init_ex(&logs, prvLwprintfLogsOut);
 }
 /******************************************************************************/
 
 
 
 
-void log_clear_queues(void)
+void LogClearQueues(void)
 {
     osMessageQueueReset(logsQueueHandle);
     osMessageQueueReset(consoleQueueHandle);
@@ -79,7 +79,7 @@ void log_clear_queues(void)
 
 
 
-int log_printf_logs(const char *fmt, ...)
+int PrintfLogs(const char *fmt, ...)
 {
     va_list args;
     int len;
@@ -95,7 +95,7 @@ int log_printf_logs(const char *fmt, ...)
 
 
 
-int log_printf_console(const char *fmt, ...)
+int PrintfConsole(const char *fmt, ...)
 {
     va_list args;
     int len;
@@ -110,7 +110,7 @@ int log_printf_console(const char *fmt, ...)
 
 
 
-static int lwprintf_logs_out(int ch, lwprintf_t* p)
+static int prvLwprintfLogsOut(int ch, lwprintf_t* p)
 {
     uint8_t c = (uint8_t)ch;
 
@@ -128,7 +128,7 @@ static int lwprintf_logs_out(int ch, lwprintf_t* p)
 
 
 
-static int lwprintf_console_out(int ch, lwprintf_t* p)
+static int prvLwprintfConsoleOut(int ch, lwprintf_t* p)
 {
     uint8_t c = (uint8_t)ch;
 
@@ -145,13 +145,13 @@ static int lwprintf_console_out(int ch, lwprintf_t* p)
 
 
 
-void log_print_welcome_msg(void)
+void LogPrintWelcomeMsg(void)
 {
-    log_printf_crlf("");
-    log_printf_crlf("");
-    log_printf_crlf("\tWelcome to STM32F407 Discovery firmware with FreeRTOS");
-    log_printf_crlf("");
-    log_printf_crlf("");
+    PrintfLogsCRLF("");
+    PrintfLogsCRLF("");
+    PrintfLogsCRLF("\tWelcome to STM32F407 Discovery firmware with FreeRTOS");
+    PrintfLogsCRLF("");
+    PrintfLogsCRLF("");
 }
 /******************************************************************************/
 
