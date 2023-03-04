@@ -77,6 +77,12 @@ void ConsoleInit(void)
     microrl_set_complete_callback(microrl_ptr, ConsoleComplete);
 #endif /* MICRORL_CFG_USE_COMPLETE */
 
+#if CONSOLE_NO_PASSW
+    logged_in = 1;
+    ConsolePrintHelp(microrl_ptr);
+    microrl_set_execute_callback(microrl_ptr, ConsoleExecuteMain);
+#endif /* CONSOLE_NO_PASSW */
+
 #if MICRORL_CFG_USE_CTRL_C
     /* Set callback for Ctrl+C handling */
     microrl_set_sigint_callback(microrl_ptr, ConsoleSigint);
@@ -89,12 +95,10 @@ void ConsoleInit(void)
 
 void ConsoleStart(void)
 {
+    MicrophoneSetVisualizer(false);
     IoSystemClearRxQueue();
     LogClearQueues();
     ConsoleInit();
-
-    PrintfConsole(CLR_CLR);
-    ConsolePrintWelcome(microrl_ptr);
 }
 /******************************************************************************/
 
@@ -146,8 +150,10 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv) {
             prvConsoleClearScreen(microrl_ptr);
         }
         else if (strcmp(argv[i], _CMD_LOGOUT) == 0) {
-            prvConsolePrint(microrl_ptr, "\tBye!" _ENDLINE_SEQ);
+            IoSystemClearRxQueue();
+            LogClearQueues();
             microrl_set_execute_callback(microrl_ptr, ConsoleExecute);
+
             IoSystemSetMode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BUFF) == 0) {
@@ -288,7 +294,7 @@ int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv
     while (i < argc) {
         if (strcmp(argv[i], _CMD_SHOW) == 0) {
             microphone.timestamp_ms = HAL_GetTick();
-            microphone.visualize = true;
+            MicrophoneSetVisualizer(true);
         }
         else if (strcmp(argv[i], _CMD_BACK) == 0) {
             prvConsolePrint(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
@@ -354,7 +360,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
  */
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
-    microphone.visualize = false;
+    MicrophoneSetVisualizer(false);
     prvConsolePrint(microrl_ptr, "^C is caught!"_ENDLINE_SEQ);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
