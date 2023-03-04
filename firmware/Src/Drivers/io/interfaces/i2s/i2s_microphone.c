@@ -35,22 +35,22 @@ bool I2S2ReceiveDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff)
 
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-    microphone.state = MICROPHONE_RX_STATE_1;
+    MicrophoneSetStatus(MICROPHONE_RX_STATE_1);
 }
 
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-    microphone.state = MICROPHONE_RX_STATE_2;
+    MicrophoneSetStatus(MICROPHONE_RX_STATE_2);
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-    microphone.state = MICROPHONE_TX_STATE_1;
+    MicrophoneSetStatus(MICROPHONE_TX_STATE_1);
 }
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
-    microphone.state = MICROPHONE_TX_STATE_2;
+    MicrophoneSetStatus(MICROPHONE_TX_STATE_2);
 }
 
 

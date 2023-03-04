@@ -68,6 +68,9 @@ void IoSystemInit(void)
     TxTaskHandle = osThreadNew(IoSystemTxTask, NULL, &TxTask_attributes);
     uartRxQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &uartRxQueueAttributes);
 }
+/******************************************************************************/
+
+
 
 
 void IoSystemSetMode(IOSYS_MODE mode)

@@ -80,7 +80,7 @@ void IndicationLedToggle(mculed_t *self);
 void IndicationLedsUpdate(void);
 void IndicationLedButtonHold(void);
 void IndicationLedButtonDoubleClick(void);
-void IndicationUpdateTaskStart(void *argument);
+void IndicationUpdateTask(void *argument);
 
 #endif /* INDICATION_H_ */
 

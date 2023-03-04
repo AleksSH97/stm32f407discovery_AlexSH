@@ -75,7 +75,7 @@ void IndicationInit(void)
 
 
 
-void IndicationUpdateTaskStart(void *argument)
+void IndicationUpdateTask(void *argument)
 {
     uint8_t ddd[128] = {0};
     UNUSED(ddd);
