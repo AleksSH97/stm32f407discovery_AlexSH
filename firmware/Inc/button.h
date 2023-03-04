@@ -56,7 +56,7 @@ enum button_mode {
 void ButtonInit(void);
 bool ButtonIsPushed(void);
 void ButtonCheckMode(void);
-void ButtonTaskStart(void *argumet);
+void ButtonTask(void *argumet);
 
 /******************************************************************************/
 

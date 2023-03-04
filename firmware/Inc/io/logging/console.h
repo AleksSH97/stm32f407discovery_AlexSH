@@ -22,12 +22,24 @@ extern "C" {
 #include "microrl_config.h"
 
 
+/**
+ * \brief           Skip login + passw for debug
+ */
+#ifndef CONSOLE_NO_PASSW
+#define CONSOLE_NO_PASSW                1
+#endif
+/******************************************************************************/
+
+
+
+
 void ConsoleInit(void);
 void ConsoleStart(void);
 char ConsoleGetChar(void);
 void ConsoleClearScreenSetup(void);
 
 int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv);
+int ConsoleExecuteMain(microrl_t* microrl_ptr, int argc, const char* const *argv);
 int ConsoleBuff(microrl_t *microrl_ptr, int argc, const char * const *argv);
 int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv);
 char **ConsoleComplete(microrl_t *microrl_ptr, int argc, const char * const *argv);

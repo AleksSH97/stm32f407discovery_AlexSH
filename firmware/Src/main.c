@@ -20,7 +20,6 @@
 
 static void prvInitializeMCU(void);
 static void prvSystemClockConfig(void);
-static void prvInitRTOS(void);
 static void prvInitializeDrivers(void);
 static void prvDMAInit(void);
 
@@ -63,20 +62,6 @@ void prvInitializeMCU(void)
 
 
 /**
- * @brief          FreeRTOS init fns
- */
-void prvInitRTOS(void)
-{
-    osKernelInitialize();
-    MX_FREERTOS_Init();
-    osKernelStart();
-}
-/******************************************************************************/
-
-
-
-
-/**
  * @brief          Drivers init fns
  */
 void prvInitializeDrivers(void)
@@ -95,7 +80,6 @@ void prvInitializeDrivers(void)
     IoSystemInit();
 }
 /******************************************************************************/
-
 
 
 
@@ -152,6 +136,9 @@ void prvSystemClockConfig(void)
 
 
 
+/**
+ * @brief          DMA Init
+ */
 void prvDMAInit(void)
 {
     __HAL_RCC_DMA1_CLK_ENABLE();
@@ -162,6 +149,9 @@ void prvDMAInit(void)
     HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 }
+
+
+
 
 /**
  * @brief          Error handler
