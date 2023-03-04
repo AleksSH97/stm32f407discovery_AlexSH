@@ -55,7 +55,7 @@ struct microphone {
     uint32_t timeout_ms;
     uint32_t timestamp_ms;
 
-    microphone_status_t state;
+    microphone_status_t status;
     struct fifo_buff fifo;
 
     bool visualize;
@@ -63,7 +63,11 @@ struct microphone {
 };
 
 void MicrophoneInit(void);
-void MicrophoneProcess(void);
-void MicrophoneTaskStart(void *argument);
+void MicrophoneTask(void *argument);
+void MicrophoneVisualizationTask(void *argument);
+void MicrophoneSetStatus(microphone_status_t status);
+void MicrophoneSetVisualizer(bool mode);
+bool MicrophoneGetVisualizerStatus(void);
+microphone_status_t MicrophoneGetStatus(void);
 
 #endif /* MICROPHONE_H_ */
