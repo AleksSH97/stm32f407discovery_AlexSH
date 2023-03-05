@@ -271,12 +271,6 @@ void MicrophoneVisualizationTask(void *argument)
                     continue;
                 }
 
-//                if ((msg[i] > 800) && (msg[i] < 1200)) {
-//                    PrintfConsoleCRLF("|");
-//                }
-//                if ((msg[i] > 1200) && (msg[i] < 1300)) {
-//                    PrintfConsoleCRLF("||");
-//                }
                 if ((msg[i] > 1300) && (msg[i] < 1500)) {
                     PrintfConsoleCRLF("|");
                 }
