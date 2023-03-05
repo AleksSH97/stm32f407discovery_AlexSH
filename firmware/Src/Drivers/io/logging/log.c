@@ -81,6 +81,10 @@ void LogClearQueues(void)
 
 int PrintfLogs(const char *fmt, ...)
 {
+    if (IoSystemGetMode() != IO_LOGS) {
+        return 0;
+    }
+
     va_list args;
     int len;
 
@@ -97,6 +101,10 @@ int PrintfLogs(const char *fmt, ...)
 
 int PrintfConsole(const char *fmt, ...)
 {
+    if (IoSystemGetMode() != IO_CONSOLE) {
+        return 0;
+    }
+
     va_list args;
     int len;
 
