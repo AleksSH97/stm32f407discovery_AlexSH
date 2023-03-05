@@ -98,6 +98,7 @@ void ConsoleStart(void)
     MicrophoneSetVisualizer(false);
     IoSystemClearRxQueue();
     LogClearQueues();
+    MicrophoneVisualizationClearQueue();
     ConsoleInit();
 }
 /******************************************************************************/
@@ -361,7 +362,8 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetVisualizer(false);
-    prvConsolePrint(microrl_ptr, "^C is caught!"_ENDLINE_SEQ);
+    //MicrophoneVisualizationClearQueue();
+    //prvConsolePrint(microrl_ptr, "^C is caught!"_ENDLINE_SEQ);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
 }
