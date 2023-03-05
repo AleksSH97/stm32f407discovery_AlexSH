@@ -234,6 +234,16 @@ bool MicrophoneGetVisualizerStatus(void)
 /******************************************************************************/
 
 
+/**
+ * \brief           Clear visualization queue
+ * \param[in]
+ */
+void MicrophoneVisualizationClearQueue(void)
+{
+    osMessageQueueReset(VisualQueueHandle);
+}
+/******************************************************************************/
+
 
 
 /**
@@ -261,50 +271,50 @@ void MicrophoneVisualizationTask(void *argument)
                     continue;
                 }
 
-                if ((msg[i] > 800) && (msg[i] < 1200)) {
+//                if ((msg[i] > 800) && (msg[i] < 1200)) {
+//                    PrintfConsoleCRLF("|");
+//                }
+//                if ((msg[i] > 1200) && (msg[i] < 1300)) {
+//                    PrintfConsoleCRLF("||");
+//                }
+                if ((msg[i] > 1300) && (msg[i] < 1500)) {
                     PrintfConsoleCRLF("|");
                 }
-                else if ((msg[i] > 1200) && (msg[i] < 1300)) {
+                else if ((msg[i] > 1500) && (msg[i] < 1800)) {
                     PrintfConsoleCRLF("||");
-                }
-                else if ((msg[i] > 1300) && (msg[i] < 1500)) {
-                    PrintfConsoleCRLF("|||");
-                }
-                else if ((msg[i]) && (msg[i] < 1800)) {
-                    PrintfConsoleCRLF("|");
                 }
                 else if ((msg[i] > 1800) && (msg[i] < 2000)) {
-                    PrintfConsoleCRLF("||");
-                }
-                else if ((msg[i] > 2000) && (msg[i] < 3000)) {
                     PrintfConsoleCRLF("|||");
                 }
-                else if ((msg[i] > 3000) && (msg[i] < 4000)) {
+                else if ((msg[i] > 2000) && (msg[i] < 3000)) {
                     PrintfConsoleCRLF("||||");
                 }
-                else if ((msg[i] > 4000) && (msg[i] < 5000)) {
+                else if ((msg[i] > 3000) && (msg[i] < 4000)) {
                     PrintfConsoleCRLF("|||||");
                 }
-                else if ((msg[i] > 5000) && (msg[i] < 10000)) {
+                else if ((msg[i] > 4000) && (msg[i] < 5000)) {
                     PrintfConsoleCRLF("||||||");
                 }
-                else if ((msg[i] > 10000) && (msg[i] < 15000)) {
+                else if ((msg[i] > 5000) && (msg[i] < 10000)) {
                     PrintfConsoleCRLF("|||||||");
                 }
-                else if ((msg[i] > 15000) && (msg[i] < 20000)) {
+                else if ((msg[i] > 10000) && (msg[i] < 15000)) {
                     PrintfConsoleCRLF("||||||||");
                 }
-                else if ((msg[i] > 20000) && (msg[i] < 25000)) {
+                else if ((msg[i] > 15000) && (msg[i] < 20000)) {
                     PrintfConsoleCRLF("|||||||||");
                 }
-                else if ((msg[i] > 25000) && (msg[i] < 30000)) {
+                else if ((msg[i] > 20000) && (msg[i] < 25000)) {
                     PrintfConsoleCRLF("||||||||||");
                 }
-                else if ((msg[i] > 30000) && (msg[i] < 35000)) {
+                else if ((msg[i] > 25000) && (msg[i] < 30000)) {
                     PrintfConsoleCRLF("|||||||||||");
                 }
+                else if ((msg[i] > 30000) && (msg[i] < 35000)) {
+                    PrintfConsoleCRLF("||||||||||||");
+                }
                 else {
-                    PrintfConsoleCont("");
+                    continue;
                 }
             }
         }

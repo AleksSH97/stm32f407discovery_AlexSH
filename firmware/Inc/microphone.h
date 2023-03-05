@@ -24,10 +24,11 @@
 
 #define MICROPHONE_FIFO_BUFF_SIZE     256
 
-#define MICROPHONE_TIMEOUT_MS       1000
+#define MICROPHONE_TIMEOUT_MS         700
 
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
+extern osMessageQueueId_t VisualQueueHandle;
 
 typedef enum {
     MICROPHONE_READY         = 0x00,
@@ -68,6 +69,7 @@ void MicrophoneVisualizationTask(void *argument);
 void MicrophoneSetStatus(microphone_status_t status);
 void MicrophoneSetVisualizer(bool mode);
 bool MicrophoneGetVisualizerStatus(void);
+void MicrophoneVisualizationClearQueue(void);
 microphone_status_t MicrophoneGetStatus(void);
 
 #endif /* MICROPHONE_H_ */
