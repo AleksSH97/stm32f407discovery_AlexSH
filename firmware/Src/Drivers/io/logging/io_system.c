@@ -93,8 +93,7 @@ IOSYS_MODE IoSystemGetMode(void)
 
 void IoSystemRxTask(void *argument)
 {
-    uint8_t rx = 0;
-    uint8_t data = 0;
+    uint8_t rx = 0x00;
 
     LogInit();
     ConsoleInit();
@@ -102,6 +101,8 @@ void IoSystemRxTask(void *argument)
 
     for(;;)
     {
+        uint8_t data = 0x00;
+
         if (lwrb_get_free(&data_uart.lwrb_rx) != 0) {
             lwrb_read(&data_uart.lwrb_rx, &data, sizeof(char));
             osMessageQueuePut(uartRxQueueHandle, &data, 0, 100);
@@ -110,6 +111,8 @@ void IoSystemRxTask(void *argument)
         if (!(IoSystemGetByte(&rx, 100))) {
             continue;
         }
+
+        IoSystemClearRxQueue();
 
         prvIoSystemSetRxHandler(rx);
         if (io_system.rx_handler != NULL) {
@@ -206,13 +209,13 @@ void prvIoSystemSetRxHandler(char rx)
 
 void prvIoConsoleRxHandler(char rx)
 {
-    if (!data_uart.flag) {
-        return;
-    }
+//    if (!data_uart.flag) {
+//        return;
+//    }
 
     ConsoleInsertChar(rx);
 
-    data_uart.flag = false;
+//    data_uart.flag = false;
 }
 /******************************************************************************/
 
