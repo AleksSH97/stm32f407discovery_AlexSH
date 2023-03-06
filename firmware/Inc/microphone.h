@@ -31,6 +31,12 @@ extern CRC_HandleTypeDef hcrc;
 extern osMessageQueueId_t VisualQueueHandle;
 
 typedef enum {
+    MICROPHONE_READ_BLOCKED = 0,
+    MICROPHONE_READ_READY = 1,
+    MICROPHONE_READ_ERROR = 2,
+} microphone_read_t;
+
+typedef enum {
     MICROPHONE_READY         = 0x00,
     MICROPHONE_RX_STATE_1    = 0x01,
     MICROPHONE_RX_STATE_2    = 0x02,
@@ -39,6 +45,8 @@ typedef enum {
     MICROPHONE_INIT_ERROR    = 0x05,
     MICROPHONE_PROCESS_ERROR = 0x06,
 } microphone_status_t;
+
+typedef void (*microphone_handler_fn)(void);
 
 struct microphone {
     lwrb_t   lwrb_rx;
