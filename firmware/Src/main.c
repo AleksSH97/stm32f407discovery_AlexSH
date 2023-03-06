@@ -18,12 +18,16 @@
 
 #include "main.h"
 
+
+/******************************************************************************/
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
 static void prvInitializeMCU(void);
 static void prvSystemClockConfig(void);
 static void prvInitializeDrivers(void);
 static void prvDMAInit(void);
 
-
+/******************************************************************************/
 
 
 /**

@@ -1,12 +1,22 @@
-/*
- * console.c
- *
- *  Created on: 05 jan. 2023 г.
- *      Author: Aleksandr Shabalin
+/**
+ ******************************************************************************
+ * @file           : console.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : Console system (MicroRL)
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
  */
 
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "console.h"
 
+/******************************************************************************/
+/* Private defines ---------------------------------------------------------- */
+/******************************************************************************/
 #define _STM32_DEMO_VER             "1.1"
 
 #define _ENDLINE_SEQ                "\r\n"
@@ -42,32 +52,32 @@
 uint8_t  logged_in = 0;
 uint8_t  passw_in = 0;
 #endif /* MICRORL_CFG_USE_ECHO_OFF */
+
 /******************************************************************************/
-
-
-
-static void prvConsoleClearScreen(microrl_t *microrl_ptr);
-void prvConsoleClearScreenSimple(microrl_t *microrl_ptr);
-static void prvConsolePrint(microrl_t *microrl_ptr, const char *str);
+/* Private variables -------------------------------------------------------- */
 /******************************************************************************/
-
-
-
 microrl_t microrl;
 microrl_t *microrl_ptr = &microrl;
-/******************************************************************************/
-
-
-
 
 char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE, _CMD_BACK};    //available  commands
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
 char *compl_word [_NUM_OF_CMD + 1];                        // array for completion
+
+/******************************************************************************/
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
+static void prvConsoleClearScreen(microrl_t *microrl_ptr);
+void prvConsoleClearScreenSimple(microrl_t *microrl_ptr);
+static void prvConsolePrint(microrl_t *microrl_ptr, const char *str);
+
+
+
 /******************************************************************************/
 
 
-
-
+/**
+ * @brief          Console (Microrl init)
+ */
 void ConsoleInit(void)
 {
     microrl_init(microrl_ptr, prvConsolePrint, ConsoleExecute);
@@ -92,7 +102,9 @@ void ConsoleInit(void)
 
 
 
-
+/**
+ * @brief          Console start
+ */
 void ConsoleStart(void)
 {
     MicrophoneSetVisualizer(false);
@@ -104,6 +116,11 @@ void ConsoleStart(void)
 /******************************************************************************/
 
 
+
+
+/**
+ * @brief          Console insert char
+ */
 void ConsoleInsertChar(char ch)
 {
     microrl_processing_input(microrl_ptr, &ch, 1);
@@ -112,7 +129,9 @@ void ConsoleInsertChar(char ch)
 
 
 
-
+/**
+ * @brief          Console printf
+ */
 void prvConsolePrint(microrl_t *microrl_ptr, const char *str)
 {
     UNUSED(microrl_ptr);
@@ -122,7 +141,9 @@ void prvConsolePrint(microrl_t *microrl_ptr, const char *str)
 
 
 
-
+/**
+ * @brief          Get char from keyboard
+ */
 char ConsoleGetChar(void)
 {
    return (char)data_uart.console_input;
@@ -368,6 +389,9 @@ void ConsoleSigint(microrl_t *microrl_ptr)
     ConsolePrintVisualizer(microrl_ptr);
 }
 
+
+
+
 //*****************************************************************************
 // completion callback for microrl library
 char **ConsoleComplete(microrl_t *microrl_ptr, int argc, const char * const *argv)
@@ -409,6 +433,9 @@ char **ConsoleComplete(microrl_t *microrl_ptr, int argc, const char * const *arg
 
 
 
+/**
+ * @brief          Print "help"
+ */
 void ConsolePrintHelp(microrl_t *microrl_ptr)
 {
     char ver_str[6] = {0};
@@ -441,6 +468,9 @@ void ConsolePrintHelp(microrl_t *microrl_ptr)
 
 
 
+/**
+ * @brief          Print buff menu
+ */
 void ConsolePrintBuff(microrl_t *microrl_ptr)
 {
     prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
@@ -455,6 +485,9 @@ void ConsolePrintBuff(microrl_t *microrl_ptr)
 
 
 
+/**
+ * @brief          Print visualizer menu
+ */
 void ConsolePrintVisualizer(microrl_t *microrl_ptr)
 {
     prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
@@ -467,6 +500,9 @@ void ConsolePrintVisualizer(microrl_t *microrl_ptr)
 
 
 
+/**
+ * @brief          Print welcome message after swapping from logs to console
+ */
 void ConsolePrintWelcome(microrl_t *microrl_ptr)
 {
     prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
@@ -478,6 +514,9 @@ void ConsolePrintWelcome(microrl_t *microrl_ptr)
 
 
 
+/**
+ * @brief          Get console version
+ */
 void ConsoleGetVersion(char* ver_str)
 {
     uint32_t ver = microrl_get_version();

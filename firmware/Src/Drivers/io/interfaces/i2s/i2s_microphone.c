@@ -1,16 +1,35 @@
-/*
- * i2s_microphone.c
- *
- *  Created on: 5 февр. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : i2s_microphone.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : I2S2 (microphone) hardware
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
  */
 
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "i2s_microphone.h"
 
+
+
+
+/******************************************************************************/
+/* Private variables -------------------------------------------------------- */
+/******************************************************************************/
 I2S_HandleTypeDef hi2s2;
 
 struct microphone microphone;
 
+/******************************************************************************/
+
+
+/**
+ * @brief           I2S2 init
+ */
 void I2S2Init(void)
 {
     hi2s2.Instance = SPI2;
@@ -27,34 +46,62 @@ void I2S2Init(void)
       Error_Handler();
     }
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * @brief          I2S2 receive DMA
+ */
 bool I2S2ReceiveDMA(I2S_HandleTypeDef *hi2s, uint16_t *buff)
 {
     return HAL_I2S_Receive_DMA(hi2s, buff, 64) == HAL_OK;
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * @brief          I2S2 RX half cplt callback
+ */
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
     MicrophoneSetStatus(MICROPHONE_RX_STATE_1);
 }
+/******************************************************************************/
 
+
+
+
+/**
+ * @brief          I2S2 RX cplt callback
+ */
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
     MicrophoneSetStatus(MICROPHONE_RX_STATE_2);
 }
+/******************************************************************************/
 
+
+
+/**
+ * @brief          I2S3 TX half cplt callback
+ */
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
 {
     MicrophoneSetStatus(MICROPHONE_TX_STATE_1);
 }
+/******************************************************************************/
 
+
+
+/**
+ * @brief          I2S3 TX cplt callback
+ */
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
 {
     MicrophoneSetStatus(MICROPHONE_TX_STATE_2);
 }
-
-
-
-
-
-
+/******************************************************************************/

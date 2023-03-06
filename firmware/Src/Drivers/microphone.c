@@ -1,35 +1,43 @@
-/*
- * microphone.c
- *
- *  Created on: 5 февр. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : microphone.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : Microphone input/output system
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
  */
 
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "microphone.h"
 
 
 
 
-
-static void prvMicrophoneCRCInit(void);
-static void prvMicrophoneFifoWrite(uint16_t data);
-uint16_t prvMicrophoneFifoRead(void);
 /******************************************************************************/
-
-
-
-
+/* Private variables -------------------------------------------------------- */
+/******************************************************************************/
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
 osMessageQueueId_t VisualQueueHandle;
-/******************************************************************************/
-
-
-
 
 const osMessageQueueAttr_t VisualQueueAttributes = {
         .name = "VisualizationQueue",
 };
+
+
+
+
+/******************************************************************************/
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
+static void prvMicrophoneCRCInit(void);
+static void prvMicrophoneFifoWrite(uint16_t data);
+uint16_t prvMicrophoneFifoRead(void);
+
 /******************************************************************************/
 
 

@@ -1,12 +1,19 @@
-/*
- * io_system.c
- *
- *  Created on: 26 февр. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : io_system.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : i/o system
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
  */
 
-#include "io_system.h"
 /******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
+#include "io_system.h"
+
 
 
 
@@ -17,20 +24,15 @@
 
 
 
-static IO_SYSTEM io_system;
+
 /******************************************************************************/
-
-
-
-
+/* Private variables -------------------------------------------------------- */
+/******************************************************************************/
+static IO_SYSTEM io_system;
 osThreadId_t RxTaskHandle;
 osThreadId_t TxTaskHandle;
 
 osMessageQueueId_t uartRxQueueHandle;
-/******************************************************************************/
-
-
-
 
 const osThreadAttr_t RxTask_attributes = {
         .name = "RxTask",
@@ -47,19 +49,25 @@ const osThreadAttr_t TxTask_attributes = {
 const osMessageQueueAttr_t uartRxQueueAttributes = {
         .name = "uartRxQueue",
 };
+
+
+
+
 /******************************************************************************/
-
-
-
-
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
 static void prvIoSystemSetRxHandler(char rx);
 static void prvIoLogsRxHandler(char rx);
 static void prvIoConsoleRxHandler(char rx);
+
 /******************************************************************************/
 
 
 
 
+/**
+ * @brief          IO init
+ */
 void IoSystemInit(void)
 {
     IoSystemSetMode(IO_LOGS);
@@ -72,7 +80,9 @@ void IoSystemInit(void)
 
 
 
-
+/**
+ * @brief          Set IO mode of operation
+ */
 void IoSystemSetMode(IOSYS_MODE mode)
 {
     io_system.mode = mode;
@@ -82,6 +92,9 @@ void IoSystemSetMode(IOSYS_MODE mode)
 
 
 
+/**
+ * @brief          Get IO mode of operation
+ */
 IOSYS_MODE IoSystemGetMode(void)
 {
     return io_system.mode;
@@ -91,6 +104,9 @@ IOSYS_MODE IoSystemGetMode(void)
 
 
 
+/**
+ * @brief          Receive task
+ */
 void IoSystemRxTask(void *argument)
 {
     uint8_t rx = 0x00;
@@ -129,6 +145,9 @@ void IoSystemRxTask(void *argument)
 
 
 
+/**
+ * @brief          Transmit task
+ */
 void IoSystemTxTask(void *argument)
 {
     for(;;)
@@ -169,6 +188,9 @@ void IoSystemTxTask(void *argument)
 
 
 
+/**
+ * @brief          IO get byte
+ */
 bool IoSystemGetByte(uint8_t *data, uint32_t timeout_ms)
 {
     *data = 0x00;
@@ -187,6 +209,9 @@ bool IoSystemGetByte(uint8_t *data, uint32_t timeout_ms)
 
 
 
+/**
+ * @brief          Set RX handler function
+ */
 void prvIoSystemSetRxHandler(char rx)
 {
     if (IoSystemGetMode() == IO_CONSOLE) {
@@ -207,6 +232,9 @@ void prvIoSystemSetRxHandler(char rx)
 
 
 
+/**
+ * @brief          IO console RX handler
+ */
 void prvIoConsoleRxHandler(char rx)
 {
 //    if (!data_uart.flag) {
@@ -222,6 +250,9 @@ void prvIoConsoleRxHandler(char rx)
 
 
 
+/**
+ * @brief          IO logs RX handler
+ */
 void prvIoLogsRxHandler(char rx)
 {
     if ((rx == 'T') || (rx == 't')) {
@@ -243,6 +274,9 @@ void prvIoLogsRxHandler(char rx)
 
 
 
+/**
+ * @brief          Clear RX queue
+ */
 void IoSystemClearRxQueue(void)
 {
     osMessageQueueReset(uartRxQueueHandle);
@@ -252,6 +286,9 @@ void IoSystemClearRxQueue(void)
 
 
 
+/**
+ * @brief          Check TX buffer is full
+ */
 bool IoSystemIsTxBufferFull(void)
 {
     return (lwrb_get_free(&data_uart.lwrb_tx) == 0 ? true : false);
@@ -261,6 +298,9 @@ bool IoSystemIsTxBufferFull(void)
 
 
 
+/**
+ * @brief         Put data to TX ring buffer
+ */
 bool IoSystemPutDataToTxBuffer(const void* data, size_t len)
 {
     if (lwrb_get_free(&data_uart.lwrb_tx) == 0) {
@@ -274,6 +314,9 @@ bool IoSystemPutDataToTxBuffer(const void* data, size_t len)
 
 
 
+/**
+ * @brief          Put data to RX ring buffer
+ */
 bool IoSystemPutDataToRxBuffer(const void* data, size_t len)
 {
     if (lwrb_get_free(&data_uart.lwrb_rx) == 0) {
@@ -283,4 +326,3 @@ bool IoSystemPutDataToRxBuffer(const void* data, size_t len)
     return (lwrb_write(&data_uart.lwrb_rx, data, len) > 0 ? true : false);
 }
 /******************************************************************************/
-
