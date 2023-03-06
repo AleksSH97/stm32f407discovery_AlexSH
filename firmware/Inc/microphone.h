@@ -40,24 +40,21 @@ typedef enum {
     MICROPHONE_PROCESS_ERROR = 0x06,
 } microphone_status_t;
 
-struct fifo_buff {
-    uint16_t buff[MICROPHONE_FIFO_BUFF_SIZE];
-    uint8_t  w_ptr;
-    uint8_t  r_ptr;
-};
-
 struct microphone {
-    lwrb_t   lwrb;
-    uint16_t buff[MICROPHONE_BUFF_SIZE];
-    uint16_t record[MICROPHONE_BUFF_SIZE];
+    lwrb_t   lwrb_rx;
+    lwrb_t   lwrb_tx;
+
+    uint16_t buff_rx[MICROPHONE_FIFO_BUFF_SIZE];
+    uint16_t buff_tx[MICROPHONE_BUFF_SIZE];
+
+    uint16_t rx[MICROPHONE_BUFF_SIZE];
     uint16_t mid_buff[MICROPHONE_MID_BUFF_SIZE];
-    uint16_t tx_buff[MICROPHONE_BUFF_SIZE];
+    uint16_t tx[MICROPHONE_BUFF_SIZE];
 
     uint32_t timeout_ms;
     uint32_t timestamp_ms;
 
     microphone_status_t status;
-    struct fifo_buff fifo;
 
     bool visualize;
     bool read;
@@ -65,6 +62,9 @@ struct microphone {
 
 void MicrophoneInit(void);
 void MicrophoneTask(void *argument);
+bool MicrophonePutDataToTxBuffer(const void* data, size_t len);
+bool MicrophonePutDataToRxBuffer(const void* data, size_t len);
+void MicrophoneGetDataFromRxBuffer(uint16_t *data);
 void MicrophoneVisualizationTask(void *argument);
 void MicrophoneSetStatus(microphone_status_t status);
 void MicrophoneSetVisualizer(bool mode);

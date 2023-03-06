@@ -35,8 +35,8 @@ const osMessageQueueAttr_t VisualQueueAttributes = {
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
 static void prvMicrophoneCRCInit(void);
-static void prvMicrophoneFifoWrite(uint16_t data);
-uint16_t prvMicrophoneFifoRead(void);
+void prvMicrophoneSetRead(bool activate);
+bool prvMicrophoneGetRead(void);
 
 /******************************************************************************/
 
@@ -51,17 +51,18 @@ void MicrophoneInit(void)
 {
     I2S2Init();
     I2S3Init();
+    RingBufMicrophoneInit();
     prvMicrophoneCRCInit();
     PDM2PCM_init();
 
-    microphone.fifo.w_ptr = 0;
-    microphone.fifo.r_ptr = 0;
+    prvMicrophoneSetRead(false);
+
     microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
 
     VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
 
-    HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx_buff[0], 64);
-    HAL_I2S_Receive_DMA(&hi2s2, &microphone.record[0], 64);
+    HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx[0], 64);
+    HAL_I2S_Receive_DMA(&hi2s2, &microphone.rx[0], 64);
 }
 /******************************************************************************/
 
@@ -81,45 +82,53 @@ void MicrophoneTask(void *argument)
     {
         switch (microphone.status) {
             case MICROPHONE_RX_STATE_1:
-                PDM_Filter(&microphone.record[0], &microphone.mid_buff[0], &PDM1_filter_handler);
+                PDM_Filter(&microphone.rx[0], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-                for (int i = 0; i < 16; i++) {
-                    prvMicrophoneFifoWrite(microphone.mid_buff[i]);
-                    osMessageQueuePut(VisualQueueHandle, &microphone.mid_buff[i], 0, 100);
+                if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+                    MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
                 }
 
-                if ((microphone.fifo.w_ptr - microphone.fifo.r_ptr) > MICROPHONE_BUFF_SIZE) {
+                osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
+
+                if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
                     IndicationLedBottom();
-                    microphone.read = true;
+                    prvMicrophoneSetRead(true);
                 }
 
                 MicrophoneSetStatus(MICROPHONE_READY);
                 break;
             case MICROPHONE_RX_STATE_2:
-                PDM_Filter(&microphone.record[64], &microphone.mid_buff[0], &PDM1_filter_handler);
+                PDM_Filter(&microphone.rx[64], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-                for (int i = 0; i < 16; i++) {
-                    prvMicrophoneFifoWrite(microphone.mid_buff[i]);
-                    osMessageQueuePut(VisualQueueHandle, &microphone.mid_buff[i], 0, 100);
+                if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+                    MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
                 }
+
+                osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
                 MicrophoneSetStatus(MICROPHONE_READY);
                 break;
             case MICROPHONE_TX_STATE_1:
-                if (microphone.read) {
+                if (prvMicrophoneGetRead()) {
+
+                    uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
+                    MicrophoneGetDataFromRxBuffer(data);
+
                     for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
-                        uint16_t data = prvMicrophoneFifoRead();
-                        microphone.tx_buff[i] = data;
-                        microphone.tx_buff[i + 2] = data;
+                        microphone.tx[i] = data[i];
+                        microphone.tx[i + 2] = data[i];
                     }
                 }
                 MicrophoneSetStatus(MICROPHONE_READY);
             case MICROPHONE_TX_STATE_2:
-                if (microphone.read) {
+                if (prvMicrophoneGetRead()) {
+
+                    uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
+                    MicrophoneGetDataFromRxBuffer(data);
+
                     for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
-                        uint16_t data = prvMicrophoneFifoRead();
-                        microphone.tx_buff[i] = data;
-                        microphone.tx_buff[i + 2] = data;
+                        microphone.tx[i] = data[i];
+                        microphone.tx[i + 2] = data[i];
                     }
                 }
                 MicrophoneSetStatus(MICROPHONE_READY);
@@ -155,6 +164,51 @@ microphone_status_t MicrophoneGetStatus(void)
 
 
 
+/**
+ * \brief           Microphone write TX ring buffer
+ * \param[in]
+ */
+bool MicrophonePutDataToTxBuffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&microphone.lwrb_tx) == 0) {
+        return false;
+    }
+
+    return (lwrb_write(&microphone.lwrb_tx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone write RX ring buffer
+ * \param[in]
+ */
+bool MicrophonePutDataToRxBuffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&microphone.lwrb_rx) == 0) {
+        return false;
+    }
+
+    return (lwrb_write(&microphone.lwrb_rx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+/**
+ * \brief           Microphone get data from RX ring buffer
+ * \param[in]
+ */
+void MicrophoneGetDataFromRxBuffer(uint16_t *data)
+{
+    lwrb_read(&microphone.lwrb_rx, data, sizeof(data));
+}
+/******************************************************************************/
+
+
+
 
 /**
  * \brief           Microphone set state
@@ -163,6 +217,32 @@ microphone_status_t MicrophoneGetStatus(void)
 void MicrophoneSetStatus(microphone_status_t status)
 {
     microphone.status = status;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone set read state
+ * \param[in]
+ */
+void prvMicrophoneSetRead(bool activate)
+{
+    microphone.read = activate;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone set read state
+ * \param[in]
+ */
+bool prvMicrophoneGetRead(void)
+{
+    return microphone.read;
 }
 /******************************************************************************/
 
@@ -182,36 +262,6 @@ void prvMicrophoneCRCInit(void)
     }
 
     __HAL_CRC_DR_RESET(&hcrc);
-}
-/******************************************************************************/
-
-
-
-
-/**
- * \brief           FIFO buff write
- * \param[in]
- */
-void prvMicrophoneFifoWrite(uint16_t data)
-{
-    microphone.fifo.buff[microphone.fifo.w_ptr] = data;
-    microphone.fifo.w_ptr++;
-}
-/******************************************************************************/
-
-
-
-
-/**
- * \brief           FIFO buff read
- * \param[in]
- */
-uint16_t prvMicrophoneFifoRead(void)
-{
-    uint16_t val = microphone.fifo.buff[microphone.fifo.r_ptr];
-    microphone.fifo.r_ptr++;
-
-    return val;
 }
 /******************************************************************************/
 
