@@ -36,6 +36,10 @@ const osMessageQueueAttr_t VisualQueueAttributes = {
 /******************************************************************************/
 static void prvMicrophoneCRCInit(void);
 void prvMicrophoneSetRead(bool activate);
+void prvMicrophoneRxState1(void);
+void prvMicrophoneRxState2(void);
+void prvMicrophoneTxState1(void);
+void prvMicrophoneTxState2(void);
 bool prvMicrophoneGetRead(void);
 
 /******************************************************************************/
@@ -55,7 +59,7 @@ void MicrophoneInit(void)
     prvMicrophoneCRCInit();
     PDM2PCM_init();
 
-    prvMicrophoneSetRead(false);
+    prvMicrophoneSetRead(MICROPHONE_READ_BLOCKED);
 
     microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
 
@@ -75,75 +79,124 @@ void MicrophoneInit(void)
  */
 void MicrophoneTask(void *argument)
 {
-    uint8_t ddd[128] = {0};
-    UNUSED(ddd);
-
     for (;;)
     {
         switch (microphone.status) {
             case MICROPHONE_RX_STATE_1:
-                PDM_Filter(&microphone.rx[0], &microphone.mid_buff[0], &PDM1_filter_handler);
-
-                if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
-                    MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
-                }
-
-                osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
-
-                if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
-                    IndicationLedBottom();
-                    prvMicrophoneSetRead(true);
-                }
-
+                prvMicrophoneRxState1();
                 MicrophoneSetStatus(MICROPHONE_READY);
                 break;
             case MICROPHONE_RX_STATE_2:
-                PDM_Filter(&microphone.rx[64], &microphone.mid_buff[0], &PDM1_filter_handler);
-
-                if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
-                    MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
-                }
-
-                osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
-
+                prvMicrophoneRxState2();
                 MicrophoneSetStatus(MICROPHONE_READY);
                 break;
             case MICROPHONE_TX_STATE_1:
-                if (prvMicrophoneGetRead()) {
-
-                    uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
-                    MicrophoneGetDataFromRxBuffer(data);
-
-                    for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
-                        microphone.tx[i] = data[i];
-                        microphone.tx[i + 2] = data[i];
-                    }
-                }
+                prvMicrophoneTxState1();
                 MicrophoneSetStatus(MICROPHONE_READY);
             case MICROPHONE_TX_STATE_2:
-                if (prvMicrophoneGetRead()) {
-
-                    uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
-                    MicrophoneGetDataFromRxBuffer(data);
-
-                    for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
-                        microphone.tx[i] = data[i];
-                        microphone.tx[i + 2] = data[i];
-                    }
-                }
+                prvMicrophoneTxState2();
                 MicrophoneSetStatus(MICROPHONE_READY);
             case MICROPHONE_READY:
                 break;
             case MICROPHONE_PROCESS_ERROR:
-                PrintfLogsCRLF("Error: microphone process error!");
+                PrintfLogsCRLF("\tError: microphone process error!");
                 break;
             case MICROPHONE_INIT_ERROR:
-                PrintfLogsCRLF("Error: initialization of DMA I2S for microphone");
+                PrintfLogsCRLF("\tError: initialization of DMA I2S for microphone");
                 break;
             default:
                 break;
         }
         osDelay(1);
+    }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone RX_STATE_1
+ * \param[in]
+ */
+void prvMicrophoneRxState1(void)
+{
+    PDM_Filter(&microphone.rx[0], &microphone.mid_buff[0], &PDM1_filter_handler);
+
+    if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+        MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
+    }
+
+    osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
+
+    if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
+        IndicationLedBottom();
+        prvMicrophoneSetRead(MICROPHONE_READ_READY);
+    }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone RX_STATE_2
+ * \param[in]
+ */
+void prvMicrophoneRxState2(void)
+{
+    PDM_Filter(&microphone.rx[64], &microphone.mid_buff[0], &PDM1_filter_handler);
+
+    if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+        MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
+    }
+
+    osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
+
+    MicrophoneSetStatus(MICROPHONE_READY);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone TX_STATE_1
+ * \param[in]
+ */
+void prvMicrophoneTxState1(void)
+{
+    if (prvMicrophoneGetRead()) {
+
+        uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
+        MicrophoneGetDataFromRxBuffer(data);
+
+        for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
+            microphone.tx[i] = data[i];
+            microphone.tx[i + 2] = data[i];
+        }
+    }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone TX_STATE_1
+ * \param[in]
+ */
+void prvMicrophoneTxState2(void)
+{
+    if (prvMicrophoneGetRead()) {
+
+        uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
+        MicrophoneGetDataFromRxBuffer(data);
+
+        for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
+            microphone.tx[i] = data[i];
+            microphone.tx[i + 2] = data[i];
+        }
     }
 }
 /******************************************************************************/
