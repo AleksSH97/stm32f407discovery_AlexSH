@@ -39,6 +39,9 @@ void PDM2PCM_init(void)
   PDM1_filter_config.mic_gain = 0;
   PDM_Filter_setConfig(&PDM1_filter_handler, &PDM1_filter_config);
 }
+/******************************************************************************/
+
+
 
 
 uint8_t PDM2PCM_process(uint16_t *PDMBuf, uint16_t *PCMBuf)
@@ -56,6 +59,7 @@ uint8_t PDM2PCM_process(uint16_t *PDMBuf, uint16_t *PCMBuf)
   /* this example return the default status AUDIO_ERROR */
   return (uint8_t) 1;
 }
+/******************************************************************************/
 
 
 /**

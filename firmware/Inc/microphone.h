@@ -18,6 +18,10 @@
 #include "log.h"
 #include "pdm2pcm.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define MICROPHONE_BUFF_SIZE          128
 #define MICROPHONE_HALF_BUFF_SIZE     64
 #define MICROPHONE_MID_BUFF_SIZE      16
@@ -45,8 +49,6 @@ typedef enum {
     MICROPHONE_INIT_ERROR    = 0x05,
     MICROPHONE_PROCESS_ERROR = 0x06,
 } microphone_status_t;
-
-typedef void (*microphone_handler_fn)(void);
 
 struct microphone {
     lwrb_t   lwrb_rx;
@@ -79,5 +81,9 @@ void MicrophoneSetVisualizer(bool mode);
 bool MicrophoneGetVisualizerStatus(void);
 void MicrophoneVisualizationClearQueue(void);
 microphone_status_t MicrophoneGetStatus(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* MICROPHONE_H_ */
