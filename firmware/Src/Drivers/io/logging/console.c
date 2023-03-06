@@ -383,8 +383,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetVisualizer(false);
-    //MicrophoneVisualizationClearQueue();
-    //prvConsolePrint(microrl_ptr, "^C is caught!"_ENDLINE_SEQ);
+    microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
 }

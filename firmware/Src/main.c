@@ -75,7 +75,6 @@ void prvInitializeDrivers(void)
     ButtonInit();
 
     MicrophoneInit();
-    RingBufI2S2Init();
 
     UARTAllInit();
     RingBufUARTInit();
