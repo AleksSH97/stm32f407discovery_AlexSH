@@ -12,7 +12,7 @@
 #include "uart.h"
 
 void RingBufUARTInit(void);
-void RingBufI2S2Init(void);
+void RingBufMicrophoneInit(void);
 void RingBufEvtCallback(struct uart *self, lwrb_evt_type_t evt, size_t bp);
 
 #endif /* RING_BUF_H_ */

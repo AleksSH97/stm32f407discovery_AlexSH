@@ -26,15 +26,21 @@ void RingBufUARTInit(void)
     lwrb_set_evt_fn(&data_uart.lwrb_tx, RingBufEvtCallback);
 }
 
-void RingBufI2S2Init(void)
+void RingBufMicrophoneInit(void)
 {
-    lwrb_init(&microphone.lwrb, microphone.buff, sizeof(microphone.buff));
+    lwrb_init(&microphone.lwrb_rx, microphone.buff_rx, sizeof(microphone.buff_rx));
+    lwrb_init(&microphone.lwrb_tx, microphone.buff_tx, sizeof(microphone.buff_tx));
 
-    if (!lwrb_is_ready(&microphone.lwrb)) {
-        PrintfLogsCRLF("Error ring buf i2s2 init");
+    if (!lwrb_is_ready(&microphone.lwrb_rx)) {
+        PrintfLogsCRLF("Error ring buf i2s2 rx init");
+    }
+    if (!lwrb_is_ready(&microphone.buff_tx)) {
+        PrintfLogsCRLF("Error ring buf i2s2 tx init");
     }
 
-    lwrb_set_evt_fn(&microphone.lwrb, RingBufEvtCallback);
+
+    lwrb_set_evt_fn(&microphone.lwrb_rx, RingBufEvtCallback);
+    lwrb_set_evt_fn(&microphone.lwrb_tx, RingBufEvtCallback);
 }
 
 void RingBufEvtCallback(struct uart *self, lwrb_evt_type_t evt, size_t bp)
