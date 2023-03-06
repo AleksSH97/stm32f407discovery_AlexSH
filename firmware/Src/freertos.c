@@ -1,22 +1,17 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : freertos.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : FreeRTOS inits (delete in future)
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
+ */
 
-/* Includes ------------------------------------------------------------------*/
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
@@ -24,14 +19,13 @@
 
 
 
-
+/******************************************************************************/
+/* Private variables -------------------------------------------------------- */
+/******************************************************************************/
 osThreadId_t ButtonInput;
 osThreadId_t IndicationUpdate;
 osThreadId_t MicrophoneInput;
 osThreadId_t VisualizationUpdate;
-
-
-
 
 const osThreadAttr_t ButtonTask_attributes = {
         .name = "ButtonTask",
@@ -56,10 +50,12 @@ const osThreadAttr_t VisualizationTask_attributes = {
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityNormal,
 };
+/******************************************************************************/
 
 
-
-
+/**
+ * @brief          FreeRTOS tasks init
+ */
 void MX_FREERTOS_Init(void)
 {
     ButtonInput = osThreadNew(ButtonTask, NULL, &ButtonTask_attributes);
@@ -71,27 +67,3 @@ void MX_FREERTOS_Init(void)
     VisualizationUpdate = osThreadNew(MicrophoneVisualizationTask, NULL, &VisualizationTask_attributes);
 }
 /******************************************************************************/
-
-
-
-
-
-
-/******************************************************************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

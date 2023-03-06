@@ -1,8 +1,12 @@
-/*
- * log.c
- *
- *  Created on: 20 дек. 2022 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : log.c
+ * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
+ * @brief          : logging system
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
+ ******************************************************************************
+ ******************************************************************************
  */
 
 /******************************************************************************/
@@ -14,27 +18,25 @@
 #include "lwprintf/lwprintf.h"
 
 
+
+
+/******************************************************************************/
+/* Private defines ---------------------------------------------------------- */
+/******************************************************************************/
 #define LOGS_QUEUE_SIZE            (512U)
 #define CONSOLE_QUEUE_SIZE         (512U)
+
+
+
+
 /******************************************************************************/
-
-
-
-
-static int prvLwprintfLogsOut(int ch, lwprintf_t* p);
-static int prvLwprintfConsoleOut(int ch, lwprintf_t* p);
+/* Private variables -------------------------------------------------------- */
 /******************************************************************************/
-
-
-
-
 osMessageQueueId_t consoleQueueHandle;
 osMessageQueueId_t logsQueueHandle;
-/******************************************************************************/
 
-
-
-
+static lwprintf_t console;
+static lwprintf_t logs;
 
 const osMessageQueueAttr_t consoleQueueAttributes = {
         .name = "consoleQueue",
@@ -43,19 +45,24 @@ const osMessageQueueAttr_t consoleQueueAttributes = {
 const osMessageQueueAttr_t logsQueueAttributes = {
         .name = "logsQueue",
 };
+
+
+
+
+/******************************************************************************/
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
+static int prvLwprintfLogsOut(int ch, lwprintf_t* p);
+static int prvLwprintfConsoleOut(int ch, lwprintf_t* p);
+
 /******************************************************************************/
 
 
 
 
-
-static lwprintf_t console;
-static lwprintf_t logs;
-/******************************************************************************/
-
-
-
-
+/**
+ * @brief          Init logging system
+ */
 void LogInit(void)
 {
     consoleQueueHandle = osMessageQueueNew(512, sizeof(uint8_t), &consoleQueueAttributes);
@@ -69,6 +76,9 @@ void LogInit(void)
 
 
 
+/**
+ * @brief          Clear Queues of logs and console
+ */
 void LogClearQueues(void)
 {
     osMessageQueueReset(logsQueueHandle);
@@ -79,6 +89,9 @@ void LogClearQueues(void)
 
 
 
+/**
+ * @brief          Printf of logs
+ */
 int PrintfLogs(const char *fmt, ...)
 {
     if (IoSystemGetMode() != IO_LOGS) {
@@ -99,6 +112,9 @@ int PrintfLogs(const char *fmt, ...)
 
 
 
+/**
+ * @brief          Printf of console
+ */
 int PrintfConsole(const char *fmt, ...)
 {
     if (IoSystemGetMode() != IO_CONSOLE) {
@@ -118,6 +134,10 @@ int PrintfConsole(const char *fmt, ...)
 
 
 
+
+/**
+ * @brief          Printf logs out (add to logs queue)
+ */
 static int prvLwprintfLogsOut(int ch, lwprintf_t* p)
 {
     uint8_t c = (uint8_t)ch;
@@ -135,7 +155,9 @@ static int prvLwprintfLogsOut(int ch, lwprintf_t* p)
 
 
 
-
+/**
+ * @brief          Printf console out (add to console queue)
+ */
 static int prvLwprintfConsoleOut(int ch, lwprintf_t* p)
 {
     uint8_t c = (uint8_t)ch;
@@ -153,6 +175,9 @@ static int prvLwprintfConsoleOut(int ch, lwprintf_t* p)
 
 
 
+/**
+ * @brief          Print welcome message at the start
+ */
 void LogPrintWelcomeMsg(void)
 {
     PrintfLogsCRLF("");
@@ -162,4 +187,3 @@ void LogPrintWelcomeMsg(void)
     PrintfLogsCRLF("");
 }
 /******************************************************************************/
-

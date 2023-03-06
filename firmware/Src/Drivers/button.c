@@ -27,15 +27,15 @@ struct user_button {
 	struct timeout debounce_timeout;
 };
 
+struct user_button user_button;
+
 /******************************************************************************/
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
 static void prvButtonCheckAlgorithm(struct user_button *user_button_ptr);
 static void prvButtonActivate(struct user_button *user_button_ptr);
 
-struct user_button user_button;
-//struct msg msg;
-
+/******************************************************************************/
 
 
 
