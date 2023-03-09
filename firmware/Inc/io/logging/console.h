@@ -42,6 +42,7 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv);
 int ConsoleExecuteMain(microrl_t* microrl_ptr, int argc, const char* const *argv);
 int ConsoleBuff(microrl_t *microrl_ptr, int argc, const char * const *argv);
 int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv);
+int ConsoleAccelerometer(microrl_t *microrl_ptr, int argc, const char * const *argv);
 char **ConsoleComplete(microrl_t *microrl_ptr, int argc, const char * const *argv);
 
 void ConsoleGetVersion(char* ver_str);
@@ -51,6 +52,7 @@ void ConsolePrintHelp(microrl_t *microrl_ptr);
 void ConsolePrintBuff(microrl_t *microrl_ptr);
 void ConsolePrintWelcome(microrl_t *microrl_ptr);
 void ConsolePrintVisualizer(microrl_t *microrl_ptr);
+void ConsolePrintAccelerometer(microrl_t *microrl_ptr);
 void ConsoleSigint(microrl_t *microrl_ptr);
 
 

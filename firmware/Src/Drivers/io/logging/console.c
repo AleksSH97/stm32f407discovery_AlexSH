@@ -30,6 +30,9 @@
 #define _CMD_VISUAL                 "visual"
 #define _CMD_SHOW                   "show"
 
+#define _CMD_ACCELERO               "accelero"
+#define _CMD_ENABLE                 "enable"
+
 #define _CMD_BUFF                   "buff"
 #define _CMD_RESET                  "reset"
 #define _CMD_FREE                   "free"
@@ -39,7 +42,7 @@
 #define _SCMD_RD                    "?"
 #define _SCMD_SAVE                  "save"
 
-#define _NUM_OF_CMD                 10
+#define _NUM_OF_CMD                 12
 #define _NUM_OF_SETCLEAR_SCMD       2
 
 #if MICRORL_CFG_USE_ECHO_OFF
@@ -59,7 +62,10 @@ uint8_t  passw_in = 0;
 microrl_t microrl;
 microrl_t *microrl_ptr = &microrl;
 
-char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT, _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE, _CMD_BACK};    //available  commands
+char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT,
+        _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE,
+        _CMD_ACCELERO, _CMD_ENABLE, _CMD_BACK};    //available  commands
+
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
 char *compl_word [_NUM_OF_CMD + 1];                        // array for completion
 
@@ -76,7 +82,7 @@ static void prvConsolePrint(microrl_t *microrl_ptr, const char *str);
 
 
 /**
- * @brief          Console (Microrl init)
+ * @brief          Console (MicroRL init)
  */
 void ConsoleInit(void)
 {
@@ -187,6 +193,11 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv) {
             prvConsolePrint(microrl_ptr, "\tChoose your action with audio visualizer: " _ENDLINE_SEQ);
             ConsolePrintVisualizer(microrl_ptr);
             microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
+        }
+        else if (strcmp(argv[i], _CMD_ACCELERO) == 0) {
+            prvConsolePrint(microrl_ptr, "\tChoose your action with accelerometer: " _ENDLINE_SEQ);
+            ConsolePrintAccelerometer(microrl_ptr);
+            microrl_set_execute_callback(microrl_ptr, ConsoleAccelerometer);
         }
         else {
             prvConsolePrint(microrl_ptr, "command: '");
@@ -339,6 +350,39 @@ int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv
 
 
 /**
+ * \brief           Visualizer menu in console
+ * \param[in]
+ */
+int ConsoleAccelerometer(microrl_t *microrl_ptr, int argc, const char * const *argv)
+{
+    int i = 0;
+
+    while (i < argc) {
+        if (strcmp(argv[i], _CMD_ENABLE) == 0) {
+            accelero_spi.enabled = true;
+        }
+        else if (strcmp(argv[i], _CMD_BACK) == 0) {
+            prvConsolePrint(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
+            ConsolePrintHelp(microrl_ptr);
+            accelero_spi.enabled = false;
+            microrl_set_execute_callback(microrl_ptr, ConsoleExecuteMain);
+        }
+        else {
+            prvConsolePrint(microrl_ptr, "\tUndefined command" _ENDLINE_SEQ);
+            IndicationLedError();
+            ConsolePrintAccelerometer(microrl_ptr);
+        }
+        i++;
+    }
+
+        return 0;
+}
+/******************************************************************************/
+
+
+
+
+/**
  * \brief           Clear console screen fn extern
  */
 void ConsoleClearScreenSetup(void)
@@ -383,6 +427,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetVisualizer(false);
+    accelero_spi.enabled = false;
     microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
@@ -457,6 +502,7 @@ void ConsolePrintHelp(microrl_t *microrl_ptr)
     prvConsolePrint(microrl_ptr, "\tlogout              - end session"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tvisual              - audio visualization configuration menu"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tbuff                - buff configuration menu"_ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "\taccelero            - accelerometer configuration menu"_ENDLINE_SEQ);
 
 #if MICRORL_CFG_USE_COMPLETE
     prvConsolePrint(microrl_ptr, "Use TAB key for completion"_ENDLINE_SEQ _ENDLINE_SEQ);
@@ -492,6 +538,21 @@ void ConsolePrintVisualizer(microrl_t *microrl_ptr)
     prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "List of audio visualizer commands:"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tshow               -  show visualization"_ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "\tback               -  back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Print visualizer menu
+ */
+void ConsolePrintAccelerometer(microrl_t *microrl_ptr)
+{
+    prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "List of aceelerometer commands:"_ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "\tenable             -  show visualization"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tback               -  back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
 /******************************************************************************/
