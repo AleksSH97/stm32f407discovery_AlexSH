@@ -24,13 +24,14 @@ SPI_HandleTypeDef hspi1;
 /******************************************************************************/
 static uint8_t prvAcceleroSpiWriteRead(uint8_t byte);
 
+
+
+
 /**
  * @brief           SPI1 init fn
  */
 void AcceleroSpiInit(void)
 {
-    AcceleroIoItConfig();
-
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -66,6 +67,10 @@ void AcceleroSpiInit(void)
     }
 }
 /******************************************************************************/
+
+
+
+
 
 /**
  * @brief          CS pin init
@@ -104,10 +109,14 @@ void AcceleroIoItConfig(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority((IRQn_Type)ACCELERO_SPI_INT2_EXTI_IRQn, 0x0F, 0);
+    HAL_NVIC_SetPriority((IRQn_Type)ACCELERO_SPI_INT2_EXTI_IRQn, 0x07, 0x00);
     HAL_NVIC_EnableIRQ((IRQn_Type)ACCELERO_SPI_INT2_EXTI_IRQn);
 }
 /******************************************************************************/
+
+
+
+
 
 /**
   * @brief  Writes one byte to the Accelero.
@@ -135,6 +144,9 @@ void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_
     ACCELERO_SPI_CS_HIGH();
 }
 /******************************************************************************/
+
+
+
 
 /**
   * @brief  Reads a block of data from the Accelero.
@@ -167,6 +179,8 @@ void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_re
 /******************************************************************************/
 
 
+
+
 /**
  * @brief          SPI1 Transmit and Receive fn
  */
@@ -182,6 +196,9 @@ uint8_t prvAcceleroSpiWriteRead(uint8_t byte)
 }
 /******************************************************************************/
 
+
+
+
 /**
  * @brief          Led ON/OFF depend on the position
  */
@@ -189,23 +206,26 @@ void AcceleroLedIndication(void)
 {
     AccelerometerGetXyz(accelero_spi.xyz_buf);
 
-//    if (Accelero_spi.xyz_buf[Accelero_X] < Accelero_BOUNDARY_NEG) {
-//        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_SET);
-//        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_RESET);
-//    }
-//    else if (Accelero_spi.xyz_buf[Accelero_X] > Accelero_BOUNDARY_POS) {
-//        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_SET);
-//        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_RESET);
-//    }
-//    else if (Accelero_spi.xyz_buf[Accelero_Y] < Accelero_BOUNDARY_NEG) {
-//        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_SET);
-//        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_RESET);
-//    }
-//    else if (Accelero_spi.xyz_buf[Accelero_Y] > Accelero_BOUNDARY_POS) {
-//        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_RESET);
-//        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_SET);
-//    }
+    if (accelero_spi.xyz_buf[ACCELERO_SPI_X] < ACCELERO_SPI_BOUNDARY_NEG) {
+        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_RESET);
+    }
+    else if (accelero_spi.xyz_buf[ACCELERO_SPI_X] > ACCELERO_SPI_BOUNDARY_POS) {
+        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_RESET);
+    }
+    else if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] < ACCELERO_SPI_BOUNDARY_NEG) {
+        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_RESET);
+    }
+    else if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] > ACCELERO_SPI_BOUNDARY_POS) {
+        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_SET);
+    }
 }
+
+
+
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
