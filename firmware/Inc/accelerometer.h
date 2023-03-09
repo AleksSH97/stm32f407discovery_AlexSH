@@ -56,6 +56,7 @@ struct accelerometerac_filter_config {
 };
 
 uint8_t AccelerometerInit(void);
+void AccelerometerTask(void* argument);
 void AccelerometerReset(void);
 void AccelerometerClickItConfig(void);
 void AccelerometerClickItClear(void);

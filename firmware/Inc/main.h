@@ -56,6 +56,9 @@ extern "C" {
 #include "microphone.h"
 #include "pdm2pcm.h"
 
+#include "accelerometer.h"
+#include "accelero_spi.h"
+
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
 #endif /* USE_FULL_ASSERT */

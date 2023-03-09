@@ -56,7 +56,7 @@ struct accelero_spi {
     uint8_t          buff[ACCELERO_SPI_BUFF_SIZE];
 
     int16_t          xyz_buf[ACCELERO_SPI_NUM_OF_AXES];
-    volatile bool    flag;
+    bool             enabled;
 };
 
 void AcceleroSpiInit(void);

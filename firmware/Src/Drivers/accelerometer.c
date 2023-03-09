@@ -21,14 +21,19 @@
 /******************************************************************************/
 enum accelerometer_status accelerometer_status;
 struct accelero_spi accelero_spi;
-
 static struct accelerometer_drv *accelerometer_drv_ptr;
 
+/******************************************************************************/
+
+
+
+
 /**
- * @brief          Accelerometer initialization fn
+ * @brief          Accelerometer initialization
  */
 uint8_t AccelerometerInit(void)
 {
+    AcceleroIoItConfig();
     AcceleroSpiInit();
 
     uint8_t ret = ACCELEROMETER_ERROR;
@@ -67,6 +72,24 @@ uint8_t AccelerometerInit(void)
 }
 /******************************************************************************/
 
+
+/**
+ * @brief          Accelerometer RTOS task
+ */
+void AccelerometerTask(void* argument)
+{
+    for(;;)
+    {
+        if (accelero_spi.enabled) {
+            AcceleroLedIndication();
+        }
+    }
+}
+/******************************************************************************/
+
+
+
+
 /**
  * @brief          Accelerometer reset fn
  */
@@ -77,6 +100,9 @@ void AccelerometerReset(void)
      }
 }
 /******************************************************************************/
+
+
+
 
 /**
  * @brief          Accelerometer IT conf fn
@@ -89,6 +115,9 @@ void AccelerometerClickItConfig(void)
 }
 /******************************************************************************/
 
+
+
+
 /**
  * @brief          Accelerometer IT clear fn
  */
@@ -100,6 +129,9 @@ void AccelerometerClickItClear(void)
   }
 }
 /******************************************************************************/
+
+
+
 
 /**
   * @brief  Get XYZ axes acceleration.

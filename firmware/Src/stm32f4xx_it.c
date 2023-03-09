@@ -24,6 +24,7 @@
 
 extern DMA_HandleTypeDef hdma_spi2_rx;
 extern DMA_HandleTypeDef hdma_spi3_tx;
+extern SPI_HandleTypeDef hspi1;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -66,6 +67,11 @@ void UsageFault_Handler(void)
 
 void DebugMon_Handler(void)
 {
+}
+
+void SPI1_IRQHandler(void)
+{
+    HAL_SPI_IRQHandler(&hspi1);
 }
 
 void USART2_IRQHandler(void)
