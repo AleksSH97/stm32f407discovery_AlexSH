@@ -76,6 +76,8 @@ void prvInitializeDrivers(void)
 
     MicrophoneInit();
 
+    AccelerometerInit();
+
     UARTAllInit();
     RingBufUARTInit();
     UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
