@@ -61,5 +61,7 @@ void AccelerometerReset(void);
 void AccelerometerClickItConfig(void);
 void AccelerometerClickItClear(void);
 void AccelerometerGetXyz(int16_t *Data_xyz_ptr);
+bool AccelerometerPutDataToRxBuffer(const void* data, size_t len);
+bool AccelerometerPutDataToTxBuffer(const void* data, size_t len);
 
 #endif /* ACCELEROMETER_H_ */

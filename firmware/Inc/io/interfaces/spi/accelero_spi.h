@@ -27,14 +27,18 @@ extern "C" {
 #define ACCELERO_SPI_SCK_PIN           GPIO_PIN_5
 #define ACCELERO_SPI_MISO_PIN          GPIO_PIN_6
 #define ACCELERO_SPI_MOSI_PIN          GPIO_PIN_7
+#define ACCELERO_SPI_GPIO_PORT         GPIOA
 
 #define ACCELERO_SPI_CS_LOW()          HAL_GPIO_WritePin(ACCELERO_SPI_CS_GPIO_PORT, ACCELERO_SPI_CS_PIN, GPIO_PIN_RESET)
 #define ACCELERO_SPI_CS_HIGH()         HAL_GPIO_WritePin(ACCELERO_SPI_CS_GPIO_PORT, ACCELERO_SPI_CS_PIN, GPIO_PIN_SET)
 
 #define ACCELERO_SPI_INT1_PI           GPIO_PIN_0                 /* PE.00 */
 #define ACCELERO_SPI_INT1_EXTI_IRQn    EXTI0_IRQn
+#define ACCELERO_SPI_INT1_PORT         GPIOE
+
 #define ACCELERO_SPI_INT2_PIN          GPIO_PIN_1                 /* PE.01 */
 #define ACCELERO_SPI_INT2_EXTI_IRQn    EXTI1_IRQn
+#define ACCELERO_SPI_INT2_PORT         GPIOE
 
 #define ACCELERO_SPI_TIMEOUT           (uint32_t)0x1000
 #define ACCELERO_SPI_NUM_OF_AXES       3u
@@ -52,8 +56,13 @@ extern SPI_HandleTypeDef hspi1;
 extern struct accelero_spi accelero_spi;
 
 struct accelero_spi {
-    lwrb_t           lwrb;
-    uint8_t          buff[ACCELERO_SPI_BUFF_SIZE];
+    lwrb_t           lwrb_rx;
+    lwrb_t           lwrb_tx;
+    uint8_t          buff_rx[ACCELERO_SPI_BUFF_SIZE];
+    uint8_t          buff_tx[ACCELERO_SPI_BUFF_SIZE];
+
+    uint8_t          byte_in;
+    uint8_t          byte_out;
 
     int16_t          xyz_buf[ACCELERO_SPI_NUM_OF_AXES];
     bool             enabled;
@@ -65,6 +74,8 @@ void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_re
 void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write);
 void AcceleroIoItConfig(void);
 void AcceleroLedIndication(void);
+bool AcceleroSpiSetupITWriteRead(void);
+void AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write, struct accelero_spi *accelero_spi_ptr);
 
 #ifdef __cplusplus
 }
