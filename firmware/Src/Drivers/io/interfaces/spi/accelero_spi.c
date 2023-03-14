@@ -41,7 +41,7 @@ void AcceleroSpiInit(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(ACCELERO_SPI_GPIO_PORT, &GPIO_InitStruct);
 
     __HAL_RCC_SPI1_CLK_ENABLE();
 
@@ -54,12 +54,12 @@ void AcceleroSpiInit(void)
     hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
     hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-    hspi1.Init.NSS = SPI_NSS_SOFT; // Check this our again. Was configured with error! SPI was not transferring
+    hspi1.Init.NSS = SPI_NSS_SOFT; // Check this out again. Was configured with error! SPI was not transferring
     hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
     hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
     hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-    hspi1.Init.CRCPolynomial = 7; // Check this our again. Was configured with error! SPI was not transferring
+    hspi1.Init.CRCPolynomial = 7; // Check this out again. Was configured with error! SPI was not transferring
 
     if (HAL_SPI_Init(&hspi1) != HAL_OK)
     {
@@ -67,7 +67,6 @@ void AcceleroSpiInit(void)
     }
 }
 /******************************************************************************/
-
 
 
 
@@ -91,6 +90,10 @@ void AcceleroCsInit(void)
 }
 /******************************************************************************/
 
+
+
+
+
 /**
   * @brief  Configures the Accelero INT2.
   *         EXTI0 is already used by user button so INT1 is not configured here.
@@ -107,13 +110,12 @@ void AcceleroIoItConfig(void)
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    HAL_GPIO_Init(ACCELERO_SPI_INT2_PORT, &GPIO_InitStruct);
 
     HAL_NVIC_SetPriority((IRQn_Type)ACCELERO_SPI_INT2_EXTI_IRQn, 0x07, 0x00);
     HAL_NVIC_EnableIRQ((IRQn_Type)ACCELERO_SPI_INT2_EXTI_IRQn);
 }
 /******************************************************************************/
-
 
 
 
@@ -145,6 +147,37 @@ void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_
 }
 /******************************************************************************/
 
+
+
+
+/**
+  * @brief  Writes one byte to the Accelero interrupt
+  * @param  buf_ptr: pointer to the buffer containing the data to be written to the Accelero.
+  * @param  write_addr: Accelero's internal address to write to.
+  * @param  num_byte_to_write: Number of bytes to write.
+  * @retval None
+  */
+void AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write, struct accelero_spi *accelero_spi_ptr)
+{
+    if (num_byte_to_write > 0x01) {
+        write_addr |= (uint8_t)MULTIPLEBYTE_CMD;
+    }
+
+    ACCELERO_SPI_CS_LOW();
+
+    accelero_spi_ptr->byte_out = write_addr;
+    //prvAcceleroSpiWriteRead(write_addr);
+
+    while (num_byte_to_write >= 0x01) {
+        accelero_spi_ptr->byte_out = (*buf_ptr);
+        //prvAcceleroSpiWriteRead(*buf_ptr);
+        num_byte_to_write--;
+        buf_ptr++;
+    }
+
+    ACCELERO_SPI_CS_HIGH();
+}
+/******************************************************************************/
 
 
 
@@ -200,6 +233,21 @@ uint8_t prvAcceleroSpiWriteRead(uint8_t byte)
 
 
 /**
+ * @brief          SPI1 Transmit and Receive fn
+ */
+bool AcceleroSpiSetupITWriteRead(void)
+{
+    if (HAL_SPI_TransmitReceive_IT(&hspi1, &accelero_spi.byte_out, &accelero_spi.byte_in, 2) != HAL_OK) {
+        return false;
+    }
+
+    return true;
+}
+/******************************************************************************/
+
+
+
+/**
  * @brief          Led ON/OFF depend on the position
  */
 void AcceleroLedIndication(void)
@@ -226,13 +274,73 @@ void AcceleroLedIndication(void)
 
 
 
-
+/**
+ * @brief          TX RX interrupt callback
+ */
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-//    if (hspi->Instance == SPI1) {
-//
-//    }
+    if (hspi->Instance == SPI1) {
+      //  IndicationLedTop();
+
+        if (!AccelerometerPutDataToRxBuffer(&accelero_spi.byte_in, 1)) {
+            PrintfLogsCRLF("Error writing to SPI RX Ring Buffer!!!");
+        }
+        if(!AccelerometerPutDataToTxBuffer(&accelero_spi.byte_out, 1)) {
+            PrintfLogsCRLF("Error writing to SPI TX Ring Buffer!!!");
+        }
+
+        if (!AcceleroSpiSetupITWriteRead()) {
+            PrintfLogsCRLF("\tError HAL IT init in callback");
+        }
+    }
 }
+/******************************************************************************/
+
+
+
+///**
+// * @brief          TX interrupt callback
+// */
+//void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+//{
+//    if (hspi->Instance == SPI1) {
+//        IndicationLedTop();
+//
+//        if (!AccelerometerPutDataToRxBuffer(&accelero_spi.byte_in, 1)) {
+//            PrintfLogsCRLF("Error writing to SPI RX Ring Buffer!!!");
+//        }
+//        if(!AccelerometerPutDataToTxBuffer(&accelero_spi.byte_out, 1)) {
+//            PrintfLogsCRLF("Error writing to SPI TX Ring Buffer!!!");
+//        }
+//
+//        AcceleroSpiSetupITWriteRead();
+//    }
+//}
+///******************************************************************************/
+//
+//
+//
+//
+///**
+// * @brief          RX interrupt callback
+// */
+//void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+//{
+//    if (hspi->Instance == SPI1) {
+//        IndicationLedTop();
+//
+//        if (!AccelerometerPutDataToRxBuffer(&accelero_spi.byte_in, 1)) {
+//            PrintfLogsCRLF("Error writing to SPI RX Ring Buffer!!!");
+//        }
+//        if(!AccelerometerPutDataToTxBuffer(&accelero_spi.byte_out, 1)) {
+//            PrintfLogsCRLF("Error writing to SPI TX Ring Buffer!!!");
+//        }
+//
+//        AcceleroSpiSetupITWriteRead();
+//    }
+//}
+///******************************************************************************/
+
 
 /**
  * @brief          Error callback fn

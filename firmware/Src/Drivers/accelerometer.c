@@ -36,6 +36,10 @@ uint8_t AccelerometerInit(void)
     AcceleroIoItConfig();
     AcceleroSpiInit();
 
+    if (!AcceleroSpiSetupITWriteRead()) {
+        PrintfLogsCRLF("\tError HAL IT init");
+    }
+
     uint8_t ret = ACCELEROMETER_ERROR;
     uint8_t ctrl = 0x0000;
 
@@ -91,7 +95,7 @@ void AccelerometerTask(void* argument)
 
 
 /**
- * @brief          Accelerometer reset fn
+ * @brief          Accelerometer reset
  */
 void AccelerometerReset(void)
 {
@@ -105,7 +109,7 @@ void AccelerometerReset(void)
 
 
 /**
- * @brief          Accelerometer IT conf fn
+ * @brief          Accelerometer IT configuration
  */
 void AccelerometerClickItConfig(void)
 {
@@ -119,7 +123,7 @@ void AccelerometerClickItConfig(void)
 
 
 /**
- * @brief          Accelerometer IT clear fn
+ * @brief          Accelerometer IT clear
  */
 void AccelerometerClickItClear(void)
 {
@@ -156,5 +160,37 @@ void AccelerometerGetXyz(int16_t *Data_xyz_ptr)
       Data_xyz_ptr[1] = -switch_xy;
     }
   }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Put data to RX ring buffer
+ */
+bool AccelerometerPutDataToRxBuffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&accelero_spi.lwrb_rx) == 0) {
+        return false;
+    }
+
+    return (lwrb_write(&accelero_spi.lwrb_rx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Put data to TX ring buffer
+ */
+bool AccelerometerPutDataToTxBuffer(const void* data, size_t len)
+{
+    if (lwrb_get_free(&accelero_spi.lwrb_tx) == 0) {
+        return false;
+    }
+
+    return (lwrb_write(&accelero_spi.lwrb_tx, data, len) > 0 ? true : false);
 }
 /******************************************************************************/
