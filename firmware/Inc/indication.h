@@ -12,6 +12,7 @@
 
 #include "main.h"
 #include "log.h"
+#include "led.h"
 #include "stm32f4xx_hal.h"
 
 #define INDICATION_LED_LOADING_NUM                (10000u)
@@ -31,18 +32,18 @@
 
 #define ZERO_MS                        (0u)
 
-#define LED_TOP_TIME_ON                (50u)
-#define LED_LEFT_TIME_ON               (70u)
-#define LED_BOTTOM_TIME_ON             (90u)
-#define LED_RIGHT_TIME_ON              (110u)
+#define LED_TOP_TIME_ON                (10u)
+#define LED_LEFT_TIME_ON               (20u)
+#define LED_BOTTOM_TIME_ON             (30u)
+#define LED_RIGHT_TIME_ON              (40u)
 
-#define LED_TOP_TIME_OFF               (70u)
-#define LED_LEFT_TIME_OFF              (90u)
-#define LED_BOTTOM_TIME_OFF            (110u)
-#define LED_RIGHT_TIME_OFF             (130u)
+#define LED_TOP_TIME_OFF               (20u)
+#define LED_LEFT_TIME_OFF              (30u)
+#define LED_BOTTOM_TIME_OFF            (40u)
+#define LED_RIGHT_TIME_OFF             (50u)
 
-#define LED_TIME_ON                    (50u)
-#define LED_TIME_OFF                   (70u)
+#define LED_TIME_ON                    (15u)
+#define LED_TIME_OFF                   (40u)
 
 enum indication_led_id {
 	LED_TOP = 0,
