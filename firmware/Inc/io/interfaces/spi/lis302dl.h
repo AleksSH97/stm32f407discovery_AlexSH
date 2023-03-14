@@ -552,6 +552,6 @@ void lis302dl_low_power_cmd(uint8_t low_power_mode);
 void lis302dl_data_rate_cmd(uint8_t data_rate_value);
 void lis302dl_full_scale_cmd(uint8_t fs_value);
 void lis302dl_reboot_cmd(void);
-void lis302dl_read_acc(int16_t *pData);
+void lis302dl_get_xyz(int16_t *pData);
 
 #endif /* LIS302DL_H_ */
