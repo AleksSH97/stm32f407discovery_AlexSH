@@ -32,10 +32,11 @@ struct accelerometer_drv lis302dl_drv = {
         lis302dl_click_int_clear,
         lis302dl_filter_config,
         0,
-        lis302dl_read_acc,
+        lis302dl_get_xyz,
 };
 
 /******************************************************************************/
+
 
 
 
@@ -52,7 +53,7 @@ void lis302dl_init(uint16_t init_struct)
 
     ctrl = (uint8_t) init_struct;
 
-    AcceleroIoWrite(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1, &accelero_spi);
 }
 /******************************************************************************/
 
@@ -105,7 +106,7 @@ void lis302dl_filter_config(uint8_t filter_struct)
 
     ctrl |= filter_struct;
 
-    AcceleroIoWrite(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1, &accelero_spi);
 }
 /******************************************************************************/
 
@@ -301,13 +302,13 @@ void lis302dl_reboot_cmd(void)
 
 /**
   * @brief  Read lis302dl output register, and calculate the acceleration
-  *         ACC[mg]=SENSITIVITY* (out_h*256+out_l)/16 (12 bit rappresentation)
+  *         ACC[mg]=SENSITIVITY* (out_h*256+out_l)/16 (12 bit representation)
   * @param  pfData: Data out pointer
   * @retval None
   */
-void lis302dl_read_acc(int16_t *pData)
+void lis302dl_get_xyz(int16_t *pData)
 {
-    int8_t buffer[6];
+    int8_t  buffer[6];
     int16_t pn_raw_data[3];
     uint8_t sensitivity = LIS302DL_SENSITIVITY_2_3G;
     uint8_t ctrl;
