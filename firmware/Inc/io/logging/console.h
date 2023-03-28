@@ -19,6 +19,7 @@ extern "C" {
 #include "uart.h"
 #include "log.h"
 #include "microrl.h"
+#include "accelero_spi.h"
 #include "microrl_config.h"
 
 
