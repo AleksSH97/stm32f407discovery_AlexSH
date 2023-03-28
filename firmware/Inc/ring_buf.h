@@ -13,6 +13,7 @@
 
 void RingBufUARTInit(void);
 void RingBufMicrophoneInit(void);
+void RingBufAcceleroInit(void);
 void RingBufEvtCallback(struct uart *self, lwrb_evt_type_t evt, size_t bp);
 
 #endif /* RING_BUF_H_ */
