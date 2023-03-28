@@ -10,13 +10,6 @@
 
 #include "lis302dl.h"
 
-enum accelerometer_status
-{
-    ACCELEROMETER_OK = 0,
-    ACCELEROMETER_ERROR = 1,
-    ACCELEROMETER_TIMEOUT = 2
-};
-
 struct accelerometer_drv {
     void      (*init)(uint16_t);
     void      (*deinit)(void);
@@ -58,10 +51,16 @@ struct accelerometerac_filter_config {
 uint8_t AccelerometerInit(void);
 void AccelerometerTask(void* argument);
 void AccelerometerReset(void);
+
+enum accelero_status AccelerometerGetStatus(void);
+void AccelerometerSetStatus(enum accelero_status status);
+
 void AccelerometerClickItConfig(void);
 void AccelerometerClickItClear(void);
 void AccelerometerGetXyz(int16_t *Data_xyz_ptr);
 bool AccelerometerPutDataToRxBuffer(const void* data, size_t len);
+bool AccelerometerReadDataFromRxBuffer(void* data, size_t len);
 bool AccelerometerPutDataToTxBuffer(const void* data, size_t len);
+bool AccelerometerReadDataFromTxBuffer(void* data, size_t len);
 
 #endif /* ACCELEROMETER_H_ */
