@@ -19,7 +19,7 @@
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
 /******************************************************************************/
-enum accelerometer_status accelerometer_status;
+enum accelero_status accelero_status;
 struct accelero_spi accelero_spi;
 static struct accelerometer_drv *accelerometer_drv_ptr;
 
@@ -33,14 +33,14 @@ static struct accelerometer_drv *accelerometer_drv_ptr;
  */
 uint8_t AccelerometerInit(void)
 {
+    PrintfLogsCRLF(CLR_DEF"");
+    PrintfLogsCRLF("\t\tACCELEROMETER INIT STARTED");
+    PrintfLogsCRLF("");
+
     AcceleroIoItConfig();
     AcceleroSpiInit();
 
-    if (!AcceleroSpiSetupITWriteRead()) {
-        PrintfLogsCRLF("\tError HAL IT init");
-    }
-
-    uint8_t ret = ACCELEROMETER_ERROR;
+    uint8_t ret = ACCELERO_INIT_ERROR;
     uint8_t ctrl = 0x0000;
 
     struct lis302dl_init_conf lis302dl_init;
@@ -58,6 +58,8 @@ uint8_t AccelerometerInit(void)
                       lis302dl_init.full_scale | lis302dl_init.self_test | \
                       lis302dl_init.axes_enable);
 
+    PrintfLogsCRLF(CLR_GR"ACCELEROMETER INIT CTRL: %d", ctrl);
+
     accelerometer_drv_ptr->init(ctrl);
 
     lis302dl_filter.highpass_filter_data_select = LIS302DL_FILTERDATASELECTION_OUTPUTREGISTER;
@@ -68,13 +70,21 @@ uint8_t AccelerometerInit(void)
                      lis302dl_filter.highpass_filter_cutoff_freq | \
                      lis302dl_filter.highpass_filter_interrupt);
 
+    PrintfLogsCRLF(CLR_GR"ACCELEROMETER FILTER CONFIG CTRL: %d", ctrl);
+
     accelerometer_drv_ptr->filter_config(ctrl);
 
-    ret = ACCELEROMETER_OK;
+    ret = ACCELERO_OK;
+
+    PrintfLogsCRLF(CLR_DEF"");
+    PrintfLogsCRLF("\t\tACCELEROMETER INIT ENDED");
+    PrintfLogsCRLF("");
 
     return ret;
 }
 /******************************************************************************/
+
+
 
 
 /**
@@ -82,15 +92,58 @@ uint8_t AccelerometerInit(void)
  */
 void AccelerometerTask(void* argument)
 {
+    AccelerometerInit();
+
+    if (!lwrb_is_ready(&accelero_spi.lwrb_rx)) {
+        PrintfLogsCRLF("Error ring buf SPI rx init");
+    }
+    if (!lwrb_is_ready(&accelero_spi.lwrb_tx)) {
+        PrintfLogsCRLF("Error ring buf SPI tx init");
+    }
+
     for(;;)
     {
-        if (accelero_spi.enabled) {
+        if (AccelerometerGetStatus() == ACCELERO_XYZ) {
             AcceleroLedIndication();
         }
+
+        if (AccelerometerGetStatus() == ACCELERO_OK) {
+            __NOP();
+        }
+
+        if (AccelerometerGetStatus() == ACCELERO_INIT_ERROR) {
+            PrintfLogsCRLF("ERROR INIT ACCELEROMETER");
+            HardFault_Handler();
+        }
+
+        osDelay(1);
     }
 }
 /******************************************************************************/
 
+
+
+
+/**
+ * @brief          Accelerometer get current status
+ */
+enum accelero_status AccelerometerGetStatus(void)
+{
+    return accelero_spi.status;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Accelerometer set current status
+ */
+void AccelerometerSetStatus(enum accelero_status status)
+{
+    accelero_spi.status = status;
+}
+/******************************************************************************/
 
 
 
@@ -127,7 +180,7 @@ void AccelerometerClickItConfig(void)
  */
 void AccelerometerClickItClear(void)
 {
-  if(accelerometer_drv_ptr->clear_it != NULL)
+  if (accelerometer_drv_ptr->clear_it != NULL)
   {
       accelerometer_drv_ptr->clear_it();
   }
@@ -183,6 +236,22 @@ bool AccelerometerPutDataToRxBuffer(const void* data, size_t len)
 
 
 /**
+ * @brief          Read data from RX ring buffer
+ */
+bool AccelerometerReadDataFromRxBuffer(void* data, size_t len)
+{
+    if (lwrb_get_free(&accelero_spi.lwrb_rx) == 0) {
+        return false;
+    }
+
+    return (lwrb_read(&accelero_spi.lwrb_rx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+/**
  * @brief          Put data to TX ring buffer
  */
 bool AccelerometerPutDataToTxBuffer(const void* data, size_t len)
@@ -192,5 +261,21 @@ bool AccelerometerPutDataToTxBuffer(const void* data, size_t len)
     }
 
     return (lwrb_write(&accelero_spi.lwrb_tx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Read data from TX ring buffer
+ */
+bool AccelerometerReadDataFromTxBuffer(void* data, size_t len)
+{
+    if (lwrb_get_free(&accelero_spi.lwrb_tx) == 0) {
+        return false;
+    }
+
+    return (lwrb_read(&accelero_spi.lwrb_tx, data, len) > 0 ? true : false);
 }
 /******************************************************************************/
