@@ -15,8 +15,14 @@
 #include "indication.h"
 #include "uart.h"
 
+/******************************************************************************/
+/* Private variables -------------------------------------------------------- */
+/******************************************************************************/
 struct uart debug_uart;
 struct uart data_uart;
+
+
+
 
 /**
  * @brief          Initialization of all uarts
@@ -27,6 +33,9 @@ void UARTAllInit(void)
     DataUartInit();
 }
 /******************************************************************************/
+
+
+
 
 /**
  * @brief          Check and validate message
@@ -58,6 +67,9 @@ void UARTCheckMsg(void)
     }
 }
 /******************************************************************************/
+
+
+
 
 /**
  * @brief          Enable interrupt receiving message
@@ -116,6 +128,7 @@ bool UARTReceiveByte(UART_HandleTypeDef *huart, uint8_t byte)
 
 
 
+
 bool UARTSendByteTxBuff(UART_HandleTypeDef *huart)
 {
     uint8_t msg;
@@ -125,6 +138,9 @@ bool UARTSendByteTxBuff(UART_HandleTypeDef *huart)
     return HAL_UART_Transmit(huart, &msg, sizeof(uint8_t), HAL_MAX_DELAY) == HAL_OK;
 }
 /******************************************************************************/
+
+
+
 
 /**
  * @brief          Interrupt callbacks
@@ -138,7 +154,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART3) {
-        IndicationLedTop();
         IoSystemPutDataToRxBuffer(&data_uart.keyboarb_input, sizeof(uint8_t));
         data_uart.flag = true;
         UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);

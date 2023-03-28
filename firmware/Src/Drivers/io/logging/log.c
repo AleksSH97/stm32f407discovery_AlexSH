@@ -180,10 +180,10 @@ static int prvLwprintfConsoleOut(int ch, lwprintf_t* p)
  */
 void LogPrintWelcomeMsg(void)
 {
+    PrintfLogsCRLF(CLR_DEF"");
     PrintfLogsCRLF("");
-    PrintfLogsCRLF("");
-    PrintfLogsCRLF("\tWelcome to STM32F407 Discovery firmware with FreeRTOS");
-    PrintfLogsCRLF("");
+    PrintfLogsCRLF("\tWelcome to STM32F407 Discovery firmware with" CLR_RD " FreeRTOS");
+    PrintfLogsCRLF(CLR_DEF"");
     PrintfLogsCRLF("");
 }
 /******************************************************************************/

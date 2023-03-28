@@ -16,11 +16,7 @@
   *
   ******************************************************************************
   */
-#include "stm32f4xx_hal.h"
-#include "main.h"
 #include "tim.h"
-#include "indication.h"
-#include "led.h"
 
 TIM_HandleTypeDef htim1;
 
@@ -95,7 +91,7 @@ void MX_TIM1_Init(void)
 
     if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
     {
-    Error_Handler();
+        Error_Handler();
     }
 
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;

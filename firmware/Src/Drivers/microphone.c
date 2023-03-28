@@ -130,7 +130,6 @@ void prvMicrophoneRxState1(void)
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
     if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
-        IndicationLedBottom();
         prvMicrophoneSetRead(MICROPHONE_READ_READY);
     }
 }
