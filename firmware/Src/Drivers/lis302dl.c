@@ -51,9 +51,13 @@ void lis302dl_init(uint16_t init_struct)
 
     AcceleroCsInit();
 
-    ctrl = (uint8_t) init_struct;
+    ctrl = (uint8_t)init_struct;
 
-    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1, &accelero_spi);
+    PrintfLogsCRLF(CLR_GR"LIS302DL INIT STARTED WITH CTRL: %d", ctrl);
+
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1);
+
+    PrintfLogsCRLF(CLR_GR"LIS302DL INIT ENDED");
 }
 /******************************************************************************/
 
@@ -80,7 +84,7 @@ uint8_t lis302dl_read_id(void)
 
     AcceleroCsInit();
 
-    AcceleroIoRead(&tmp, LIS302DL_WHO_AM_I_ADDR, 1);
+    AcceleroIoReadIT(&tmp, LIS302DL_WHO_AM_I_ADDR, 1);
 
     return (uint16_t)tmp;
 }
@@ -98,7 +102,11 @@ void lis302dl_filter_config(uint8_t filter_struct)
 {
     uint8_t ctrl = 0x00;
 
-    AcceleroIoRead(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1);
+    PrintfLogsCRLF(CLR_GR"LIS302DL FILTER CONFIG READING REG2_ADR");
+
+    AcceleroIoReadIT(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1);
+
+    PrintfLogsCRLF(CLR_GR"LIS302DL FILTER CONFIG READING REG2_ADR ENDED");
 
     ctrl &= (uint8_t)~(LIS302DL_FILTERDATASELECTION_OUTPUTREGISTER | \
             LIS302DL_HIGHPASSFILTER_LEVEL_3 | \
@@ -106,7 +114,13 @@ void lis302dl_filter_config(uint8_t filter_struct)
 
     ctrl |= filter_struct;
 
-    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1, &accelero_spi);
+    PrintfLogsCRLF(CLR_GR"LIS302DL FILTER CONFIG STARTED WITH CTRL: %d", ctrl);
+
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG2_ADDR, 1);
+
+    PrintfLogsCRLF(CLR_DEF"");
+    PrintfLogsCRLF("LIS302DL FILTER CONFIG ENDED");
+    PrintfLogsCRLF("");
 }
 /******************************************************************************/
 
@@ -133,35 +147,35 @@ void lis302dl_click_int_config(void)
     /* Configure Interrupt control register: enable Click interrupt on INT1 and
     INT2 on Z LIS302DL high event */
     ctrl = 0x3F;
-    AcceleroIoWrite(&ctrl, LIS302DL_CTRL_REG3_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CTRL_REG3_ADDR, 1);
 
     /* Enable Interrupt generation on click on Z LIS302DL */
     ctrl = 0x50;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
 
     /* Configure Click Threshold on X/Y LIS302DL (10 x 0.5g) */
     ctrl = 0xAA;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_THSY_X_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_THSY_X_REG_ADDR, 1);
 
     /* Configure Click Threshold on Z LIS302DL (10 x 0.5g) */
     ctrl = 0x0A;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_THSZ_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_THSZ_REG_ADDR, 1);
 
     /* Enable interrupt on Y LIS302DL high event */
     ctrl = 0x4C;
-    AcceleroIoWrite(&ctrl, LIS302DL_FF_WU_CFG1_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_FF_WU_CFG1_REG_ADDR, 1);
 
     /* Configure Time Limit */
     ctrl = 0x03;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_TIMELIMIT_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_TIMELIMIT_REG_ADDR, 1);
 
     /* Configure Latency */
     ctrl = 0x7F;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_LATENCY_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_LATENCY_REG_ADDR, 1);
 
     /* Configure Click Window */
     ctrl = 0x7F;
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_WINDOW_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_WINDOW_REG_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -177,13 +191,13 @@ void lis302dl_interrupt_config(struct lis302dl_interrupt_conf *lis302dl_interrup
 {
     uint8_t ctrl = 0x00;
 
-    AcceleroIoRead(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
+    AcceleroIoReadIT(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
 
     ctrl = (uint8_t)(lis302dl_interrupt_conf_ptr->latch_request| \
             lis302dl_interrupt_conf_ptr->single_click_axes | \
             lis302dl_interrupt_conf_ptr->double_click_axes);
 
-    AcceleroIoWrite(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
+    AcceleroIoWriteIT(&ctrl, LIS302DL_CLICK_CFG_REG_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -199,8 +213,8 @@ void lis302dl_click_int_clear(void)
 {
     uint8_t buffer[6], clickreg = 0;
 
-    AcceleroIoRead(&clickreg, LIS302DL_CLICK_SRC_REG_ADDR, 1);
-    AcceleroIoRead(buffer, LIS302DL_STATUS_REG_ADDR, 6);
+    AcceleroIoReadIT(&clickreg, LIS302DL_CLICK_SRC_REG_ADDR, 1);
+    AcceleroIoReadIT(buffer, LIS302DL_STATUS_REG_ADDR, 6);
 }
 /******************************************************************************/
 
@@ -219,13 +233,13 @@ void lis302dl_low_power_cmd(uint8_t low_power_mode)
 {
     uint8_t tmpreg;
 
-    AcceleroIoRead(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoReadIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 
     /* Set new low power mode configuration */
     tmpreg &= (uint8_t)~LIS302DL_LOWPOWERMODE_ACTIVE;
     tmpreg |= low_power_mode;
 
-    AcceleroIoWrite(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoWriteIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -244,12 +258,12 @@ void lis302dl_data_rate_cmd(uint8_t data_rate_value)
 {
     uint8_t tmpreg;
 
-    AcceleroIoRead(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoReadIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 
     tmpreg &= (uint8_t)~LIS302DL_DATARATE_400;
     tmpreg |= data_rate_value;
 
-    AcceleroIoWrite(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoWriteIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -268,12 +282,12 @@ void lis302dl_full_scale_cmd(uint8_t fs_value)
 {
     uint8_t tmpreg;
 
-    AcceleroIoRead(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoReadIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 
     tmpreg &= (uint8_t)~LIS302DL_FULLSACLE_9_2;
     tmpreg |= fs_value;
 
-    AcceleroIoWrite(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoWriteIT(&tmpreg, LIS302DL_CTRL_REG1_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -289,11 +303,11 @@ void lis302dl_reboot_cmd(void)
 {
     uint8_t tmpreg;
 
-    AcceleroIoRead(&tmpreg, LIS302DL_CTRL_REG2_ADDR, 1);
+    AcceleroIoReadIT(&tmpreg, LIS302DL_CTRL_REG2_ADDR, 1);
 
     tmpreg |= LIS302DL_BOOT_REBOOTMEMORY;
 
-    AcceleroIoWrite(&tmpreg, LIS302DL_CTRL_REG2_ADDR, 1);
+    AcceleroIoWriteIT(&tmpreg, LIS302DL_CTRL_REG2_ADDR, 1);
 }
 /******************************************************************************/
 
@@ -313,8 +327,8 @@ void lis302dl_get_xyz(int16_t *pData)
     uint8_t sensitivity = LIS302DL_SENSITIVITY_2_3G;
     uint8_t ctrl;
 
-    AcceleroIoRead(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1);
-    AcceleroIoRead((uint8_t*)buffer, LIS302DL_OUT_X_ADDR, 6);
+    AcceleroIoReadIT(&ctrl, LIS302DL_CTRL_REG1_ADDR, 1);
+    AcceleroIoReadIT((uint8_t*)buffer, LIS302DL_OUT_X_ADDR, 6);
 
     for (uint8_t i = 0; i < 3; i++) { // TODO get rid of magic numbers
         pn_raw_data[i] = buffer[2 * i];
