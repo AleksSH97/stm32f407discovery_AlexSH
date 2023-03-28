@@ -55,17 +55,32 @@ extern "C" {
 extern SPI_HandleTypeDef hspi1;
 extern struct accelero_spi accelero_spi;
 
+enum accelero_status
+{
+    ACCELERO_OK = 0,
+    ACCELERO_INIT_ERROR,
+    ACCELERO_TIMEOUT,
+    ACCELERO_XYZ,
+    ACCELERO_ERROR = 4,
+};
+
 struct accelero_spi {
     lwrb_t           lwrb_rx;
     lwrb_t           lwrb_tx;
     uint8_t          buff_rx[ACCELERO_SPI_BUFF_SIZE];
     uint8_t          buff_tx[ACCELERO_SPI_BUFF_SIZE];
 
-    uint8_t          byte_in;
-    uint8_t          byte_out;
+    uint8_t          receive;
+    uint8_t          transmit;
+
+    uint8_t          receive_buff[6];
+    uint8_t          transmit_buff[6];
+
+    uint8_t          got_data; //rx buff from ISR
 
     int16_t          xyz_buf[ACCELERO_SPI_NUM_OF_AXES];
-    bool             enabled;
+
+    enum accelero_status status;
 };
 
 void AcceleroSpiInit(void);
@@ -74,8 +89,17 @@ void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_re
 void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write);
 void AcceleroIoItConfig(void);
 void AcceleroLedIndication(void);
-bool AcceleroSpiSetupITWriteRead(void);
-void AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write, struct accelero_spi *accelero_spi_ptr);
+
+bool AcceleroSpiSetupTransmitIT(void);
+bool AcceleroSpiSetupReceiveIT(void);
+bool AcceleroSpiSetupWriteReadIT(void);
+bool AcceleroSpiSetupWriteReadIT_BUFF(uint8_t num_byte);
+
+void AcceleroSetMode(bool mode);
+bool AcceleroGetMode(void);
+bool prvAcceleroSpiWrite(uint8_t byte);
+void AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write);
+void AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read);
 
 #ifdef __cplusplus
 }
