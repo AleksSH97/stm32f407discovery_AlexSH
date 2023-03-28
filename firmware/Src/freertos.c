@@ -60,6 +60,8 @@ const osThreadAttr_t AccelerometerTask_attributes = {
 /******************************************************************************/
 
 
+
+
 /**
  * @brief          FreeRTOS tasks init
  */

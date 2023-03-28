@@ -89,6 +89,7 @@ void IndicationUpdateTask(void *argument)
     {
         IndicationLedsUpdate();
 
+//        PrintfLogsCRLF("\tIndication task");
         osDelay(10);
     }
 }

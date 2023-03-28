@@ -30,6 +30,8 @@ extern "C" {
 #include <stdbool.h>
 
 #include "main.h"
+#include "stm32f4xx_hal.h"
+#include "indication.h"
 #include "led.h"
 
 struct timeout {
