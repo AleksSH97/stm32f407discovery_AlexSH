@@ -41,9 +41,7 @@ int main(void)
     MX_FREERTOS_Init();
     osKernelStart();
 
-    for(;;)
-    {
-    }
+    for(;;) {}
 }
 /******************************************************************************/
 
@@ -57,7 +55,7 @@ void prvInitializeMCU(void)
 {
     HAL_Init();
     prvSystemClockConfig();
-    prvDMAInit();
+    //prvDMAInit();
     MX_TIM1_Init();
 }
 /******************************************************************************/
@@ -71,16 +69,17 @@ void prvInitializeMCU(void)
 void prvInitializeDrivers(void)
 {
     IndicationInit();
-    IndicationLedLoading();
+//    IndicationLedLoading();
     ButtonInit();
 
-    MicrophoneInit();
-
-    AccelerometerInit();
+    //AccelerometerInit();
 
     UARTAllInit();
     RingBufUARTInit();
+    RingBufAcceleroInit();
     UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
+
+//    MicrophoneInit();
 
     IoSystemInit();
 }
@@ -148,10 +147,10 @@ void prvDMAInit(void)
 {
     __HAL_RCC_DMA1_CLK_ENABLE();
 
-    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0x06, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
 
-    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0x06, 0);
     HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 }
 
