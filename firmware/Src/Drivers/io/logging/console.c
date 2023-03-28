@@ -114,6 +114,7 @@ void ConsoleInit(void)
 void ConsoleStart(void)
 {
     MicrophoneSetVisualizer(false);
+    AccelerometerSetStatus(ACCELERO_OK);
     IoSystemClearRxQueue();
     LogClearQueues();
     MicrophoneVisualizationClearQueue();
@@ -200,6 +201,7 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv) {
             microrl_set_execute_callback(microrl_ptr, ConsoleAccelerometer);
         }
         else {
+            IndicationLedError();
             prvConsolePrint(microrl_ptr, "command: '");
             prvConsolePrint(microrl_ptr, (char*)argv[i]);
             prvConsolePrint(microrl_ptr, "' Not found." _ENDLINE_SEQ);
@@ -350,7 +352,7 @@ int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv
 
 
 /**
- * \brief           Visualizer menu in console
+ * \brief           Accelerometer menu in console
  * \param[in]
  */
 int ConsoleAccelerometer(microrl_t *microrl_ptr, int argc, const char * const *argv)
@@ -359,12 +361,13 @@ int ConsoleAccelerometer(microrl_t *microrl_ptr, int argc, const char * const *a
 
     while (i < argc) {
         if (strcmp(argv[i], _CMD_ENABLE) == 0) {
-            accelero_spi.enabled = true;
+            AccelerometerSetStatus(ACCELERO_XYZ);
+            IoSystemSetMode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BACK) == 0) {
             prvConsolePrint(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
             ConsolePrintHelp(microrl_ptr);
-            accelero_spi.enabled = false;
+            AccelerometerSetStatus(ACCELERO_OK);
             microrl_set_execute_callback(microrl_ptr, ConsoleExecuteMain);
         }
         else {
@@ -427,7 +430,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetVisualizer(false);
-    accelero_spi.enabled = false;
+    AccelerometerSetStatus(ACCELERO_OK);
     microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
