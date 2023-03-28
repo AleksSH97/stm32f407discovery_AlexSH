@@ -26,16 +26,16 @@ void RingBufUARTInit(void)
     lwrb_set_evt_fn(&data_uart.lwrb_tx, RingBufEvtCallback);
 }
 
-void RingBufMicrophoneInit(void)
+void RingBufAcceleroInit(void)
 {
     lwrb_init(&accelero_spi.lwrb_rx, accelero_spi.buff_rx, sizeof(accelero_spi.buff_rx));
     lwrb_init(&accelero_spi.lwrb_tx, accelero_spi.buff_tx, sizeof(accelero_spi.buff_tx));
 
     if (!lwrb_is_ready(&accelero_spi.lwrb_rx)) {
-        PrintfLogsCRLF("Error ring buf i2s2 rx init");
+        PrintfLogsCRLF("Error ring buf SPI rx init");
     }
-    if (!lwrb_is_ready(&accelero_spi.buff_tx)) {
-        PrintfLogsCRLF("Error ring buf i2s2 tx init");
+    if (!lwrb_is_ready(&accelero_spi.lwrb_tx)) {
+        PrintfLogsCRLF("Error ring buf SPI tx init");
     }
 
 
@@ -46,7 +46,7 @@ void RingBufMicrophoneInit(void)
 
 
 
-void RingBufAcceleroInit(void)
+void RingBufMicrophoneInit(void)
 {
     lwrb_init(&microphone.lwrb_rx, microphone.buff_rx, sizeof(microphone.buff_rx));
     lwrb_init(&microphone.lwrb_tx, microphone.buff_tx, sizeof(microphone.buff_tx));
@@ -54,7 +54,7 @@ void RingBufAcceleroInit(void)
     if (!lwrb_is_ready(&microphone.lwrb_rx)) {
         PrintfLogsCRLF("Error ring buf i2s2 rx init");
     }
-    if (!lwrb_is_ready(&microphone.buff_tx)) {
+    if (!lwrb_is_ready(&microphone.lwrb_tx)) {
         PrintfLogsCRLF("Error ring buf i2s2 tx init");
     }
 
