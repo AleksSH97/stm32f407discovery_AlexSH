@@ -30,6 +30,7 @@ static void prvIndicationLedErrorSetup(mculed_t *led_ptr);
 static void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index);
 static void prvIndicationLedTopSetup(mculed_t *led_ptr, int led_index);
 static void prvIndicationLedBottomSetup(mculed_t *led_ptr, int led_index);
+static void prvIndicationLedReadySetup(mculed_t *led_ptr);
 
 /******************************************************************************/
 
@@ -82,15 +83,13 @@ void IndicationInit(void)
 
 void IndicationUpdateTask(void *argument)
 {
-    uint8_t ddd[128] = {0};
-    UNUSED(ddd);
+    osDelay(1000);
+    IndicationLedReady();
 
     for (;;)
     {
         IndicationLedsUpdate();
-
-//        PrintfLogsCRLF("\tIndication task");
-        osDelay(10);
+        osDelay(5);
     }
 }
 /******************************************************************************/
@@ -218,6 +217,21 @@ void IndicationLedError(void)
 	    prvIndicationLedErrorSetup(&mculed[led_index]);
 	    LedFunction(&mculed[led_index]);
 	}
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Ready board led function
+ */
+void IndicationLedReady(void)
+{
+    for (int led_index = 0; led_index < N_LED; led_index++) {
+        prvIndicationLedReadySetup(&mculed[led_index]);
+        LedFunction(&mculed[led_index]);
+    }
 }
 /******************************************************************************/
 
@@ -358,6 +372,7 @@ void prvIndicationLedLoadingSetup(mculed_t *led_ptr, int led_index)
 	led_ptr->status.on_timeout = led_ptr->setup.on_ms;
 	led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
 
 
 
@@ -398,6 +413,7 @@ void prvIndicationLedButtonSetup(mculed_t *led_ptr, int led_index)
 	led_ptr->status.on_timeout = led_ptr->setup.on_ms;
 	led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
 
 
 
@@ -443,6 +459,7 @@ void prvIndicationLedButtonHoldSetup(mculed_t *led_ptr, int led_index)
 	led_ptr->status.on_timeout = led_ptr->setup.on_ms;
 	led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
 
 
 
@@ -483,6 +500,7 @@ void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index)
 	led_ptr->status.on_timeout = led_ptr->setup.on_ms;
 	led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
 
 
 
@@ -503,6 +521,28 @@ void prvIndicationLedErrorSetup(mculed_t *led_ptr)
 	led_ptr->status.on_timeout = led_ptr->setup.on_ms;
 	led_ptr->status.off_timeout = led_ptr->setup.off_ms;
 }
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Ready led setup
+ */
+void prvIndicationLedReadySetup(mculed_t *led_ptr)
+{
+    led_ptr->hardware.mode = MCULED_ON_STATE;
+    led_ptr->setup.iterations_num = INDICATION_LED_READY_NUM;
+
+    led_ptr->setup.on_ms = (INDICATION_LED_SPEED_FAST * LED_TIME_ON);
+    led_ptr->setup.off_ms = (INDICATION_LED_SPEED_FAST * LED_TIME_OFF);
+    led_ptr->setup.delay_ms = ZERO_MS;
+
+    led_ptr->status.iterations_counter = 0;
+    led_ptr->status.on_timeout = led_ptr->setup.on_ms;
+    led_ptr->status.off_timeout = led_ptr->setup.off_ms;
+}
+/******************************************************************************/
 
 
 
