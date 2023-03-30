@@ -104,6 +104,11 @@ void AccelerometerTask(void* argument)
     for(;;)
     {
         if (AccelerometerGetStatus() == ACCELERO_XYZ) {
+
+            if (MicrophoneGetStatus() != MICROPHONE_DEINIT) {
+                MicrophoneSetStatus(MICROPHONE_DEINIT);
+            }
+
             AcceleroLedIndication();
         }
 
@@ -113,7 +118,10 @@ void AccelerometerTask(void* argument)
 
         if (AccelerometerGetStatus() == ACCELERO_INIT_ERROR) {
             PrintfLogsCRLF("ERROR INIT ACCELEROMETER");
-            HardFault_Handler();
+        }
+
+        if (AccelerometerGetStatus() == ACCELERO_BLOCKED) {
+            osDelay(1);
         }
 
         osDelay(1);
