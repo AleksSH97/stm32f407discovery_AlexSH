@@ -35,12 +35,13 @@ const osMessageQueueAttr_t VisualQueueAttributes = {
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
 static void prvMicrophoneCRCInit(void);
-void prvMicrophoneSetRead(bool activate);
+void prvMicrophoneSetTransmit(microphone_transmit_t transmit);
+microphone_transmit_t prvMicrophoneGetTransmit(void);
 void prvMicrophoneRxState1(void);
 void prvMicrophoneRxState2(void);
 void prvMicrophoneTxState1(void);
 void prvMicrophoneTxState2(void);
-bool prvMicrophoneGetRead(void);
+void prvMicrophoneInitDMA();
 
 /******************************************************************************/
 
@@ -59,12 +60,26 @@ void MicrophoneInit(void)
     prvMicrophoneCRCInit();
     PDM2PCM_init();
 
-    prvMicrophoneSetRead(MICROPHONE_READ_BLOCKED);
+    prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
+    MicrophoneSetVisualizer(false);
 
     microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
 
     VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
 
+    prvMicrophoneInitDMA();
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           DMA Microphone init
+ * \param[in]
+ */
+void prvMicrophoneInitDMA(void)
+{
     HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx[0], 64);
     HAL_I2S_Receive_DMA(&hi2s2, &microphone.rx[0], 64);
 }
@@ -79,24 +94,36 @@ void MicrophoneInit(void)
  */
 void MicrophoneTask(void *argument)
 {
+    MicrophoneInit();
+
     for (;;)
     {
         switch (microphone.status) {
+            case MICROPHONE_INIT:
+                PrintfConsoleCRLF("\tInitializing microphone DMA");
+                prvMicrophoneInitDMA();
+                PrintfConsoleCRLF("\tBlocking accelerometer");
+                AccelerometerSetStatus(ACCELERO_BLOCKED);
+            case MICROPHONE_DEINIT:
+                HAL_I2S_DMAStop(&hi2s3);
+                HAL_I2S_DMAStop(&hi2s2);
+                prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
+                MicrophoneSetStatus(MICROPHONE_IDLE);
             case MICROPHONE_RX_STATE_1:
                 prvMicrophoneRxState1();
-                MicrophoneSetStatus(MICROPHONE_READY);
+                MicrophoneSetStatus(MICROPHONE_IDLE);
                 break;
             case MICROPHONE_RX_STATE_2:
                 prvMicrophoneRxState2();
-                MicrophoneSetStatus(MICROPHONE_READY);
+                MicrophoneSetStatus(MICROPHONE_IDLE);
                 break;
             case MICROPHONE_TX_STATE_1:
                 prvMicrophoneTxState1();
-                MicrophoneSetStatus(MICROPHONE_READY);
+                MicrophoneSetStatus(MICROPHONE_IDLE);
             case MICROPHONE_TX_STATE_2:
                 prvMicrophoneTxState2();
-                MicrophoneSetStatus(MICROPHONE_READY);
-            case MICROPHONE_READY:
+                MicrophoneSetStatus(MICROPHONE_IDLE);
+            case MICROPHONE_IDLE:
                 break;
             case MICROPHONE_PROCESS_ERROR:
                 PrintfLogsCRLF("\tError: microphone process error!");
@@ -130,7 +157,7 @@ void prvMicrophoneRxState1(void)
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
     if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
-        prvMicrophoneSetRead(MICROPHONE_READ_READY);
+        prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_READY);
     }
 }
 /******************************************************************************/
@@ -152,7 +179,7 @@ void prvMicrophoneRxState2(void)
 
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
-    MicrophoneSetStatus(MICROPHONE_READY);
+    MicrophoneSetStatus(MICROPHONE_IDLE);
 }
 /******************************************************************************/
 
@@ -165,7 +192,7 @@ void prvMicrophoneRxState2(void)
  */
 void prvMicrophoneTxState1(void)
 {
-    if (prvMicrophoneGetRead()) {
+    if (prvMicrophoneGetTransmit() == MICROPHONE_TRANSMIT_READY) {
 
         uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
         MicrophoneGetDataFromRxBuffer(data);
@@ -187,7 +214,7 @@ void prvMicrophoneTxState1(void)
  */
 void prvMicrophoneTxState2(void)
 {
-    if (prvMicrophoneGetRead()) {
+    if (prvMicrophoneGetTransmit() == MICROPHONE_TRANSMIT_READY) {
 
         uint16_t data[MICROPHONE_HALF_BUFF_SIZE] = {0};
         MicrophoneGetDataFromRxBuffer(data);
@@ -279,9 +306,9 @@ void MicrophoneSetStatus(microphone_status_t status)
  * \brief           Microphone set read state
  * \param[in]
  */
-void prvMicrophoneSetRead(bool activate)
+void prvMicrophoneSetTransmit(microphone_transmit_t transmit)
 {
-    microphone.read = activate;
+    microphone.transmit = transmit;
 }
 /******************************************************************************/
 
@@ -292,9 +319,9 @@ void prvMicrophoneSetRead(bool activate)
  * \brief           Microphone set read state
  * \param[in]
  */
-bool prvMicrophoneGetRead(void)
+microphone_transmit_t prvMicrophoneGetTransmit(void)
 {
-    return microphone.read;
+    return microphone.transmit;
 }
 /******************************************************************************/
 
