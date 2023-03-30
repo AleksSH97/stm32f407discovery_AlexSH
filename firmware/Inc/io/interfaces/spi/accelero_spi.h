@@ -61,7 +61,8 @@ enum accelero_status
     ACCELERO_INIT_ERROR,
     ACCELERO_TIMEOUT,
     ACCELERO_XYZ,
-    ACCELERO_ERROR = 4,
+    ACCELERO_ERROR,
+    ACCELERO_BLOCKED = 5,
 };
 
 struct accelero_spi {

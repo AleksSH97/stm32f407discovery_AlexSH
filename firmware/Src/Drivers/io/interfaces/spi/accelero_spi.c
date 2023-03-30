@@ -505,9 +505,6 @@ void AcceleroLedIndication(void)
 {
     AccelerometerGetXyz(accelero_spi.xyz_buf);
 
-//    PrintfLogsCRLF("What I got X: %d", accelero_spi.xyz_buf[ACCELERO_SPI_X]);
-//    PrintfLogsCRLF("What I got Y: %d", accelero_spi.xyz_buf[ACCELERO_SPI_Y]);
-
     if (accelero_spi.xyz_buf[ACCELERO_SPI_X] < ACCELERO_SPI_BOUNDARY_NEG) {
         HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_RESET);
