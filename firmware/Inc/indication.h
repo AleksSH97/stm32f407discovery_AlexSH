@@ -16,7 +16,8 @@
 #include "stm32f4xx_hal.h"
 
 #define INDICATION_LED_LOADING_NUM                (10000u)
-#define INDICATION_LED_ERROR_NUM                  (3u)
+#define INDICATION_LED_READY_NUM                  (5u)
+#define INDICATION_LED_ERROR_NUM                  (2u)
 #define INDICATION_LED_BUTTON_NUM                 (1u)
 
 #define N_LED                          (4u)
@@ -73,6 +74,7 @@ void IndicationLedBottom(void);
 void IndicationLedLoading(void);
 void IndicationLedError(void);
 void IndicationLedButton(void);
+void IndicationLedReady(void);
 
 void IndicationLedTurnOn(mculed_t *self);
 void IndicationLedTurnOff(mculed_t *self);
