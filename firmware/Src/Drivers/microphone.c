@@ -41,7 +41,8 @@ void prvMicrophoneRxState1(void);
 void prvMicrophoneRxState2(void);
 void prvMicrophoneTxState1(void);
 void prvMicrophoneTxState2(void);
-void prvMicrophoneInitDMA();
+void prvMicrophoneActivateDMA(void);
+void prvMicrophoneDMAInit(void);
 
 /******************************************************************************/
 
@@ -54,6 +55,7 @@ void prvMicrophoneInitDMA();
  */
 void MicrophoneInit(void)
 {
+    prvMicrophoneDMAInit();
     I2S2Init();
     I2S3Init();
     RingBufMicrophoneInit();
@@ -61,13 +63,15 @@ void MicrophoneInit(void)
     PDM2PCM_init();
 
     prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
-    MicrophoneSetVisualizer(false);
+    MicrophoneSetActivate(MICROPHONE_ON);
 
-    microphone.timeout_ms = MICROPHONE_TIMEOUT_MS;
+    microphone.timer = malloc(sizeof(struct timeout));
+
+    microphone.timer->timeout_ms = MICROPHONE_TIMEOUT_MS;
 
     VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
 
-    prvMicrophoneInitDMA();
+    prvMicrophoneActivateDMA();
 }
 /******************************************************************************/
 
@@ -75,10 +79,28 @@ void MicrophoneInit(void)
 
 
 /**
- * \brief           DMA Microphone init
+ * @brief          DMA Microphone Init
+ */
+void prvMicrophoneDMAInit(void)
+{
+    __HAL_RCC_DMA1_CLK_ENABLE();
+
+    HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0x06, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
+
+    HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0x06, 0);
+    HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           DMA Microphone activate
  * \param[in]
  */
-void prvMicrophoneInitDMA(void)
+void prvMicrophoneActivateDMA(void)
 {
     HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx[0], 64);
     HAL_I2S_Receive_DMA(&hi2s2, &microphone.rx[0], 64);
@@ -98,17 +120,14 @@ void MicrophoneTask(void *argument)
 
     for (;;)
     {
+        if (!MicrophoneGetActivate()) {
+            continue;
+        }
+
         switch (microphone.status) {
             case MICROPHONE_INIT:
-                PrintfConsoleCRLF("\tInitializing microphone DMA");
-                prvMicrophoneInitDMA();
-                PrintfConsoleCRLF("\tBlocking accelerometer");
-                AccelerometerSetStatus(ACCELERO_BLOCKED);
-            case MICROPHONE_DEINIT:
-                HAL_I2S_DMAStop(&hi2s3);
-                HAL_I2S_DMAStop(&hi2s2);
-                prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
-                MicrophoneSetStatus(MICROPHONE_IDLE);
+                prvMicrophoneActivateDMA();
+                AccelerometerSetStatus(ACCELERO_OK);
             case MICROPHONE_RX_STATE_1:
                 prvMicrophoneRxState1();
                 MicrophoneSetStatus(MICROPHONE_IDLE);
@@ -157,6 +176,7 @@ void prvMicrophoneRxState1(void)
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
     if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
+        IndicationLedTop();
         prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_READY);
     }
 }
@@ -231,19 +251,6 @@ void prvMicrophoneTxState2(void)
 
 
 /**
- * \brief           Microphone get state
- * \param[in]
- */
-microphone_status_t MicrophoneGetStatus(void)
-{
-    return microphone.status;
-}
-/******************************************************************************/
-
-
-
-
-/**
  * \brief           Microphone write TX ring buffer
  * \param[in]
  */
@@ -303,6 +310,43 @@ void MicrophoneSetStatus(microphone_status_t status)
 
 
 /**
+ * \brief           Microphone get state
+ * \param[in]
+ */
+microphone_status_t MicrophoneGetStatus(void)
+{
+    return microphone.status;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Microphone set state
+ * \param[in]
+ */
+bool MicrophoneDisable(void)
+{
+    MicrophoneSetActivate(MICROPHONE_OFF);
+    prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
+
+    if (HAL_I2S_DMAStop(&hi2s3) != HAL_OK) {
+        return false;
+    }
+
+    if (HAL_I2S_DMAStop(&hi2s2) != HAL_OK) {
+        return false;
+    }
+
+    return true;
+}
+/******************************************************************************/
+
+
+
+
+/**
  * \brief           Microphone set read state
  * \param[in]
  */
@@ -351,9 +395,9 @@ void prvMicrophoneCRCInit(void)
  * \brief           Microphone set visualizer off/on
  * \param[in]
  */
-void MicrophoneSetVisualizer(bool mode)
+void MicrophoneSetActivate(bool mode)
 {
-    microphone.visualize = mode;
+    microphone.activate = mode;
 }
 /******************************************************************************/
 
@@ -364,9 +408,9 @@ void MicrophoneSetVisualizer(bool mode)
  * \brief           Microphone get visualizer status
  * \param[in]
  */
-bool MicrophoneGetVisualizerStatus(void)
+bool MicrophoneGetActivate(void)
 {
-    return microphone.visualize;
+    return microphone.activate;
 }
 /******************************************************************************/
 
@@ -393,61 +437,46 @@ void MicrophoneVisualizationTask(void *argument)
 
     for (;;)
     {
-        if (MicrophoneGetVisualizerStatus()) {
+        if (!MicrophoneGetActivate()) {
+            continue;
+        }
 
-            if ((HAL_GetTick() - microphone.timestamp_ms) > microphone.timeout_ms) {
-                microphone.timestamp_ms = HAL_GetTick();
-                PrintfConsoleCont(CLR_CLR);
+        if (TimCheck(microphone.timer, MICROPHONE_TIMEOUT_MS)) {
+            microphone.timer->timestamp_ms = HAL_GetTick();
+            PrintfLogsCont(CLR_CLR);
+        }
+
+        for (uint32_t i = 0; i < MICROPHONE_MID_BUFF_SIZE; i++) {
+            osStatus_t event = osMessageQueueGet(VisualQueueHandle, &msg[i], NULL, 200);
+            if (event != osOK) {
+                continue;
             }
 
-            for (int i = 0; i < MICROPHONE_MID_BUFF_SIZE; i++) {
-
-                osStatus_t event = osMessageQueueGet(VisualQueueHandle, &msg[i], NULL, 200);
-
-                if (event != osOK) {
-                    continue;
-                }
-
-                if ((msg[i] > 1300) && (msg[i] < 1500)) {
-                    PrintfConsoleCRLF("|");
-                }
-                else if ((msg[i] > 1500) && (msg[i] < 1800)) {
-                    PrintfConsoleCRLF("||");
-                }
-                else if ((msg[i] > 1800) && (msg[i] < 2000)) {
-                    PrintfConsoleCRLF("|||");
-                }
-                else if ((msg[i] > 2000) && (msg[i] < 3000)) {
-                    PrintfConsoleCRLF("||||");
-                }
-                else if ((msg[i] > 3000) && (msg[i] < 4000)) {
-                    PrintfConsoleCRLF("|||||");
-                }
-                else if ((msg[i] > 4000) && (msg[i] < 5000)) {
-                    PrintfConsoleCRLF("||||||");
-                }
-                else if ((msg[i] > 5000) && (msg[i] < 10000)) {
-                    PrintfConsoleCRLF("|||||||");
-                }
-                else if ((msg[i] > 10000) && (msg[i] < 15000)) {
-                    PrintfConsoleCRLF("||||||||");
-                }
-                else if ((msg[i] > 15000) && (msg[i] < 20000)) {
-                    PrintfConsoleCRLF("|||||||||");
-                }
-                else if ((msg[i] > 20000) && (msg[i] < 25000)) {
-                    PrintfConsoleCRLF("||||||||||");
-                }
-                else if ((msg[i] > 25000) && (msg[i] < 30000)) {
-                    PrintfConsoleCRLF("|||||||||||");
-                }
-                else if ((msg[i] > 30000) && (msg[i] < 35000)) {
-                    PrintfConsoleCRLF("||||||||||||");
-                }
-                else {
-                    continue;
-                }
+            if (msg[i] < MICROPHONE_THRESHOLD || msg[i] > 64000) {
+                continue;
             }
+
+            uint8_t bars = msg[i] / (0XFFFF / MICROPHONE_MAX_BARS);
+
+            if (bars > MICROPHONE_MAX_BARS) {
+                bars = MICROPHONE_MAX_BARS;
+            }
+
+            if (bars > 0) {
+                PrintfLogsCont("|");
+            }
+            for (uint32_t j = 1; j < bars; j++) {
+                PrintfLogsCont("-");
+            }
+            PrintfLogsCRLF("|");
+
+//            if ((msg[i] > 1300) && (msg[i] < 35000)) {
+//                uint32_t bars = (msg[i] - 1300) / 2000;
+//                for (uint32_t j = 0; j < bars; j++) {
+//                    PrintfLogsCont("|");
+//                }
+//                PrintfLogsCRLF("");
+//            }
         }
     }
 }

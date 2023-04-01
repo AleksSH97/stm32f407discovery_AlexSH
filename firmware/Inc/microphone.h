@@ -8,19 +8,18 @@
 #ifndef MICROPHONE_H_
 #define MICROPHONE_H_
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "stm32f4xx_hal.h"
 #include "i2s_microphone.h"
 #include "i2s_dac.h"
 #include "lwrb.h"
+#include "tim.h"
 #include "log.h"
 #include "pdm2pcm.h"
 
+
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define MICROPHONE_BUFF_SIZE          128
 #define MICROPHONE_HALF_BUFF_SIZE     64
@@ -29,6 +28,12 @@ extern "C" {
 #define MICROPHONE_FIFO_BUFF_SIZE     256
 
 #define MICROPHONE_TIMEOUT_MS         700
+
+#define MICROPHONE_MAX_BARS           20
+#define MICROPHONE_THRESHOLD          500
+
+#define MICROPHONE_OFF                0
+#define MICROPHONE_ON                 1
 
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
@@ -49,7 +54,6 @@ typedef enum {
     MICROPHONE_INIT_ERROR    = 0x05,
     MICROPHONE_PROCESS_ERROR = 0x06,
     MICROPHONE_INIT          = 0x07,
-    MICROPHONE_DEINIT        = 0x08,
 } microphone_status_t;
 
 struct microphone {
@@ -63,13 +67,12 @@ struct microphone {
     uint16_t mid_buff[MICROPHONE_MID_BUFF_SIZE];
     uint16_t tx[MICROPHONE_BUFF_SIZE];
 
-    uint32_t timeout_ms;
-    uint32_t timestamp_ms;
-
     microphone_status_t status;
 
-    bool visualize;
+    bool activate;
     microphone_transmit_t transmit;
+
+    struct timeout *timer;
 };
 
 void MicrophoneInit(void);
@@ -79,13 +82,14 @@ bool MicrophonePutDataToRxBuffer(const void* data, size_t len);
 void MicrophoneGetDataFromRxBuffer(uint16_t *data);
 void MicrophoneVisualizationTask(void *argument);
 void MicrophoneSetStatus(microphone_status_t status);
-void MicrophoneSetVisualizer(bool mode);
-bool MicrophoneGetVisualizerStatus(void);
+void MicrophoneSetActivate(bool mode);
+bool MicrophoneGetActivate(void);
+bool MicrophoneDisable(void);
 void MicrophoneVisualizationClearQueue(void);
 microphone_status_t MicrophoneGetStatus(void);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
 #endif /* MICROPHONE_H_ */
