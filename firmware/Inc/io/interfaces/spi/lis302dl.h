@@ -516,12 +516,15 @@
 #define READWRITE_CMD          ((uint8_t)0x80)
 #define MULTIPLEBYTE_CMD       ((uint8_t)0x40)
 
-struct lis302dl_init_conf {
+struct lis302dl_config {
     uint8_t power_mode;
     uint8_t output_data_rate;
     uint8_t axes_enable;
     uint8_t full_scale;
     uint8_t self_test;
+    uint8_t highpass_filter_data_select;
+    uint8_t highpass_filter_cutoff_freq;
+    uint8_t highpass_filter_interrupt;
 };
 
 /* Interrupt struct */
@@ -531,12 +534,12 @@ struct lis302dl_interrupt_conf {
     uint8_t double_click_axes;
 };
 
-/* High Pass Filter struct */
-struct lis302dl_filter_conf {
-    uint8_t highpass_filter_data_select;
-    uint8_t highpass_filter_cutoff_freq;
-    uint8_t highpass_filter_interrupt;
-};
+///* High Pass Filter struct */
+//struct lis302dl_filter_conf {
+//    uint8_t highpass_filter_data_select;
+//    uint8_t highpass_filter_cutoff_freq;
+//    uint8_t highpass_filter_interrupt;
+//};
 
 extern struct accelerometer_drv lis302dl_drv;
 
