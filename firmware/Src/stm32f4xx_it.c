@@ -90,15 +90,15 @@ void USART3_IRQHandler(void)
     HAL_UART_IRQHandler(&huart3);
 }
 
-//void DMA1_Stream3_IRQHandler(void)
-//{
-//    HAL_DMA_IRQHandler(&hdma_spi2_rx);
-//}
-//
-//void DMA1_Stream5_IRQHandler(void)
-//{
-//    HAL_DMA_IRQHandler(&hdma_spi3_tx);
-//}
+void DMA1_Stream3_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_spi2_rx);
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_spi3_tx);
+}
 
 void SysTick_Handler(void)
 {
