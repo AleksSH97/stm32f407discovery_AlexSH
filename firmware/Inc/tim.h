@@ -29,7 +29,6 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "main.h"
 #include "stm32f4xx_hal.h"
 #include "indication.h"
 #include "led.h"
@@ -43,10 +42,10 @@ struct timeout {
 extern TIM_HandleTypeDef htim1;
 
 extern void MX_TIM1_Init(void);
-extern void TimStart(struct timeout *tim, uint32_t timeout_ms);
-extern bool TimStarted(struct timeout *tim);
+extern void TimStart(struct timeout *timeout, uint32_t timeout_ms);
+extern bool TimStarted(struct timeout *timeout);
 extern void TimStop(struct timeout *timeout);
-extern bool TimElapsed(struct timeout *tim);
+extern bool TimElapsed(struct timeout *timeout);
 extern bool TimCheck(struct timeout *timeout, uint32_t msTime);
 
 #ifdef __cplusplus

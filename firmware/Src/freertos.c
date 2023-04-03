@@ -25,7 +25,6 @@
 osThreadId_t ButtonInput;
 osThreadId_t IndicationUpdate;
 osThreadId_t MicrophoneInput;
-osThreadId_t VisualizationUpdate;
 osThreadId_t AccelerometerUpdate;
 
 const osThreadAttr_t ButtonTask_attributes = {
@@ -42,12 +41,6 @@ const osThreadAttr_t IndicationTask_attributes = {
 
 const osThreadAttr_t MicrophoneTask_attributes = {
         .name = "MicrophoneTask",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal,
-};
-
-const osThreadAttr_t VisualizationTask_attributes = {
-        .name = "VisualizationTask",
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityNormal,
 };
@@ -72,8 +65,6 @@ void MX_FREERTOS_Init(void)
     IndicationUpdate = osThreadNew(IndicationUpdateTask, NULL, &IndicationTask_attributes);
 
     MicrophoneInput = osThreadNew(MicrophoneTask, NULL, &MicrophoneTask_attributes);
-
-    VisualizationUpdate = osThreadNew(MicrophoneVisualizationTask, NULL, &VisualizationTask_attributes);
 
     AccelerometerUpdate = osThreadNew(AccelerometerTask, NULL, &AccelerometerTask_attributes);
 }
