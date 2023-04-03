@@ -12,9 +12,7 @@
 /******************************************************************************/
 /* Includes ----------------------------------------------------------------- */
 /******************************************************************************/
-#include "main.h"
 #include "accelerometer.h"
-#include "accelero_spi.h"
 
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
@@ -24,7 +22,10 @@ struct accelero_spi accelero_spi;
 static struct accelerometer_drv *accelerometer_drv_ptr;
 
 /******************************************************************************/
-
+/* Private function prototypes ---------------------------------------------- */
+/******************************************************************************/
+static void prvAccelerometerSetDrv(struct accelerometer_drv *accelerometer_drv);
+static struct lis302dl_config prvAccelerometerSetConf(void);
 
 
 
@@ -39,48 +40,38 @@ uint8_t AccelerometerInit(void)
 
     AcceleroIoItConfig();
     AcceleroSpiInit();
+    prvAccelerometerSetDrv(&lis302dl_drv);
 
-    uint8_t ret = ACCELERO_INIT_ERROR;
+    if (accelerometer_drv_ptr == NULL) {
+        return ACCELERO_INIT_ERROR;
+    }
+    if (accelerometer_drv_ptr->init == NULL || accelerometer_drv_ptr->filter_config == NULL) {
+        return ACCELERO_INIT_ERROR;
+    }
+
+    struct lis302dl_config lis302dl_conf = prvAccelerometerSetConf();
+
     uint8_t ctrl = 0x0000;
+    //prvAccelerometerSetCtrlConf(&ctrl);
 
-    struct lis302dl_init_conf lis302dl_init;
-    struct lis302dl_filter_conf lis302dl_filter;
-
-    accelerometer_drv_ptr = &lis302dl_drv;
-
-    lis302dl_init.power_mode = LIS302DL_LOWPOWERMODE_ACTIVE;
-    lis302dl_init.output_data_rate = LIS302DL_DATARATE_100;
-    lis302dl_init.axes_enable = LIS302DL_XYZ_ENABLE;
-    lis302dl_init.full_scale = LIS302DL_FULLSCALE_2_3;
-    lis302dl_init.self_test = LIS302DL_SELFTEST_NORMAL;
-
-    ctrl = (uint16_t)(lis302dl_init.output_data_rate | lis302dl_init.power_mode | \
-                      lis302dl_init.full_scale | lis302dl_init.self_test | \
-                      lis302dl_init.axes_enable);
-
-    PrintfLogsCRLF(CLR_GR"ACCELEROMETER INIT CTRL: %d", ctrl);
+    ctrl |= *(uint8_t*)&lis302dl_conf.power_mode;
+    ctrl |= *(uint8_t*)&lis302dl_conf.output_data_rate;
+    ctrl |= *(uint8_t*)&lis302dl_conf.axes_enable;
+    ctrl |= *(uint8_t*)&lis302dl_conf.full_scale;
+    ctrl |= *(uint8_t*)&lis302dl_conf.self_test;
 
     accelerometer_drv_ptr->init(ctrl);
 
-    lis302dl_filter.highpass_filter_data_select = LIS302DL_FILTERDATASELECTION_OUTPUTREGISTER;
-    lis302dl_filter.highpass_filter_cutoff_freq = LIS302DL_HIGHPASSFILTER_LEVEL_1;
-    lis302dl_filter.highpass_filter_interrupt = LIS302DL_HIGHPASSFILTERINTERRUPT_1_2;
-
-    ctrl = (uint8_t)(lis302dl_filter.highpass_filter_data_select | \
-                     lis302dl_filter.highpass_filter_cutoff_freq | \
-                     lis302dl_filter.highpass_filter_interrupt);
-
-    PrintfLogsCRLF(CLR_GR"ACCELEROMETER FILTER CONFIG CTRL: %d", ctrl);
-
+    ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_data_select;
+    ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_cutoff_freq;
+    ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_interrupt;
     accelerometer_drv_ptr->filter_config(ctrl);
-
-    ret = ACCELERO_OK;
 
     PrintfLogsCRLF(CLR_DEF"");
     PrintfLogsCRLF("\t\tACCELEROMETER INIT ENDED");
     PrintfLogsCRLF("");
 
-    return ret;
+    return ACCELERO_OK;
 }
 /******************************************************************************/
 
@@ -118,6 +109,56 @@ void AccelerometerTask(void* argument)
 }
 /******************************************************************************/
 
+
+
+
+/**
+ * @brief          Accelerometer set driver pointer
+ */
+void prvAccelerometerSetDrv(struct accelerometer_drv *accelerometer_drv)
+{
+    accelerometer_drv_ptr = accelerometer_drv;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Accelerometer set config to lis302dl
+ */
+struct lis302dl_config prvAccelerometerSetConf(void)
+{
+    struct lis302dl_config lis302dl_config = {
+      .power_mode = LIS302DL_LOWPOWERMODE_ACTIVE,
+      .output_data_rate = LIS302DL_DATARATE_100,
+      .axes_enable = LIS302DL_XYZ_ENABLE,
+      .full_scale = LIS302DL_FULLSCALE_2_3,
+      .self_test = LIS302DL_SELFTEST_NORMAL,
+      .highpass_filter_data_select = LIS302DL_FILTERDATASELECTION_OUTPUTREGISTER,
+      .highpass_filter_cutoff_freq = LIS302DL_HIGHPASSFILTER_LEVEL_1,
+      .highpass_filter_interrupt = LIS302DL_HIGHPASSFILTERINTERRUPT_1_2
+    };
+
+    return lis302dl_config;
+}
+/******************************************************************************/
+
+
+
+
+///**
+// * @brief          Accelerometer set lis302dl conf to ctrl
+// */
+//void prvAccelerometerSetCtrlConf(uint8_t *ctrl)
+//{
+//    ctrl |= *(uint8_t*)&lis302dl_conf.power_mode;
+//    ctrl |= *(uint8_t*)&lis302dl_conf.output_data_rate;
+//    ctrl |= *(uint8_t*)&lis302dl_conf.axes_enable;
+//    ctrl |= *(uint8_t*)&lis302dl_conf.full_scale;
+//    ctrl |= *(uint8_t*)&lis302dl_conf.self_test;
+//}
+///******************************************************************************/
 
 
 
@@ -177,10 +218,9 @@ void AccelerometerClickItConfig(void)
  */
 void AccelerometerClickItClear(void)
 {
-  if (accelerometer_drv_ptr->clear_it != NULL)
-  {
+    if (accelerometer_drv_ptr->clear_it != NULL) {
       accelerometer_drv_ptr->clear_it();
-  }
+    }
 }
 /******************************************************************************/
 

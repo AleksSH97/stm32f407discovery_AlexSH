@@ -9,6 +9,8 @@
 #define ACCELEROMETER_H_
 
 #include "lis302dl.h"
+#include "accelero_spi.h"
+#include "main.h"
 
 struct accelerometer_drv {
     void      (*init)(uint16_t);
