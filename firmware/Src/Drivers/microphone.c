@@ -23,12 +23,17 @@
 CRC_HandleTypeDef hcrc;
 microphone_status_t microphone_status;
 osMessageQueueId_t VisualQueueHandle;
+osThreadId_t VisualizationUpdate;
 
 const osMessageQueueAttr_t VisualQueueAttributes = {
         .name = "VisualizationQueue",
 };
 
-
+const osThreadAttr_t VisualizationTask_attributes = {
+        .name = "VisualizationTask",
+        .stack_size = 128 * 4,
+        .priority = (osPriority_t) osPriorityNormal,
+};
 
 
 /******************************************************************************/
@@ -64,14 +69,7 @@ void MicrophoneInit(void)
 
     prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
     MicrophoneSetActivate(MICROPHONE_ON);
-
-    microphone.timer = malloc(sizeof(struct timeout));
-
-    microphone.timer->timeout_ms = MICROPHONE_TIMEOUT_MS;
-
-    VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
-
-    prvMicrophoneActivateDMA();
+    //MicrophoneSetStatus(MICROPHONE_INIT);
 }
 /******************************************************************************/
 
@@ -126,8 +124,15 @@ void MicrophoneTask(void *argument)
 
         switch (microphone.status) {
             case MICROPHONE_INIT:
+
                 prvMicrophoneActivateDMA();
                 AccelerometerSetStatus(ACCELERO_OK);
+
+                microphone.timer = malloc(sizeof(struct timeout));
+                microphone.timer->timeout_ms = MICROPHONE_TIMEOUT_MS;
+
+                VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
+                VisualizationUpdate = osThreadNew(MicrophoneVisualizationTask, NULL, &VisualizationTask_attributes);
             case MICROPHONE_RX_STATE_1:
                 prvMicrophoneRxState1();
                 MicrophoneSetStatus(MICROPHONE_IDLE);
@@ -452,9 +457,11 @@ void MicrophoneVisualizationTask(void *argument)
                 continue;
             }
 
-            if (msg[i] < MICROPHONE_THRESHOLD || msg[i] > 64000) {
+            if (msg[i] < MICROPHONE_THRESHOLD || msg[i] > 63000) {
                 continue;
             }
+
+            //PrintfLogsCRLF("%d", msg[i]);
 
             uint8_t bars = msg[i] / (0XFFFF / MICROPHONE_MAX_BARS);
 
@@ -468,15 +475,7 @@ void MicrophoneVisualizationTask(void *argument)
             for (uint32_t j = 1; j < bars; j++) {
                 PrintfLogsCont("-");
             }
-            PrintfLogsCRLF("|");
-
-//            if ((msg[i] > 1300) && (msg[i] < 35000)) {
-//                uint32_t bars = (msg[i] - 1300) / 2000;
-//                for (uint32_t j = 0; j < bars; j++) {
-//                    PrintfLogsCont("|");
-//                }
-//                PrintfLogsCRLF("");
-//            }
+           PrintfLogsCRLF("|");
         }
     }
 }
