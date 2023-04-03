@@ -30,7 +30,7 @@ extern "C" {
 #define MICROPHONE_TIMEOUT_MS         700
 
 #define MICROPHONE_MAX_BARS           20
-#define MICROPHONE_THRESHOLD          500
+#define MICROPHONE_THRESHOLD          800
 
 #define MICROPHONE_OFF                0
 #define MICROPHONE_ON                 1
