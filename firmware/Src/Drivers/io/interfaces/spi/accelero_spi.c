@@ -398,102 +398,19 @@ bool prvAcceleroSpiWrite(uint8_t byte)
 
 
 
-///**
-// * @brief          SPI1 transmit fn
-// */
-//bool AcceleroSpiSetupTransmitIT(void)
-//{
-//    if (HAL_SPI_Transmit_IT(&hspi1, &accelero_spi.transmit, sizeof(uint8_t)) != HAL_OK) {
-//        return false;
-//    }
-//
-//    return true;
-//}
-///******************************************************************************/
-//
-//
-//
-//
-///**
-// * @brief          SPI1 receive fn
-// */
-//bool AcceleroSpiSetupReceiveIT(void)
-//{
-//    if (HAL_SPI_Receive_IT(&hspi1, &accelero_spi.receive, sizeof(uint8_t)) != HAL_OK) {
-//        return false;
-//    }
-//
-//    return true;
-//}
-///******************************************************************************/
-
-
-
-
 /**
  * @brief          TX RX interrupt callback
  */
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
     if (hspi->Instance == SPI1) {
-        //IndicationLedBottom();
-
-        //PrintfLogsCRLF("Received: %d", accelero_spi.receive);
-
-//        if (!AccelerometerPutDataToRxBuffer(accelero_spi.receive_buff, 6)) {
-//            PrintfLogsCRLF(CLR_RD"ERROR WRITING TO RX RING BUFFER IN CALLBACK"CLR_DEF);
-//        }
 
         if (!AccelerometerPutDataToRxBuffer(&accelero_spi.receive, 1)) {
-            //IndicationLedTop();
             PrintfLogsCRLF(CLR_RD"ERROR WRITING TO RX RING BUFFER IN CALLBACK"CLR_DEF);
         }
     }
 }
 /******************************************************************************/
-
-
-
-///**
-// * @brief          TX interrupt callback
-// */
-//void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-//{
-//    if (hspi->Instance == SPI1) {
-//        IndicationLedTop();
-//
-//        PrintfLogsCRLF("Transmit: %d", accelero_spi.transmit);
-//
-//        if (!AcceleroSpiSetupTransmitIT()) {
-//            PrintfLogsCRLF("\tError HAL transmit IT in callback init");
-//        }
-//    }
-//}
-///******************************************************************************/
-//
-//
-//
-//
-///**
-// * @brief          RX interrupt callback
-// */
-//void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
-//{
-//    if (hspi->Instance == SPI1) {
-//        IndicationLedBottom();
-//
-//        PrintfLogsCRLF("Receive: %d", accelero_spi.receive);
-//
-//        if(!AccelerometerPutDataToRxBuffer(&accelero_spi.receive, 1)) {
-//            PrintfLogsCRLF("Put Data to RX SPI BUFF ERROR!!!");
-//        }
-//
-//        if (!AcceleroSpiSetupReceiveIT()) {
-//            PrintfLogsCRLF("\tError HAL receive IT in callback init");
-//        }
-//    }
-//}
-///******************************************************************************/
 
 
 

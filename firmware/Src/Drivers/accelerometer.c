@@ -94,19 +94,12 @@ void AccelerometerTask(void* argument)
 {
     AccelerometerInit();
 
-    if (!lwrb_is_ready(&accelero_spi.lwrb_rx)) {
-        PrintfLogsCRLF("Error ring buf SPI rx init");
-    }
-    if (!lwrb_is_ready(&accelero_spi.lwrb_tx)) {
-        PrintfLogsCRLF("Error ring buf SPI tx init");
-    }
-
     for(;;)
     {
         if (AccelerometerGetStatus() == ACCELERO_XYZ) {
 
-            if (MicrophoneGetStatus() != MICROPHONE_DEINIT) {
-                MicrophoneSetStatus(MICROPHONE_DEINIT);
+            if (MicrophoneGetActivate()) {
+                MicrophoneSetActivate(MICROPHONE_OFF);
             }
 
             AcceleroLedIndication();
@@ -118,10 +111,6 @@ void AccelerometerTask(void* argument)
 
         if (AccelerometerGetStatus() == ACCELERO_INIT_ERROR) {
             PrintfLogsCRLF("ERROR INIT ACCELEROMETER");
-        }
-
-        if (AccelerometerGetStatus() == ACCELERO_BLOCKED) {
-            osDelay(1);
         }
 
         osDelay(1);
