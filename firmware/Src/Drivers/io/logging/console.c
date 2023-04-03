@@ -28,8 +28,6 @@
 #define _CMD_LOGOUT                 "logout"
 
 #define _CMD_VISUAL                 "visual"
-#define _CMD_SHOW                   "show"
-
 #define _CMD_ACCELERO               "accelero"
 #define _CMD_ENABLE                 "enable"
 
@@ -63,7 +61,7 @@ microrl_t microrl;
 microrl_t *microrl_ptr = &microrl;
 
 char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT,
-        _CMD_BUFF, _CMD_VISUAL, _CMD_SHOW, _CMD_RESET, _CMD_FREE,
+        _CMD_BUFF, _CMD_VISUAL, _CMD_RESET, _CMD_FREE,
         _CMD_ACCELERO, _CMD_ENABLE, _CMD_BACK};    //available  commands
 
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
@@ -113,7 +111,10 @@ void ConsoleInit(void)
  */
 void ConsoleStart(void)
 {
-    MicrophoneSetVisualizer(false);
+    if (MicrophoneGetActivate()) {
+        MicrophoneSetActivate(MICROPHONE_OFF);
+    }
+
     AccelerometerSetStatus(ACCELERO_OK);
     IoSystemClearRxQueue();
     LogClearQueues();
@@ -179,10 +180,10 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv) {
             prvConsoleClearScreen(microrl_ptr);
         }
         else if (strcmp(argv[i], _CMD_LOGOUT) == 0) {
+            prvConsoleClearScreen(microrl_ptr);
             IoSystemClearRxQueue();
             LogClearQueues();
             microrl_set_execute_callback(microrl_ptr, ConsoleExecute);
-
             IoSystemSetMode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BUFF) == 0) {
@@ -327,9 +328,14 @@ int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv
     int i = 0;
 
     while (i < argc) {
-        if (strcmp(argv[i], _CMD_SHOW) == 0) {
-            microphone.timestamp_ms = HAL_GetTick();
-            MicrophoneSetVisualizer(true);
+        if (strcmp(argv[i], _CMD_ENABLE) == 0) {
+
+            if (!MicrophoneGetActivate()) {
+                MicrophoneSetActivate(MICROPHONE_ON);
+            }
+
+            MicrophoneSetStatus(MICROPHONE_INIT);
+            IoSystemSetMode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BACK) == 0) {
             prvConsolePrint(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
@@ -429,7 +435,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
  */
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
-    MicrophoneSetVisualizer(false);
+    MicrophoneSetActivate(MICROPHONE_OFF);
     AccelerometerSetStatus(ACCELERO_OK);
     microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
     prvConsoleClearScreen(microrl_ptr);
@@ -540,7 +546,7 @@ void ConsolePrintVisualizer(microrl_t *microrl_ptr)
 {
     prvConsolePrint(microrl_ptr, _ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "List of audio visualizer commands:"_ENDLINE_SEQ);
-    prvConsolePrint(microrl_ptr, "\tshow               -  show visualization"_ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "\tenable             -  enable visualization"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tback               -  back to main menu"_ENDLINE_SEQ _ENDLINE_SEQ);
 }
 /******************************************************************************/
