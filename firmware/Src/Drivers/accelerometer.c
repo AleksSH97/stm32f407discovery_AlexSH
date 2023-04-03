@@ -195,21 +195,19 @@ void AccelerometerClickItClear(void)
   */
 void AccelerometerGetXyz(int16_t *Data_xyz_ptr)
 {
-  int16_t switch_xy = 0;
+    int16_t switch_xy = 0;
 
-  if(accelerometer_drv_ptr->get_xyz != NULL)
-  {
-      accelerometer_drv_ptr->get_xyz(Data_xyz_ptr);
+    if(accelerometer_drv_ptr->get_xyz != NULL && Data_xyz_ptr != NULL) {
+        accelerometer_drv_ptr->get_xyz(Data_xyz_ptr);
 
-    /* Switch X and Y Axes in case of LIS302DL MEMS */
-    if(accelerometer_drv_ptr == &lis302dl_drv)
-    {
-      switch_xy  = Data_xyz_ptr[0];
-      Data_xyz_ptr[0] = Data_xyz_ptr[1];
-      /* Invert Y Axis to be compliant with LIS3DSH MEMS */
-      Data_xyz_ptr[1] = -switch_xy;
+        /* Switch X and Y Axes in case of LIS302DL MEMS */
+        if(accelerometer_drv_ptr == &lis302dl_drv && Data_xyz_ptr != NULL) {
+            switch_xy  = Data_xyz_ptr[0];
+            Data_xyz_ptr[0] = Data_xyz_ptr[1];
+            /* Invert Y Axis to be compliant with LIS3DSH MEMS */
+            Data_xyz_ptr[1] = -switch_xy;
+        }
     }
-  }
 }
 /******************************************************************************/
 
