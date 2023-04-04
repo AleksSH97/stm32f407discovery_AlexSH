@@ -126,7 +126,7 @@ void MicrophoneTask(void *argument)
             case MICROPHONE_INIT:
 
                 prvMicrophoneActivateDMA();
-                AccelerometerSetStatus(ACCELERO_OK);
+                AccelerometerSetStatus(ACCELERO_IDLE);
 
                 microphone.timer = malloc(sizeof(struct timeout));
                 microphone.timer->timeout_ms = MICROPHONE_TIMEOUT_MS;

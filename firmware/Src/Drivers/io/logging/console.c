@@ -115,7 +115,7 @@ void ConsoleStart(void)
         MicrophoneSetActivate(MICROPHONE_OFF);
     }
 
-    AccelerometerSetStatus(ACCELERO_OK);
+    AccelerometerSetStatus(ACCELERO_IDLE);
     IoSystemClearRxQueue();
     LogClearQueues();
     MicrophoneVisualizationClearQueue();
@@ -373,7 +373,7 @@ int ConsoleAccelerometer(microrl_t *microrl_ptr, int argc, const char * const *a
         else if (strcmp(argv[i], _CMD_BACK) == 0) {
             prvConsolePrint(microrl_ptr, "\tBack to main menu" _ENDLINE_SEQ _ENDLINE_SEQ _ENDLINE_SEQ);
             ConsolePrintHelp(microrl_ptr);
-            AccelerometerSetStatus(ACCELERO_OK);
+            AccelerometerSetStatus(ACCELERO_IDLE);
             microrl_set_execute_callback(microrl_ptr, ConsoleExecuteMain);
         }
         else {
@@ -436,7 +436,7 @@ void prvConsoleClearScreenSimple(microrl_t *microrl_ptr)
 void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetActivate(MICROPHONE_OFF);
-    AccelerometerSetStatus(ACCELERO_OK);
+    AccelerometerSetStatus(ACCELERO_IDLE);
     microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
