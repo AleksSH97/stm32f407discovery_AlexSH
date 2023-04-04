@@ -12,7 +12,6 @@
 /******************************************************************************/
 /* Includes ----------------------------------------------------------------- */
 /******************************************************************************/
-#include "led.h"
 #include "indication.h"
 
 /******************************************************************************/
@@ -30,6 +29,8 @@ static void prvIndicationLedErrorSetup(mculed_t *led_ptr);
 static void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index);
 static void prvIndicationLedTopSetup(mculed_t *led_ptr, int led_index);
 static void prvIndicationLedBottomSetup(mculed_t *led_ptr, int led_index);
+void prvIndicationLedLeftSetup(mculed_t *led_ptr, int led_index);
+void prvIndicationLedRightSetup(mculed_t *led_ptr, int led_index);
 static void prvIndicationLedReadySetup(mculed_t *led_ptr);
 
 /******************************************************************************/
@@ -42,6 +43,8 @@ static void prvIndicationLedReadySetup(mculed_t *led_ptr);
  */
 void IndicationInit(void)
 {
+    PrintfLogsCRLF(CLR_GR"INDICATION INIT..."CLR_DEF);
+
 	mculed_ctrl_t fns = {0};
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -83,6 +86,7 @@ void IndicationInit(void)
 
 void IndicationUpdateTask(void *argument)
 {
+    IndicationInit();
     osDelay(1000);
     IndicationLedReady();
 
@@ -165,6 +169,36 @@ void IndicationLedBottom(void)
 
 
 /**
+ * @brief          LED left on
+ */
+void IndicationLedLeft(void)
+{
+    for (int led_index = 0; led_index < N_LED; led_index++) {
+        prvIndicationLedLeftSetup(&mculed[led_index], led_index);
+        LedFunction(&mculed[led_index]);
+    }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          LED right on
+ */
+void IndicationLedRight(void)
+{
+    for (int led_index = 0; led_index < N_LED; led_index++) {
+        prvIndicationLedRightSetup(&mculed[led_index], led_index);
+        LedFunction(&mculed[led_index]);
+    }
+}
+/******************************************************************************/
+
+
+
+
+/**
  * @brief          Button led function
  */
 void IndicationLedButton(void)
@@ -174,6 +208,7 @@ void IndicationLedButton(void)
         LedFunction(&mculed[led_index]);
     }
 }
+/******************************************************************************/
 
 
 
@@ -336,6 +371,96 @@ void prvIndicationLedBottomSetup(mculed_t *led_ptr, int led_index)
 
 
 /**
+ * @brief          Loading led left animation setup
+ */
+void prvIndicationLedLeftSetup(mculed_t *led_ptr, int led_index)
+{
+    led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
+
+    switch (led_index) {
+        case LED_TOP:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_LEFT:
+            led_ptr->hardware.mode = MCULED_ON_STATE;
+            led_ptr->setup.on_ms = (INDICATION_LED_SPEED_VERY_FAST * LED_TIME_ON);
+            led_ptr->setup.delay_ms = (INDICATION_LED_SPEED_VERY_FAST * LED_TIME_ON);
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_BOTTOM:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_RIGHT:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        default:
+            break;
+    }
+
+    led_ptr->status.iterations_counter = 0;
+    led_ptr->status.on_timeout = led_ptr->setup.on_ms;
+    led_ptr->status.off_timeout = led_ptr->setup.off_ms;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Loading led right animation setup
+ */
+void prvIndicationLedRightSetup(mculed_t *led_ptr, int led_index)
+{
+    led_ptr->setup.iterations_num = INDICATION_LED_BUTTON_NUM;
+
+    switch (led_index) {
+        case LED_TOP:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_LEFT:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_BOTTOM:
+            led_ptr->hardware.mode = MCULED_OFF_STATE;
+            led_ptr->setup.on_ms = ZERO_MS;
+            led_ptr->setup.delay_ms = ZERO_MS;
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        case LED_RIGHT:
+            led_ptr->hardware.mode = MCULED_ON_STATE;
+            led_ptr->setup.on_ms = (INDICATION_LED_SPEED_VERY_FAST * LED_TIME_ON);
+            led_ptr->setup.delay_ms = (INDICATION_LED_SPEED_VERY_FAST * LED_TIME_ON);
+            led_ptr->setup.off_ms = ZERO_MS;
+            break;
+        default:
+            break;
+    }
+
+    led_ptr->status.iterations_counter = 0;
+    led_ptr->status.on_timeout = led_ptr->setup.on_ms;
+    led_ptr->status.off_timeout = led_ptr->setup.off_ms;
+}
+/******************************************************************************/
+
+
+
+
+/**
  * @brief          Loading led animation setup
  */
 void prvIndicationLedLoadingSetup(mculed_t *led_ptr, int led_index)
@@ -464,6 +589,9 @@ void prvIndicationLedButtonHoldSetup(mculed_t *led_ptr, int led_index)
 
 
 
+/**
+ * @brief         Double click button led setup
+ */
 void prvIndicationLedButtonDoubleClickSetup(mculed_t *led_ptr, int led_index)
 {
 	switch (led_index) {
