@@ -57,6 +57,9 @@ void AccelerometerReset(void);
 enum accelero_status AccelerometerGetStatus(void);
 void AccelerometerSetStatus(enum accelero_status status);
 
+enum accelero_error AccelerometerGetError(void);
+void AccelerometerSetError(enum accelero_error error);
+
 void AccelerometerClickItConfig(void);
 void AccelerometerClickItClear(void);
 void AccelerometerGetXyz(int16_t *Data_xyz_ptr);
