@@ -24,7 +24,7 @@ static struct accelerometer_drv *accelerometer_drv_ptr;
 /******************************************************************************/
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
-static void prvAccelerometerSetDrv(struct accelerometer_drv *accelerometer_drv);
+static void prvAccelerometerSetDrv(struct accelerometer_drv *drv);
 static struct lis302dl_config prvAccelerometerSetConf(void);
 static void prvAccelerometerErrorHandler(enum accelero_error error);
 
@@ -35,19 +35,21 @@ static void prvAccelerometerErrorHandler(enum accelero_error error);
  */
 uint8_t AccelerometerInit(void)
 {
-    PrintfLogsCRLF(CLR_DEF"");
-    PrintfLogsCRLF("\t\tACCELEROMETER INIT STARTED");
-    PrintfLogsCRLF("");
+    uint8_t res = ACCELERO_OK;
+
+    PrintfLogsCRLF(CLR_GR"ACCELEROMETER INIT..."CLR_DEF);
 
     AcceleroIoItConfig();
-    AcceleroSpiInit();
+    res = AcceleroSpiInit();
     prvAccelerometerSetDrv(&lis302dl_drv);
 
     if (accelerometer_drv_ptr == NULL) {
-        return ACCELERO_INIT_ERROR;
+        res = ACCELERO_INIT_ERROR;
+        return res;
     }
     if (accelerometer_drv_ptr->init == NULL || accelerometer_drv_ptr->filter_config == NULL) {
-        return ACCELERO_INIT_ERROR;
+        res = ACCELERO_INIT_ERROR;
+        return res;
     }
 
     struct lis302dl_config lis302dl_conf = prvAccelerometerSetConf();
@@ -59,18 +61,14 @@ uint8_t AccelerometerInit(void)
     ctrl |= *(uint8_t*)&lis302dl_conf.axes_enable;
     ctrl |= *(uint8_t*)&lis302dl_conf.full_scale;
     ctrl |= *(uint8_t*)&lis302dl_conf.self_test;
-    accelerometer_drv_ptr->init(ctrl);
+    res = accelerometer_drv_ptr->init(ctrl);
 
     ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_data_select;
     ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_cutoff_freq;
     ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_interrupt;
-    accelerometer_drv_ptr->filter_config(ctrl);
+    res = accelerometer_drv_ptr->filter_config(ctrl);
 
-    PrintfLogsCRLF(CLR_DEF"");
-    PrintfLogsCRLF("\t\tACCELEROMETER INIT ENDED");
-    PrintfLogsCRLF("");
-
-    return ACCELERO_OK;
+    return res;
 }
 /******************************************************************************/
 
@@ -82,6 +80,7 @@ uint8_t AccelerometerInit(void)
  */
 void AccelerometerTask(void* argument)
 {
+    RingBufAcceleroInit();
     accelero_spi.error = AccelerometerInit();
 
     for(;;)
@@ -115,9 +114,9 @@ void AccelerometerTask(void* argument)
 /**
  * @brief          Accelerometer set driver pointer
  */
-void prvAccelerometerSetDrv(struct accelerometer_drv *accelerometer_drv)
+void prvAccelerometerSetDrv(struct accelerometer_drv *drv)
 {
-    accelerometer_drv_ptr = accelerometer_drv;
+    accelerometer_drv_ptr = drv;
 }
 /******************************************************************************/
 
@@ -363,7 +362,7 @@ void prvAccelerometerErrorHandler(enum accelero_error error)
             AccelerometerSetError(ACCELERO_OK);
             break;
         default:
-            PrintfLogsCRLF("Undefined error SPI");
+            PrintfLogsCRLF(CLR_RD"Undefined error SPI"CLR_DEF);
             AccelerometerSetError(ACCELERO_OK);
             break;
     }
