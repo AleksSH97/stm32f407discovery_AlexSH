@@ -47,8 +47,13 @@ extern "C" {
 #define ACCELERO_SPI_Y                 1u
 #define ACCELERO_SPI_Z                 2u
 
-#define ACCELERO_SPI_BOUNDARY_POS      200
-#define ACCELERO_SPI_BOUNDARY_NEG      -200
+#define ACCELERO_SPI_ZERO_LEVEL_X_ONE    72u
+#define ACCELERO_SPI_ZERO_LEVEL_X_TWO    0u
+#define ACCELERO_SPI_ZERO_LEVEL_Y_ONE    144u
+#define ACCELERO_SPI_ZERO_LEVEL_Y_TWO    216u
+
+#define ACCELERO_SPI_BOUNDARY_POS      300
+#define ACCELERO_SPI_BOUNDARY_NEG      -300
 
 #define ACCELERO_SPI_BUFF_SIZE         8u
 
@@ -88,7 +93,7 @@ struct accelero_spi {
     enum accelero_error  error;
 };
 
-void AcceleroSpiInit(void);
+uint8_t AcceleroSpiInit(void);
 void AcceleroCsInit(void);
 void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read);
 void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write);

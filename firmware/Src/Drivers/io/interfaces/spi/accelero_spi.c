@@ -4,7 +4,7 @@
  * @author         : aleksandr Shabalin       <alexnv97@gmail.com>
  * @brief          : SPI1 usage file
  ******************************************************************************
- * ----------------- Copyright (c) 2022 Aleksandr Shabalin------------------- *
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
  ******************************************************************************
  ******************************************************************************
  */
@@ -23,6 +23,8 @@ SPI_HandleTypeDef hspi1;
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
 static uint8_t prvAcceleroSpiWriteRead(uint8_t byte);
+bool prvAcceleroCheckX(int16_t coordinate);
+bool prvAcceleroCheckY(int16_t coordinate);
 
 
 
@@ -30,7 +32,7 @@ static uint8_t prvAcceleroSpiWriteRead(uint8_t byte);
 /**
  * @brief           SPI1 init fn
  */
-void AcceleroSpiInit(void)
+uint8_t AcceleroSpiInit(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -54,16 +56,18 @@ void AcceleroSpiInit(void)
     hspi1.Init.DataSize           = SPI_DATASIZE_8BIT;
     hspi1.Init.CLKPolarity        = SPI_POLARITY_LOW;
     hspi1.Init.CLKPhase           = SPI_PHASE_1EDGE;
-    hspi1.Init.NSS                = SPI_NSS_SOFT; // Check this out again. Was configured with error! SPI was not transferring
+    hspi1.Init.NSS                = SPI_NSS_SOFT;
     hspi1.Init.BaudRatePrescaler  = SPI_BAUDRATEPRESCALER_16;
     hspi1.Init.FirstBit           = SPI_FIRSTBIT_MSB;
     hspi1.Init.TIMode             = SPI_TIMODE_DISABLED;
     hspi1.Init.CRCCalculation     = SPI_CRCCALCULATION_DISABLED;
-    hspi1.Init.CRCPolynomial      = 7; // Check this out again. Was configured with error! SPI was not transferring
+    hspi1.Init.CRCPolynomial      = 7;
 
     if (HAL_SPI_Init(&hspi1) != HAL_OK) {
-        Error_Handler();
+        return ACCELERO_INIT_ERROR;
     }
+
+    return ACCELERO_OK;
 }
 /******************************************************************************/
 
@@ -192,10 +196,6 @@ void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_re
   */
 uint8_t AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write)
 {
-    PrintfLogsCRLF("");
-    PrintfLogsCRLF(CLR_MG"\tStarted writing..."CLR_DEF);
-    PrintfLogsCRLF("");
-
     uint8_t data = 0x0000;
     uint8_t trash = 0x00;
 
@@ -264,10 +264,6 @@ uint8_t AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byt
 uint8_t AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read)
 {
     uint8_t trash = 0x00;
-
-    PrintfLogsCRLF("");
-    PrintfLogsCRLF(CLR_MG"\tStarted reading..."CLR_DEF);
-    PrintfLogsCRLF("");
 
     if (num_byte_to_read > 0x01) {
         read_addr |= (uint8_t)(READWRITE_CMD | MULTIPLEBYTE_CMD);
@@ -388,22 +384,66 @@ void AcceleroLedIndication(void)
 {
     AccelerometerGetXyz(accelero_spi.xyz_buf);
 
+    PrintfLogsCRLF("X AXIS: %d", accelero_spi.xyz_buf[ACCELERO_SPI_X]);
+    PrintfLogsCRLF("Y AXIS: %d", accelero_spi.xyz_buf[ACCELERO_SPI_Y]);
+
+    if (!prvAcceleroCheckX(accelero_spi.xyz_buf[ACCELERO_SPI_X])) {
+        return;
+    }
+
+    if (!prvAcceleroCheckY(accelero_spi.xyz_buf[ACCELERO_SPI_Y])) {
+        return;
+    }
+
     if (accelero_spi.xyz_buf[ACCELERO_SPI_X] < ACCELERO_SPI_BOUNDARY_NEG) {
-        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_RESET);
+        IndicationLedLeft();
     }
     else if (accelero_spi.xyz_buf[ACCELERO_SPI_X] > ACCELERO_SPI_BOUNDARY_POS) {
-        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_RESET);
+        IndicationLedRight();
     }
-    else if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] < ACCELERO_SPI_BOUNDARY_NEG) {
-        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_RESET);
+
+    if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] < ACCELERO_SPI_BOUNDARY_NEG) {
+        IndicationLedBottom();
     }
     else if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] > ACCELERO_SPI_BOUNDARY_POS) {
-        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_SET);
+        IndicationLedTop();
     }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Check for zero level of X axis
+ */
+bool prvAcceleroCheckX(int16_t coordinate)
+{
+    if (coordinate == ACCELERO_SPI_ZERO_LEVEL_X_ONE || coordinate == ACCELERO_SPI_ZERO_LEVEL_X_TWO) {
+        HAL_GPIO_WritePin(LED_RIGHT_GPIO_Port, LED_RIGHT_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(LED_LEFT_GPIO_Port, LED_LEFT_Pin, GPIO_PIN_RESET);
+        return false;
+    }
+
+    return true;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Check for zero level of Y axis
+ */
+bool prvAcceleroCheckY(int16_t coordinate)
+{
+    if (coordinate == ACCELERO_SPI_ZERO_LEVEL_Y_ONE || coordinate == ACCELERO_SPI_ZERO_LEVEL_Y_TWO) {
+        HAL_GPIO_WritePin(LED_TOP_GPIO_Port, LED_TOP_Pin, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(LED_BOTTOM_GPIO_Port, LED_BOTTOM_Pin, GPIO_PIN_RESET);
+        return false;
+    }
+
+    return true;
 }
 /******************************************************************************/
 
