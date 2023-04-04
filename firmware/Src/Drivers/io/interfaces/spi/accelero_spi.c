@@ -61,9 +61,8 @@ void AcceleroSpiInit(void)
     hspi1.Init.CRCCalculation     = SPI_CRCCALCULATION_DISABLED;
     hspi1.Init.CRCPolynomial      = 7; // Check this out again. Was configured with error! SPI was not transferring
 
-    if (HAL_SPI_Init(&hspi1) != HAL_OK)
-    {
-      Error_Handler();
+    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+        Error_Handler();
     }
 }
 /******************************************************************************/
@@ -152,74 +151,6 @@ void AcceleroIoWrite(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_
 
 
 /**
-  * @brief  Writes one byte to the Accelero interrupt
-  * @param  buf_ptr: pointer to the buffer containing the data to be written to the Accelero.
-  * @param  write_addr: Accelero's internal address to write to.
-  * @param  num_byte_to_write: Number of bytes to write.
-  * @retval None
-  */
-void AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write)
-{
-    PrintfLogsCRLF("");
-    PrintfLogsCRLF(CLR_MG"\tStarted writing..."CLR_DEF);
-    PrintfLogsCRLF("");
-
-    uint8_t data = 0x0000;
-    uint8_t trash = 0x00;
-
-    if (num_byte_to_write > 0x01) {
-        write_addr |= (uint8_t)MULTIPLEBYTE_CMD;
-    }
-
-    if(!AccelerometerPutDataToTxBuffer(&write_addr, 1)) {
-        PrintfLogsCRLF(CLR_RD"1.\tPUT DATA TO TX BUFFER FROM WRITE IT FUNCTION ERROR"CLR_DEF);
-    }
-
-    ACCELERO_SPI_CS_LOW();
-
-    if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
-        PrintfLogsCRLF(CLR_RD"2.\tREAD DATA FROM TX BUFFER FROM WRITE IT FUNCTION ERROR"CLR_DEF);
-    }
-
-    if (!AcceleroSpiSetupWriteReadIT()) {
-        HardFault_Handler();
-    }
-
-    if (!AccelerometerReadDataFromRxBuffer(&trash, 1)) {
-        PrintfLogsCRLF(CLR_RD"5.\tREAD DATA FROM RX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
-    }
-
-    while (num_byte_to_write >= 0x01) {
-
-        data = *buf_ptr;
-
-        if(!AccelerometerPutDataToTxBuffer(&data, 1)) {
-            PrintfLogsCRLF(CLR_RD"3.\tPUT DATA TO TX BUFFER FROM WRITE IT FUNCTION IN CYCLE ERROR"CLR_DEF);
-        }
-
-        if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
-            PrintfLogsCRLF(CLR_RD"4.\tREAD DATA FROM TX BUFFER FROM WRITE IT FUNCTION IN CYCLE ERROR"CLR_DEF);
-        }
-
-        if (!AcceleroSpiSetupWriteReadIT()) {
-            HardFault_Handler();
-        }
-
-        if (!AccelerometerReadDataFromRxBuffer(&trash, 1)) {
-            PrintfLogsCRLF(CLR_RD"5.\tREAD DATA FROM RX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
-        }
-
-        num_byte_to_write--;
-        buf_ptr++;
-    }
-
-    ACCELERO_SPI_CS_HIGH();
-}
-/******************************************************************************/
-
-
-
-/**
   * @brief  Reads a block of data from the Accelero.
   * @param  buf_ptr: pointer to the buffer that receives the data read from the Accelero.
   * @param  read_addr: Accelero's internal address to read from.
@@ -253,13 +184,84 @@ void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_re
 
 
 /**
+  * @brief  Writes one byte to the Accelero interrupt
+  * @param  buf_ptr: pointer to the buffer containing the data to be written to the Accelero.
+  * @param  write_addr: Accelero's internal address to write to.
+  * @param  num_byte_to_write: Number of bytes to write.
+  * @retval None
+  */
+uint8_t AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write)
+{
+    PrintfLogsCRLF("");
+    PrintfLogsCRLF(CLR_MG"\tStarted writing..."CLR_DEF);
+    PrintfLogsCRLF("");
+
+    uint8_t data = 0x0000;
+    uint8_t trash = 0x00;
+
+    if (num_byte_to_write > 0x01) {
+        write_addr |= (uint8_t)MULTIPLEBYTE_CMD;
+    }
+
+    if(!AccelerometerPutDataToTxBuffer(&write_addr, 1)) {
+        return ACCELERO_TX_BUFFER_WRITE_ERROR;
+    }
+
+    ACCELERO_SPI_CS_LOW();
+
+    if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
+        return ACCELERO_TX_BUFFER_READ_ERROR;
+    }
+
+    if (!AcceleroSpiSetupWriteReadIT()) {
+        return ACCELERO_SPI_SETUP_ERROR;
+    }
+
+    if (!AccelerometerReadDataFromRxBuffer(&trash, 1)) {
+        return ACCELERO_RX_BUFFER_READ_ERROR;
+    }
+
+    while (num_byte_to_write >= 0x01) {
+
+        data = *buf_ptr;
+
+        if(!AccelerometerPutDataToTxBuffer(&data, 1)) {
+            return ACCELERO_TX_BUFFER_WRITE_ERROR;
+        }
+
+        if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
+            return ACCELERO_TX_BUFFER_READ_ERROR;
+        }
+
+        if (!AcceleroSpiSetupWriteReadIT()) {
+            return ACCELERO_SPI_SETUP_ERROR;
+        }
+
+        if (!AccelerometerReadDataFromRxBuffer(&trash, 1)) {
+            return ACCELERO_RX_BUFFER_READ_ERROR;
+        }
+
+        num_byte_to_write--;
+        buf_ptr++;
+    }
+
+    ACCELERO_SPI_CS_HIGH();
+
+    return ACCELERO_OK;
+}
+/******************************************************************************/
+
+
+
+
+/**
   * @brief  Reads a block of data from the Accelero with interrupt.
   * @param  buf_ptr: pointer to the buffer that receives the data read from the Accelero.
   * @param  read_addr: Accelero's internal address to read from.
   * @param  num_byte_to_read: number of bytes to read from the Accelero.
   * @retval None
   */
-void AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read)
+uint8_t AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read)
 {
     uint8_t trash = 0x00;
 
@@ -275,21 +277,21 @@ void AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_
     }
 
     if(!AccelerometerPutDataToTxBuffer(&read_addr, 1)) {
-        PrintfLogsCRLF(CLR_RD"1.\tPUT DATA TO TX BUFFER FROM READ IT FUNCTION ERROR"CLR_DEF);
+        return ACCELERO_TX_BUFFER_WRITE_ERROR;
     }
 
     ACCELERO_SPI_CS_LOW();
 
     if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
-        PrintfLogsCRLF(CLR_RD"2.\tREAD DATA FROM TX BUFFER FROM READ IT FUNCTION ERROR"CLR_DEF);
+        return ACCELERO_TX_BUFFER_READ_ERROR;
     }
 
     if (!AcceleroSpiSetupWriteReadIT()) {
-        HardFault_Handler();
+        return ACCELERO_SPI_SETUP_ERROR;
     }
 
     if (!AccelerometerReadDataFromRxBuffer(&trash, 1)) {
-        PrintfLogsCRLF(CLR_RD"5.\tREAD DATA FROM RX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
+        return ACCELERO_DELETE_TRASH_ERROR;
     }
 
     while (num_byte_to_read > 0x01) {
@@ -300,22 +302,20 @@ void AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_
         dummy = DUMMY_BYTE;
 
         if(!AccelerometerPutDataToTxBuffer(&dummy, 1)) {
-            PrintfLogsCRLF(CLR_RD"3.\tPUT DUMMY_BYTE TO TX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
+            return ACCELERO_TX_BUFFER_WRITE_ERROR;
         }
 
         if (!AccelerometerReadDataFromTxBuffer(&accelero_spi.transmit, 1)) {
-            PrintfLogsCRLF(CLR_RD"4.\tREAD DATA FROM TX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
+            return ACCELERO_TX_BUFFER_READ_ERROR;
         }
 
         if (!AcceleroSpiSetupWriteReadIT()) {
-            HardFault_Handler();
+            return ACCELERO_RX_BUFFER_WRITE_ERROR;
         }
 
         if (!AccelerometerReadDataFromRxBuffer(&data, 1)) {
-            PrintfLogsCRLF(CLR_RD"5.\tREAD DATA FROM RX BUFFER FROM READ IT FUNCTION IN CYCLE ERROR"CLR_DEF);
+            return ACCELERO_RX_BUFFER_READ_ERROR;
         }
-
-        PrintfLogsCRLF("info from RX SPI buff: %d", data);
 
         *buf_ptr = data;
         num_byte_to_read--;
@@ -323,6 +323,8 @@ void AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_
     }
 
     ACCELERO_SPI_CS_HIGH();
+
+    return ACCELERO_OK;
 }
 /******************************************************************************/
 
@@ -348,46 +350,11 @@ uint8_t prvAcceleroSpiWriteRead(uint8_t byte)
 
 
 /**
- * @brief          SPI1 Transmit and Receive
+ * @brief          SPI1 Transmit and Receive IT
  */
 bool AcceleroSpiSetupWriteReadIT(void)
 {
     if (HAL_SPI_TransmitReceive_IT(&hspi1, (uint8_t*)&accelero_spi.transmit, (uint8_t*)&accelero_spi.receive, 1) != HAL_OK) {
-        PrintfLogsCRLF(CLR_RD"Error setup transition/receiving SPI IT"CLR_DEF);
-        return false;
-    }
-
-    return true;
-}
-/******************************************************************************/
-
-
-
-
-/**
- * @brief          SPI1 Transmit and Receive with buff
- */
-bool AcceleroSpiSetupWriteReadIT_BUFF(uint8_t num_byte)
-{
-    if (HAL_SPI_TransmitReceive_IT(&hspi1, accelero_spi.transmit_buff, accelero_spi.receive_buff, num_byte) != HAL_OK) {
-        PrintfLogsCRLF(CLR_RD"Error setup transition/receiving SPI IT"CLR_DEF);
-        return false;
-    }
-
-    return true;
-}
-/******************************************************************************/
-
-
-
-
-/**
- * @brief          SPI1 Transmit
- */
-bool prvAcceleroSpiWrite(uint8_t byte)
-{
-    if (HAL_SPI_Transmit(&hspi1, (uint8_t*)&byte, 1, ACCELERO_SPI_TIMEOUT) != HAL_OK) {
-        PrintfLogsCRLF(CLR_RD"Error transition SPI"CLR_DEF);
         return false;
     }
 
@@ -404,7 +371,6 @@ bool prvAcceleroSpiWrite(uint8_t byte)
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
     if (hspi->Instance == SPI1) {
-
         if (!AccelerometerPutDataToRxBuffer(&accelero_spi.receive, 1)) {
             PrintfLogsCRLF(CLR_RD"ERROR WRITING TO RX RING BUFFER IN CALLBACK"CLR_DEF);
         }
