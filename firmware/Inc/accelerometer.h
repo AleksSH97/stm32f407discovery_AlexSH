@@ -13,19 +13,19 @@
 #include "main.h"
 
 struct accelerometer_drv {
-    void      (*init)(uint16_t);
-    void      (*deinit)(void);
-    uint8_t   (*read_id)(void);
-    void      (*reset)(void);
-    void      (*low_power)(uint16_t);
-    void      (*config_it)(void);
-    void      (*enable_it)(uint8_t);
-    void      (*disable_it)(uint8_t);
-    uint8_t   (*it_status)(uint16_t);
-    void      (*clear_it)(void);
-    void      (*filter_config)(uint8_t);
-    void      (*filter_cmd)(uint8_t);
-    void      (*get_xyz)(int16_t *);
+    uint8_t      (*init)(uint16_t);
+    uint8_t      (*deinit)(void);
+    uint8_t      (*read_id)(void);
+    uint8_t      (*reset)(void);
+    uint8_t      (*low_power)(uint16_t);
+    uint8_t      (*config_it)(void);
+    uint8_t      (*enable_it)(uint8_t);
+    uint8_t      (*disable_it)(uint8_t);
+    uint8_t      (*it_status)(uint16_t);
+    uint8_t      (*clear_it)(void);
+    uint8_t      (*filter_config)(uint8_t);
+    uint8_t      (*filter_cmd)(uint8_t);
+    uint8_t      (*get_xyz)(int16_t *);
 };
 
 /* ACCELERO struct */
