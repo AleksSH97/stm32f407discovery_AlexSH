@@ -111,6 +111,7 @@ void IoSystemRxTask(void *argument)
 {
     uint8_t rx = 0x00;
 
+    UARTAllInit();
     LogInit();
     ConsoleInit();
     LogPrintWelcomeMsg();
