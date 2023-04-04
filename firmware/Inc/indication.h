@@ -71,6 +71,8 @@ extern mculed_t mculed[N_LED];
 void IndicationInit(void);
 void IndicationLedTop(void);
 void IndicationLedBottom(void);
+void IndicationLedLeft(void);
+void IndicationLedRight(void);
 void IndicationLedLoading(void);
 void IndicationLedError(void);
 void IndicationLedButton(void);
