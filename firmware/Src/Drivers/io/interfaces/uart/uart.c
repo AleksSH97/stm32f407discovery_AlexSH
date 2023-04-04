@@ -29,8 +29,11 @@ struct uart data_uart;
  */
 void UARTAllInit(void)
 {
+    RingBufUARTInit();
     //DebugUartInit();
     DataUartInit();
+
+    UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
 }
 /******************************************************************************/
 

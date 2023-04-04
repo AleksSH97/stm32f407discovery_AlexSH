@@ -44,6 +44,8 @@ static void prvButtonActivate(struct user_button *user_button_ptr);
  */
 void ButtonInit(void)
 {
+    PrintfLogsCRLF(CLR_GR"BUTTON INIT..."CLR_DEF);
+
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
    __HAL_RCC_GPIOH_CLK_ENABLE();
@@ -65,8 +67,7 @@ void ButtonInit(void)
 
 void ButtonTask(void *argumet)
 {
-    uint8_t ddd[128] = {0};
-    UNUSED(ddd);
+    ButtonInit();
 
     for (;;)
     {

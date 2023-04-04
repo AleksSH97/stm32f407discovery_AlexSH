@@ -60,6 +60,8 @@ void prvMicrophoneDMAInit(void);
  */
 void MicrophoneInit(void)
 {
+    PrintfLogsCRLF(CLR_GR"MICROPHONE INIT..."CLR_DEF);
+
     prvMicrophoneDMAInit();
     I2S2Init();
     I2S3Init();
@@ -69,7 +71,6 @@ void MicrophoneInit(void)
 
     prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
     MicrophoneSetActivate(MICROPHONE_ON);
-    //MicrophoneSetStatus(MICROPHONE_INIT);
 }
 /******************************************************************************/
 

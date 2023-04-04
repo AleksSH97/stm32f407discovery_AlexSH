@@ -24,7 +24,6 @@
 /******************************************************************************/
 static void prvInitializeMCU(void);
 static void prvSystemClockConfig(void);
-static void prvInitializeDrivers(void);
 
 /******************************************************************************/
 
@@ -36,7 +35,7 @@ int main(void)
 {
     prvInitializeMCU();
     osKernelInitialize();
-    prvInitializeDrivers();
+    IoSystemInit();
     MX_FREERTOS_Init();
     osKernelStart();
 
@@ -55,26 +54,6 @@ void prvInitializeMCU(void)
     HAL_Init();
     prvSystemClockConfig();
     MX_TIM1_Init();
-}
-/******************************************************************************/
-
-
-
-
-/**
- * @brief          Drivers init fns
- */
-void prvInitializeDrivers(void)
-{
-    IndicationInit();
-    ButtonInit();
-
-    UARTAllInit();
-    RingBufUARTInit();
-    RingBufAcceleroInit();
-    UARTSetupReceiveChar(&huart3, &data_uart.keyboarb_input);
-
-    IoSystemInit();
 }
 /******************************************************************************/
 
