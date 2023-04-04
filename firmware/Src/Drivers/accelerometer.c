@@ -26,6 +26,7 @@ static struct accelerometer_drv *accelerometer_drv_ptr;
 /******************************************************************************/
 static void prvAccelerometerSetDrv(struct accelerometer_drv *accelerometer_drv);
 static struct lis302dl_config prvAccelerometerSetConf(void);
+static void prvAccelerometerErrorHandler(enum accelero_error error);
 
 
 
@@ -52,14 +53,12 @@ uint8_t AccelerometerInit(void)
     struct lis302dl_config lis302dl_conf = prvAccelerometerSetConf();
 
     uint8_t ctrl = 0x0000;
-    //prvAccelerometerSetCtrlConf(&ctrl);
 
     ctrl |= *(uint8_t*)&lis302dl_conf.power_mode;
     ctrl |= *(uint8_t*)&lis302dl_conf.output_data_rate;
     ctrl |= *(uint8_t*)&lis302dl_conf.axes_enable;
     ctrl |= *(uint8_t*)&lis302dl_conf.full_scale;
     ctrl |= *(uint8_t*)&lis302dl_conf.self_test;
-
     accelerometer_drv_ptr->init(ctrl);
 
     ctrl |= *(uint8_t*)&lis302dl_conf.highpass_filter_data_select;
@@ -83,10 +82,15 @@ uint8_t AccelerometerInit(void)
  */
 void AccelerometerTask(void* argument)
 {
-    AccelerometerInit();
+    accelero_spi.error = AccelerometerInit();
 
     for(;;)
     {
+        if (AccelerometerGetError() != 0) {
+            prvAccelerometerErrorHandler(AccelerometerGetError());
+            continue;
+        }
+
         if (AccelerometerGetStatus() == ACCELERO_XYZ) {
 
             if (MicrophoneGetActivate()) {
@@ -96,12 +100,8 @@ void AccelerometerTask(void* argument)
             AcceleroLedIndication();
         }
 
-        if (AccelerometerGetStatus() == ACCELERO_OK) {
+        if (AccelerometerGetStatus() == ACCELERO_IDLE) {
             __NOP();
-        }
-
-        if (AccelerometerGetStatus() == ACCELERO_INIT_ERROR) {
-            PrintfLogsCRLF("ERROR INIT ACCELEROMETER");
         }
 
         osDelay(1);
@@ -147,21 +147,6 @@ struct lis302dl_config prvAccelerometerSetConf(void)
 
 
 
-///**
-// * @brief          Accelerometer set lis302dl conf to ctrl
-// */
-//void prvAccelerometerSetCtrlConf(uint8_t *ctrl)
-//{
-//    ctrl |= *(uint8_t*)&lis302dl_conf.power_mode;
-//    ctrl |= *(uint8_t*)&lis302dl_conf.output_data_rate;
-//    ctrl |= *(uint8_t*)&lis302dl_conf.axes_enable;
-//    ctrl |= *(uint8_t*)&lis302dl_conf.full_scale;
-//    ctrl |= *(uint8_t*)&lis302dl_conf.self_test;
-//}
-///******************************************************************************/
-
-
-
 /**
  * @brief          Accelerometer get current status
  */
@@ -182,6 +167,31 @@ void AccelerometerSetStatus(enum accelero_status status)
     accelero_spi.status = status;
 }
 /******************************************************************************/
+
+
+
+
+/**
+ * @brief          Accelerometer get current error state
+ */
+enum accelero_error AccelerometerGetError(void)
+{
+    return accelero_spi.error;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Accelerometer set current error state
+ */
+void AccelerometerSetError(enum accelero_error error)
+{
+    accelero_spi.error = error;
+}
+/******************************************************************************/
+
 
 
 
@@ -312,5 +322,50 @@ bool AccelerometerReadDataFromTxBuffer(void* data, size_t len)
     }
 
     return (lwrb_read(&accelero_spi.lwrb_tx, data, len) > 0 ? true : false);
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Accelerometer error handler
+ */
+void prvAccelerometerErrorHandler(enum accelero_error error)
+{
+    switch (error) {
+        case ACCELERO_INIT_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_TX_BUFFER_READ_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_TX_BUFFER_WRITE_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_RX_BUFFER_READ_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_RX_BUFFER_WRITE_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_DELETE_TRASH_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        case ACCELERO_SPI_SETUP_ERROR:
+            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+        default:
+            PrintfLogsCRLF("Undefined error SPI");
+            AccelerometerSetError(ACCELERO_OK);
+            break;
+    }
 }
 /******************************************************************************/
