@@ -534,27 +534,20 @@ struct lis302dl_interrupt_conf {
     uint8_t double_click_axes;
 };
 
-///* High Pass Filter struct */
-//struct lis302dl_filter_conf {
-//    uint8_t highpass_filter_data_select;
-//    uint8_t highpass_filter_cutoff_freq;
-//    uint8_t highpass_filter_interrupt;
-//};
-
 extern struct accelerometer_drv lis302dl_drv;
 
-void lis302dl_init(uint16_t init_struct);
+uint8_t lis302dl_init(uint16_t init_struct);
 uint8_t lis302dl_read_id(void);
-void lis302dl_deinit(void);
+uint8_t lis302dl_deinit(void);
 uint8_t lis302dl_read_id(void);
-void lis302dl_filter_config(uint8_t filter_struct);
-void lis302dl_interrupt_config(struct lis302dl_interrupt_conf *lis302dl_interrupt_conf_ptr);
-void lis302dl_click_int_clear(void);
-void lis302dl_click_int_config(void);
-void lis302dl_low_power_cmd(uint8_t low_power_mode);
-void lis302dl_data_rate_cmd(uint8_t data_rate_value);
-void lis302dl_full_scale_cmd(uint8_t fs_value);
-void lis302dl_reboot_cmd(void);
-void lis302dl_get_xyz(int16_t *pData);
+uint8_t lis302dl_filter_config(uint8_t filter_struct);
+uint8_t lis302dl_interrupt_config(struct lis302dl_interrupt_conf *lis302dl_interrupt_conf_ptr);
+uint8_t lis302dl_click_int_clear(void);
+uint8_t lis302dl_click_int_config(void);
+uint8_t lis302dl_low_power_cmd(uint8_t low_power_mode);
+uint8_t lis302dl_data_rate_cmd(uint8_t data_rate_value);
+uint8_t lis302dl_full_scale_cmd(uint8_t fs_value);
+uint8_t lis302dl_reboot_cmd(void);
+uint8_t lis302dl_get_xyz(int16_t *pData);
 
 #endif /* LIS302DL_H_ */
