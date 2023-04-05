@@ -79,15 +79,17 @@ enum accelero_error {
 };
 
 struct accelero_spi {
-    lwrb_t              lwrb_rx;
-    lwrb_t              lwrb_tx;
-    uint8_t             buff_rx[ACCELERO_SPI_BUFF_SIZE];
-    uint8_t             buff_tx[ACCELERO_SPI_BUFF_SIZE];
+    lwrb_t               lwrb_rx;
+    lwrb_t               lwrb_tx;
+    uint8_t              buff_rx[ACCELERO_SPI_BUFF_SIZE];
+    uint8_t              buff_tx[ACCELERO_SPI_BUFF_SIZE];
 
     uint8_t              receive;
     uint8_t              transmit;
 
     int16_t              xyz_buf[ACCELERO_SPI_NUM_OF_AXES];
+
+    bool                 changed_status;
 
     enum accelero_status status;
     enum accelero_error  error;

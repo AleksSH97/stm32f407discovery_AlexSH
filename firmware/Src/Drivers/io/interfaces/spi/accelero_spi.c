@@ -25,6 +25,7 @@ SPI_HandleTypeDef hspi1;
 static uint8_t prvAcceleroSpiWriteRead(uint8_t byte);
 bool prvAcceleroCheckX(int16_t coordinate);
 bool prvAcceleroCheckY(int16_t coordinate);
+void prvAcceleroDrawPoint(int16_t x, int16_t y);
 
 
 
@@ -382,10 +383,31 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
  */
 void AcceleroLedIndication(void)
 {
+    int16_t x_axis = 0x00;
+    int16_t y_axis = 0x00;
+
+    if (accelero_spi.changed_status) {
+        PrintfLogsCont(CLR_CLR);
+        accelero_spi.changed_status = false;
+    }
+
     AccelerometerGetXyz(accelero_spi.xyz_buf);
 
-    PrintfLogsCRLF("X AXIS: %d", accelero_spi.xyz_buf[ACCELERO_SPI_X]);
-    PrintfLogsCRLF("Y AXIS: %d", accelero_spi.xyz_buf[ACCELERO_SPI_Y]);
+    x_axis = accelero_spi.xyz_buf[ACCELERO_SPI_X];
+    y_axis = accelero_spi.xyz_buf[ACCELERO_SPI_Y];
+
+//    PrintfLogsCRLF("X AXIS: %d", x_axis);
+//    PrintfLogsCRLF("Y AXIS: %d", y_axis);
+
+    if (x_axis == 72 && y_axis == 144) {
+        prvAcceleroDrawPoint(0, 0);
+    }
+    else if (x_axis == 72 && y_axis == 216) {
+        prvAcceleroDrawPoint(0, 0);
+    }
+    else {
+        prvAcceleroDrawPoint(x_axis, y_axis);
+    }
 
     if (!prvAcceleroCheckX(accelero_spi.xyz_buf[ACCELERO_SPI_X])) {
         return;
@@ -408,6 +430,30 @@ void AcceleroLedIndication(void)
     else if (accelero_spi.xyz_buf[ACCELERO_SPI_Y] > ACCELERO_SPI_BOUNDARY_POS) {
         IndicationLedTop();
     }
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Draw point in the console
+ */
+void prvAcceleroDrawPoint(int16_t x, int16_t y)
+{
+    const int16_t console_width = 80;  // Ширина консоли
+    const int16_t console_height = 24; // Высота консоли
+    const int16_t console_range = 2000; // Диапазон значений координат (от -1000 до 1000)
+
+    // Вычисляем положение точки на экране
+    int16_t screenX = (int16_t)(((int32_t)x * console_width) / (2 * console_range) + console_width / 2);
+    int16_t screenY = (int16_t)(((int32_t)y * console_height) / (2 * console_range) + console_height / 2);
+
+    // Установка курсора в нужное место на экране
+    PrintfLogsCont("\033[%d;%dH", screenY, screenX);
+
+    // Выводим символ точки
+    PrintfLogsCont("*");
 }
 /******************************************************************************/
 
