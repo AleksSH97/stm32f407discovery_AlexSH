@@ -93,6 +93,7 @@ void ConsoleInit(void)
 
 #if CONSOLE_NO_PASSW
     logged_in = 1;
+    PrintfConsoleCont(CLR_CLR);
     ConsolePrintHelp(microrl_ptr);
     microrl_set_execute_callback(microrl_ptr, ConsoleExecuteMain);
 #endif /* CONSOLE_NO_PASSW */
