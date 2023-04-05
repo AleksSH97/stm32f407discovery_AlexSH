@@ -90,17 +90,19 @@ void AccelerometerTask(void* argument)
             continue;
         }
 
-        if (AccelerometerGetStatus() == ACCELERO_XYZ) {
-
-            if (MicrophoneGetActivate()) {
-                MicrophoneSetActivate(MICROPHONE_OFF);
-            }
-
-            AcceleroLedIndication();
-        }
-
-        if (AccelerometerGetStatus() == ACCELERO_IDLE) {
-            __NOP();
+        switch (accelero_spi.status) {
+            case ACCELERO_XYZ:
+                if (MicrophoneGetActivate()) {
+                    MicrophoneSetActivate(MICROPHONE_OFF);
+                }
+                AcceleroLedIndication();
+                break;
+            case ACCELERO_IDLE:
+                accelero_spi.changed_status = true;
+                __NOP();
+                break;
+            default:
+                break;
         }
 
         osDelay(1);
