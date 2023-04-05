@@ -125,7 +125,6 @@ void MicrophoneTask(void *argument)
 
         switch (microphone.status) {
             case MICROPHONE_INIT:
-
                 prvMicrophoneActivateDMA();
                 AccelerometerSetStatus(ACCELERO_IDLE);
 
@@ -454,29 +453,20 @@ void MicrophoneVisualizationTask(void *argument)
 
         for (uint32_t i = 0; i < MICROPHONE_MID_BUFF_SIZE; i++) {
             osStatus_t event = osMessageQueueGet(VisualQueueHandle, &msg[i], NULL, 200);
-            if (event != osOK) {
-                continue;
-            }
 
-            if (msg[i] < MICROPHONE_THRESHOLD || msg[i] > 63000) {
-                continue;
-            }
+            if (event == osOK && msg[i] >= MICROPHONE_THRESHOLD && msg[i] <= 63000) {
 
-            //PrintfLogsCRLF("%d", msg[i]);
+                uint8_t bars = (msg[i] * MICROPHONE_MAX_BARS) / 0xFFFF;
+                bars = bars > MICROPHONE_MAX_BARS ? MICROPHONE_MAX_BARS : bars;
 
-            uint8_t bars = msg[i] / (0XFFFF / MICROPHONE_MAX_BARS);
-
-            if (bars > MICROPHONE_MAX_BARS) {
-                bars = MICROPHONE_MAX_BARS;
+                if (bars > 0) {
+                    PrintfLogsCont("|");
+                }
+                for (uint32_t j = 1; j < bars; j++) {
+                    PrintfLogsCont("|");
+                }
+                PrintfLogsCRLF("|");
             }
-
-            if (bars > 0) {
-                PrintfLogsCont("|");
-            }
-            for (uint32_t j = 1; j < bars; j++) {
-                PrintfLogsCont("-");
-            }
-           PrintfLogsCRLF("|");
         }
     }
 }
