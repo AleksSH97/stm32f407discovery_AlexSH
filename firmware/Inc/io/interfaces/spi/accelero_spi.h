@@ -89,8 +89,6 @@ struct accelero_spi {
 
     int16_t              xyz_buf[ACCELERO_SPI_NUM_OF_AXES];
 
-    bool                 changed_status;
-
     enum accelero_status status;
     enum accelero_error  error;
 };
