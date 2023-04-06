@@ -1,13 +1,25 @@
-/*
- * indication.h
- *
- *  Created on: 15 дек. 2022 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : indication.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for indication configs
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef INDICATION_H_
 #define INDICATION_H_
 
+
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include <stdbool.h>
 
 #include "main.h"
@@ -15,6 +27,10 @@
 #include "led.h"
 #include "stm32f4xx_hal.h"
 
+
+/******************************************************************************/
+/* Public defines ----------------------------------------------------------- */
+/******************************************************************************/
 #define INDICATION_LED_LOADING_NUM                (10000u)
 #define INDICATION_LED_READY_NUM                  (5u)
 #define INDICATION_LED_ERROR_NUM                  (2u)
@@ -46,6 +62,10 @@
 #define LED_TIME_ON                    (15u)
 #define LED_TIME_OFF                   (40u)
 
+
+/******************************************************************************/
+/* Public variables --------------------------------------------------------- */
+/******************************************************************************/
 enum indication_led_id {
 	LED_TOP = 0,
 	LED_LEFT,
@@ -68,6 +88,10 @@ extern enum indication_led_speed speed;
 
 extern mculed_t mculed[N_LED];
 
+
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 void IndicationInit(void);
 void IndicationLedTop(void);
 void IndicationLedBottom(void);
@@ -86,6 +110,9 @@ void IndicationLedsUpdate(void);
 void IndicationLedButtonHold(void);
 void IndicationLedButtonDoubleClick(void);
 void IndicationUpdateTask(void *argument);
+
+
+/******************************************************************************/
 
 #endif /* INDICATION_H_ */
 

@@ -1,17 +1,25 @@
-/*
- * console.h
- *
- *  Created on: 5 янв. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : console.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for console
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -22,7 +30,14 @@ extern "C" {
 #include "accelero_spi.h"
 #include "microrl_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
+
+/******************************************************************************/
+/* Public defines ----------------------------------------------------------- */
+/******************************************************************************/
 /**
  * \brief           Skip login + passw for debug
  */
@@ -32,8 +47,9 @@ extern "C" {
 /******************************************************************************/
 
 
-
-
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 void ConsoleInit(void);
 void ConsoleStart(void);
 char ConsoleGetChar(void);
@@ -57,8 +73,12 @@ void ConsolePrintAccelerometer(microrl_t *microrl_ptr);
 void ConsoleSigint(microrl_t *microrl_ptr);
 
 
+/******************************************************************************/
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
 
 #endif /* CONSOLE_H_ */

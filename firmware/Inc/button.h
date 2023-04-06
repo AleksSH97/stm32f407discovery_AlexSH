@@ -1,14 +1,20 @@
-/*
- * button.h
- *
- *  Created on: Dec 6, 2022
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : button.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for button
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef BUTTON_H_
 #define BUTTON_H_
-
-
 
 
 /******************************************************************************/
@@ -24,7 +30,9 @@
 #include "indication.h"
 #include "uart.h"
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 
 /******************************************************************************/
@@ -34,8 +42,6 @@
 
 #define BUTTON_Pin          GPIO_PIN_0
 #define BUTTON_GPIO_Port    GPIOA
-
-
 
 
 /******************************************************************************/
@@ -48,8 +54,6 @@ enum button_mode {
 };
 
 
-
-
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
@@ -58,6 +62,13 @@ bool ButtonIsPushed(void);
 void ButtonCheckMode(void);
 void ButtonTask(void *argumet);
 
+
 /******************************************************************************/
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* BUTTON_H_ */
