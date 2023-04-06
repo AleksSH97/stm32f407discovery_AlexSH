@@ -80,6 +80,7 @@ void IoSystemInit(void)
 
 
 
+
 /**
  * @brief          Set IO mode of operation
  */
@@ -238,13 +239,7 @@ void prvIoSystemSetRxHandler(char rx)
  */
 void prvIoConsoleRxHandler(char rx)
 {
-//    if (!data_uart.flag) {
-//        return;
-//    }
-
     ConsoleInsertChar(rx);
-
-//    data_uart.flag = false;
 }
 /******************************************************************************/
 
@@ -265,10 +260,6 @@ void prvIoLogsRxHandler(char rx)
     if ((rx == 'L') || (rx == 'l')) {
         IoSystemSetMode(IO_LOGS);
     }
-//    else if ((rx == 'X') || (rx == 'x')) {
-//        io_set_mode(IO_IDLE);
-//        log_clear_queues();
-//    }
 }
 /******************************************************************************/
 
