@@ -98,7 +98,6 @@ void AccelerometerTask(void* argument)
                 AcceleroLedIndication();
                 break;
             case ACCELERO_IDLE:
-                accelero_spi.changed_status = true;
                 __NOP();
                 break;
             default:
