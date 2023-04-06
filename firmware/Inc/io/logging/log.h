@@ -1,13 +1,25 @@
-/*
- * log.h
- *
- *  Created on: 20 дек. 2022 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : log.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for logging
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef LOG_H_
 #define LOG_H_
 
+
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -22,6 +34,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
 
 /******************************************************************************/
 /* Public defines ----------------------------------------------------------- */
@@ -39,8 +52,6 @@ extern "C" {
 #define CLR_CLR        "\033[2J\033[H\033[0m"   /* Clear terminal */
 
 
-
-
 /******************************************************************************/
 /* Public variables --------------------------------------------------------- */
 /******************************************************************************/
@@ -49,7 +60,7 @@ extern osMessageQueueId_t logsQueueHandle;
 
 
 /******************************************************************************/
-/* Public functions --------------------------------------------------------- */
+/* Public defines --------------------------------------------------------- */
 /******************************************************************************/
 #define    PrintfLogsCRLF(fmt, ...)               do { PrintfLogs((fmt), ## __VA_ARGS__); PrintfLogs("\r\n"); } while (0)
 
@@ -59,6 +70,10 @@ extern osMessageQueueId_t logsQueueHandle;
 
 #define    PrintfConsoleCont(fmt, ...)           PrintfConsole((fmt), ## __VA_ARGS__)
 
+
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 void LogsTaskStart(void *argument);
 void LogClearQueues(void);
 void LogInit(void);
@@ -66,8 +81,13 @@ void LogPrintWelcomeMsg(void);
 int PrintfLogs(const char *fmt, ...);
 int PrintfConsole(const char *fmt, ...);
 
+
+/******************************************************************************/
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
 
 #endif /* LOG_H_ */

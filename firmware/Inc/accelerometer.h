@@ -1,17 +1,37 @@
-/*
- * accelerometer.h
- *
- *  Created on: 13 янв. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : accelerometer.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for accelerometer
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef ACCELEROMETER_H_
 #define ACCELEROMETER_H_
 
+
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "lis302dl.h"
 #include "accelero_spi.h"
 #include "main.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
+/******************************************************************************/
+/* Public variables --------------------------------------------------------- */
+/******************************************************************************/
 struct accelerometer_drv {
     uint8_t      (*init)(uint16_t);
     uint8_t      (*deinit)(void);
@@ -50,6 +70,10 @@ struct accelerometerac_filter_config {
     uint8_t HighPassFilter_Stat;
 };
 
+
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 uint8_t AccelerometerInit(void);
 void AccelerometerTask(void* argument);
 void AccelerometerReset(void);
@@ -67,5 +91,14 @@ bool AccelerometerPutDataToRxBuffer(const void* data, size_t len);
 bool AccelerometerReadDataFromRxBuffer(void* data, size_t len);
 bool AccelerometerPutDataToTxBuffer(const void* data, size_t len);
 bool AccelerometerReadDataFromTxBuffer(void* data, size_t len);
+
+
+/******************************************************************************/
+
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* ACCELEROMETER_H_ */

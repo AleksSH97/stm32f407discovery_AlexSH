@@ -1,11 +1,14 @@
 /**
  ******************************************************************************
  * @file           : led.h
- * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
- * @brief          : Header of led driver
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file for led driver
  ******************************************************************************
- * ----------------- Copyright (c) 2022 Aleksandr Shabalin------------------- *
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
  ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
  ******************************************************************************
  */
 
@@ -20,7 +23,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct mculed;
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 
 /******************************************************************************/
 /* Public defines ----------------------------------------------------------- */
@@ -30,6 +36,8 @@ struct mculed;
 /******************************************************************************/
 /* Public variables --------------------------------------------------------- */
 /******************************************************************************/
+struct mculed;
+
 typedef enum mculedr {
 	MCULED_OK = 0x00,
 	MCULED_UNKNOWN = 0x01,
@@ -78,6 +86,7 @@ typedef struct mculed {
 	mculed_ctrl_t fns;
 } mculed_t;
 
+
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
@@ -85,6 +94,13 @@ void LedFunction(mculed_t *led_ptr);
 mculedr_t McuLedInit(mculed_t *self, mculed_ctrl_t *fns);
 void LedUpdate(mculed_t *self);
 
+
 /******************************************************************************/
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 
 #endif /* LED_H_ */

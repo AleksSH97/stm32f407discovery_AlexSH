@@ -1,33 +1,25 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ ******************************************************************************
+ * @file           : main.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file of main
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
+ */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/* Includes ------------------------------------------------------------------*/
-
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -59,28 +51,27 @@ extern "C" {
 #include "accelerometer.h"
 #include "accelero_spi.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
 #endif /* USE_FULL_ASSERT */
 
-/* Private includes ----------------------------------------------------------*/
 
-/* Exported types ------------------------------------------------------------*/
-
-
-/* Exported constants --------------------------------------------------------*/
-
-/* Exported macro ------------------------------------------------------------*/
-
-
-/* Exported functions prototypes ---------------------------------------------*/
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 void Error_Handler(void);
 void MX_TIM1_Init(void);
 void HAL_RCC_CSSCallBack(void);
 void MX_FREERTOS_Init(void);
 
 
-/* Private defines -----------------------------------------------------------*/
+/******************************************************************************/
+/* Public defines --------------------------------------------------------- */
+/******************************************************************************/
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */
@@ -95,8 +86,12 @@ void MX_FREERTOS_Init(void);
 #endif
 
 
+/******************************************************************************/
+
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* __MAIN_H */

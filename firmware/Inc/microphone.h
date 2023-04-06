@@ -1,13 +1,25 @@
-/*
- * microphone.h
- *
- *  Created on: 5 февр. 2023 г.
- *      Author: АлексанDOOR
+/**
+ ******************************************************************************
+ * @file           : microphone.h
+ * @author         : Aleksandr Shabalin    <alexnv97@gmail.com>
+ * @brief          : Header file of microphone
+ ******************************************************************************
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin ------------------ *
+ ******************************************************************************
+ * This module is a confidential and proprietary property of Aleksandr Shabalin
+ * and possession or use of this module requires written permission
+ * of Aleksandr Shabalin.
+ ******************************************************************************
  */
 
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef MICROPHONE_H_
 #define MICROPHONE_H_
 
+
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
 #include "stm32f4xx_hal.h"
 #include "i2s_microphone.h"
 #include "i2s_dac.h"
@@ -16,11 +28,14 @@
 #include "log.h"
 #include "pdm2pcm.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+
+/******************************************************************************/
+/* Public defines ----------------------------------------------------------- */
+/******************************************************************************/
 #define MICROPHONE_BUFF_SIZE          128
 #define MICROPHONE_HALF_BUFF_SIZE     64
 #define MICROPHONE_MID_BUFF_SIZE      16
@@ -35,6 +50,10 @@ extern "C" {
 #define MICROPHONE_OFF                0
 #define MICROPHONE_ON                 1
 
+
+/******************************************************************************/
+/* Public variables --------------------------------------------------------- */
+/******************************************************************************/
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
 extern osMessageQueueId_t VisualQueueHandle;
@@ -75,6 +94,10 @@ struct microphone {
     struct timeout *timer;
 };
 
+
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 void MicrophoneInit(void);
 void MicrophoneTask(void *argument);
 bool MicrophonePutDataToTxBuffer(const void* data, size_t len);
@@ -88,8 +111,13 @@ bool MicrophoneDisable(void);
 void MicrophoneVisualizationClearQueue(void);
 microphone_status_t MicrophoneGetStatus(void);
 
+
+/******************************************************************************/
+
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* MICROPHONE_H_ */

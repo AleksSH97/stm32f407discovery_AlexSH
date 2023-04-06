@@ -4,23 +4,30 @@
  * @author         : Aleksandr Shabalin       <alexnv97@gmail.com>
  * @brief          : SPI1 header
  ******************************************************************************
- * ----------------- Copyright (c) 2022 Aleksandr Shabalin------------------- *
+ * ----------------- Copyright (c) 2023 Aleksandr Shabalin------------------- *
  ******************************************************************************
  ******************************************************************************
  */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __ACCELERO_SPI_H__
 #define __ACCELERO_SPI_H__
+
+/******************************************************************************/
+/* Includes ----------------------------------------------------------------- */
+/******************************************************************************/
+#include "main.h"
+#include "lis302dl.h"
+#include "lwrb.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
-#include "main.h"
-#include "lis302dl.h"
-#include "lwrb.h"
 
+/******************************************************************************/
+/* Public defines ----------------------------------------------------------- */
+/******************************************************************************/
 #define ACCELERO_SPI_CS_PIN            GPIO_PIN_3                   /* PE.03 */
 #define ACCELERO_SPI_CS_GPIO_PORT      GPIOE
 
@@ -57,6 +64,10 @@ extern "C" {
 
 #define ACCELERO_SPI_BUFF_SIZE         8u
 
+
+/******************************************************************************/
+/* Public variables --------------------------------------------------------- */
+/******************************************************************************/
 extern SPI_HandleTypeDef hspi1;
 extern struct accelero_spi accelero_spi;
 
@@ -93,6 +104,10 @@ struct accelero_spi {
     enum accelero_error  error;
 };
 
+
+/******************************************************************************/
+/* Public functions --------------------------------------------------------- */
+/******************************************************************************/
 uint8_t AcceleroSpiInit(void);
 void AcceleroCsInit(void);
 void AcceleroIoRead(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read);
@@ -109,9 +124,13 @@ bool AcceleroGetMode(void);
 uint8_t AcceleroIoWriteIT(uint8_t *buf_ptr, uint8_t write_addr, uint16_t num_byte_to_write);
 uint8_t AcceleroIoReadIT(uint8_t *buf_ptr, uint8_t read_addr, uint16_t num_byte_to_read);
 
+
+/******************************************************************************/
+
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __ACCELERO_SPI_H__ */
 
+#endif /* __ACCELERO_SPI_H__ */
