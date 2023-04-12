@@ -17,6 +17,41 @@
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
 /******************************************************************************/
+struct audio_drv cs43l22_drv =
+{
+  Cs43l22Init,
+  Cs43l22DeInit,
+  Cs43l22ReadID,
+
+  Cs43l22Play,
+  Cs43l22Pause,
+  Cs43l22Resume,
+  Cs43l22Stop,
+
+  Cs43l22SetFrequency,
+  Cs43l22SetMute,
+  Cs43l22SetMute,
+  Cs43l22SetOutputMode,
+  Cs43l22Reset,
+};
+
+
+/******************************************************************************/
+
+
+void AudioTask(void *argument)
+{
+    PrintfLogsCRLF(CLR_GR"AUDIO INIT..."CLR_DEF);
+
+    AudioIoInit();
+
+    for (;;) {
+
+    }
+}
+/******************************************************************************/
+
+
 
 
 void AudioIoInit(void)
@@ -47,3 +82,8 @@ void AudioIoInit(void)
     /* Wait for a delay to insure registers erasing */
     HAL_Delay(5);
 }
+/******************************************************************************/
+
+
+
+

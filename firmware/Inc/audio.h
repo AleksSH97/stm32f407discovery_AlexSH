@@ -23,6 +23,13 @@
 #include <stdbool.h>
 
 #include "stm32f4xx_hal.h"
+#include "dac_i2c.h"
+#include "cs43l22.h"
+#include "log.h"
+
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +40,7 @@ extern "C" {
 /* Public defines ----------------------------------------------------------- */
 /******************************************************************************/
 #define AUDIO_CODEC_STANDARD                0x04
-#define AUDIO_I2C_ADDRESS                     0x94
+#define AUDIO_I2C_ADDRESS                   0x94
 
   /* Audio Reset Pin definition */
 #define AUDIO_RESET_GPIO_CLK_ENABLE()         __GPIOD_CLK_ENABLE()
@@ -76,12 +83,35 @@ extern "C" {
 /******************************************************************************/
 /* Public variables --------------------------------------------------------- */
 /******************************************************************************/
+struct audio_drv
+{
+  uint32_t  (*Init)(uint16_t, uint16_t, uint8_t, uint32_t);
+  void      (*DeInit)(void);
+  uint32_t  (*ReadID)(uint16_t);
+  uint32_t  (*Play)(uint16_t, uint16_t*, uint16_t);
+  uint32_t  (*Pause)(uint16_t);
+  uint32_t  (*Resume)(uint16_t);
+  uint32_t  (*Stop)(uint16_t, uint32_t);
+  uint32_t  (*SetFrequency)(uint16_t, uint32_t);
+  uint32_t  (*SetVolume)(uint16_t, uint8_t);
+  uint32_t  (*SetMute)(uint16_t, uint32_t);
+  uint32_t  (*SetOutputMode)(uint16_t, uint8_t);
+  uint32_t  (*Reset)(uint16_t);
+};
 
+struct audio {
+    bool audio_stop;
+    volatile uint8_t output_dev;
+};
+
+extern struct audio audio;
+extern struct audio_drv cs43l22_drv;
 
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
 void AudioIoInit(void);
+void AudioTask(void *argument);
 
 /******************************************************************************/
 
