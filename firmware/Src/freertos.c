@@ -27,6 +27,7 @@ osThreadId_t ButtonInput;
 osThreadId_t IndicationUpdate;
 osThreadId_t MicrophoneInput;
 osThreadId_t AccelerometerUpdate;
+osThreadId_t AudioInput;
 
 const osThreadAttr_t ButtonTask_attributes = {
         .name = "ButtonTask",
@@ -51,6 +52,14 @@ const osThreadAttr_t AccelerometerTask_attributes = {
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityNormal,
 };
+
+const osThreadAttr_t AudioTaskAttributes = {
+        .name = "AudioTask",
+        .stack_size = 128 * 4,
+        .priority = (osPriority_t) osPriorityNormal,
+};
+
+
 /******************************************************************************/
 
 
@@ -68,5 +77,7 @@ void MX_FREERTOS_Init(void)
     MicrophoneInput = osThreadNew(MicrophoneTask, NULL, &MicrophoneTask_attributes);
 
     AccelerometerUpdate = osThreadNew(AccelerometerTask, NULL, &AccelerometerTask_attributes);
+
+    AudioInput = osThreadNew(AudioTask, NULL, &AudioTaskAttributes);
 }
 /******************************************************************************/
