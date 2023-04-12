@@ -17,7 +17,7 @@ void DataUartInit(void)
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
 
     GPIO_InitStruct.Pin          = GPIO_PIN_11;
     GPIO_InitStruct.Mode         = GPIO_MODE_AF_PP;
