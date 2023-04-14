@@ -17,36 +17,95 @@
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
 /******************************************************************************/
-struct audio_drv cs43l22_drv =
+static struct audio_drv *audio_drv_ptr;
+struct audio audio;
+
+/******************************************************************************/
+void prvAudioErrorHandler(audio_error_t error);
+
+
+
+/**
+ * \brief           Audio init
+ * \param[in]
+ */
+uint8_t AudioInit(void)
 {
-  Cs43l22Init,
-  Cs43l22DeInit,
-  Cs43l22ReadID,
+    uint8_t res = AUDIO_OK;
+    uint32_t deviceid = 0x00;
 
-  Cs43l22Play,
-  Cs43l22Pause,
-  Cs43l22Resume,
-  Cs43l22Stop,
+    audio.output_device = AUDIO_OUTPUT_DEVICE_HEADPHONE;
 
-  Cs43l22SetFrequency,
-  Cs43l22SetMute,
-  Cs43l22SetMute,
-  Cs43l22SetOutputMode,
-  Cs43l22Reset,
-};
+    res = DacI2cInit();
 
+    PrintfLogsCRLF(CLR_GR"AUDIO INIT..."CLR_DEF);
 
+    deviceid = cs43l22_drv.ReadID(AUDIO_I2C_ADDRESS);
+
+    if ((deviceid & CS43L22_ID_MASK) == CS43L22_ID) {
+        audio_drv_ptr = &cs43l22_drv;
+    }
+    else {
+        res = AUDIO_INIT_ERROR;
+        return res;
+    }
+
+    if (audio_drv_ptr == NULL) {
+        res = AUDIO_INIT_ERROR;
+        return res;
+    }
+
+    if (audio_drv_ptr->Init == NULL || audio_drv_ptr->ReadID == NULL) {
+        res = AUDIO_INIT_ERROR;
+        return res;
+    }
+
+    if (res == AUDIO_OK) {
+        res = audio_drv_ptr->Init(AUDIO_I2C_ADDRESS, audio.output_device, AUDIO_DEFAULT_VOLMAX, AUDIO_FREQUENCY_22K);
+        AudioSetStatus(AUDIO_IDLE);
+    }
+
+    return res;
+}
 /******************************************************************************/
 
 
+
+
+/**
+ * \brief           Audio task
+ * \param[in]
+ */
 void AudioTask(void *argument)
 {
-    PrintfLogsCRLF(CLR_GR"AUDIO INIT..."CLR_DEF);
-
-    AudioIoInit();
+    audio.error = AudioInit();
 
     for (;;) {
+        if (AudioGetError() != 0) {
+            prvAudioErrorHandler(AudioGetError());
+            continue;
+        }
 
+        switch (audio.status) {
+            case AUDIO_IDLE:
+                break;
+            case AUDIO_INIT:
+                MicrophoneSetStatus(MICROPHONE_INIT);
+                AudioSetStatus(AUDIO_PLAY);
+                break;
+            case AUDIO_PLAY:
+                AudioSetError(AudioPlay());
+                break;
+            case AUDIO_STOP:
+                break;
+            case AUDIO_ERROR:
+                PrintfLogsCRLF(CLR_RD"AUDIO ERROR..."CLR_DEF);
+                break;
+            default:
+                break;
+        }
+
+        osDelay(1);
     }
 }
 /******************************************************************************/
@@ -54,6 +113,81 @@ void AudioTask(void *argument)
 
 
 
+/**
+ * \brief           Audio play sound state
+ * \param[in]
+ */
+uint8_t AudioPlay(void)
+{
+    uint8_t res = AUDIO_OK;
+
+    if (audio_drv_ptr->Play == NULL) {
+        res = AUDIO_PLAY_ERROR;
+        return res;
+    }
+
+    audio_drv_ptr->Play(AUDIO_I2C_ADDRESS, microphone.tx, 1);
+
+    return res;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Audio set state
+ * \param[in]
+ */
+void AudioSetStatus(audio_status_t status)
+{
+    audio.status = status;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Audio get state
+ * \param[in]
+ */
+audio_status_t AudioGetStatus(void)
+{
+    return audio.status;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * \brief           Audio get error
+ * \param[in]
+ */
+audio_error_t AudioGetError(void)
+{
+    return audio.error;
+}
+/******************************************************************************/
+
+
+
+
+/**
+ * @brief          Audio set current error state
+ */
+void AudioSetError(audio_error_t error)
+{
+    audio.error = error;
+}
+/******************************************************************************/
+
+
+
+/**
+ * @brief          Audio I/O init
+ */
 void AudioIoInit(void)
 {
     GPIO_InitTypeDef  GPIO_InitStruct;
@@ -67,8 +201,6 @@ void AudioIoInit(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     HAL_GPIO_Init(AUDIO_RESET_GPIO, &GPIO_InitStruct);
-
-    DacI2cInit();
 
     /* Power Down the codec */
     HAL_GPIO_WritePin(AUDIO_RESET_GPIO, AUDIO_RESET_PIN, GPIO_PIN_RESET);
@@ -87,3 +219,44 @@ void AudioIoInit(void)
 
 
 
+/**
+ * @brief          Audio error handler
+ */
+void prvAudioErrorHandler(audio_error_t error)
+{
+    switch (error) {
+        case AUDIO_INIT_ERROR:
+            PrintfLogsCRLF("Error AUDIO: " CLR_RD"0%d" CLR_DEF, error);
+            AudioSetError(AUDIO_OK);
+            break;
+        case AUDIO_PLAY_ERROR:
+            PrintfLogsCRLF("Error AUDIO: " CLR_RD"0%d" CLR_DEF, error);
+            AudioSetError(AUDIO_OK);
+            break;
+//        case ACCELERO_TX_BUFFER_WRITE_ERROR:
+//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+//            AccelerometerSetError(ACCELERO_OK);
+//            break;
+//        case ACCELERO_RX_BUFFER_READ_ERROR:
+//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+//            AccelerometerSetError(ACCELERO_OK);
+//            break;
+//        case ACCELERO_RX_BUFFER_WRITE_ERROR:
+//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+//            AccelerometerSetError(ACCELERO_OK);
+//            break;
+//        case ACCELERO_DELETE_TRASH_ERROR:
+//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+//            AccelerometerSetError(ACCELERO_OK);
+//            break;
+//        case ACCELERO_SPI_SETUP_ERROR:
+//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
+//            AccelerometerSetError(ACCELERO_OK);
+//            break;
+        default:
+            PrintfLogsCRLF(CLR_RD"Undefined error AUDIO"CLR_DEF);
+            AudioSetError(AUDIO_OK);
+            break;
+    }
+}
+/******************************************************************************/
