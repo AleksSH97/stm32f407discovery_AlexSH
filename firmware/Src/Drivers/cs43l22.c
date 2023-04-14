@@ -18,6 +18,23 @@
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
 /******************************************************************************/
+struct audio_drv cs43l22_drv =
+{
+    Cs43l22Init,
+    Cs43l22DeInit,
+    Cs43l22ReadID,
+
+    Cs43l22Play,
+    Cs43l22Pause,
+    Cs43l22Resume,
+    Cs43l22Stop,
+
+    Cs43l22SetFrequency,
+    Cs43l22SetVolume,
+    Cs43l22SetMute,
+    Cs43l22SetOutputMode,
+    Cs43l22Reset,
+};
 
 volatile uint8_t OutputDev = 0;
 static uint8_t Is_cs43l22_Stop = 1;
@@ -123,7 +140,7 @@ uint32_t Cs43l22Init(uint16_t DeviceAddr, uint16_t OutputDevice, uint8_t Volume,
 void Cs43l22DeInit(void)
 {
     /* Deinitialize Audio Codec interface */
-    AUDIO_IO_DeInit();
+    //AUDIO_IO_DeInit();
 }
 /******************************************************************************/
 
