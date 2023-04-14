@@ -27,7 +27,7 @@
 #define _CMD_LOGIN                  "login"
 #define _CMD_LOGOUT                 "logout"
 
-#define _CMD_VISUAL                 "visual"
+#define _CMD_AUDIO                  "audio"
 #define _CMD_ACCELERO               "accelero"
 #define _CMD_ENABLE                 "enable"
 
@@ -61,7 +61,7 @@ microrl_t microrl;
 microrl_t *microrl_ptr = &microrl;
 
 char *keyword[] = {_CMD_HELP, _CMD_CLEAR, _CMD_LOGIN, _CMD_LOGOUT,
-        _CMD_BUFF, _CMD_VISUAL, _CMD_RESET, _CMD_FREE,
+        _CMD_BUFF, _CMD_AUDIO, _CMD_RESET, _CMD_FREE,
         _CMD_ACCELERO, _CMD_ENABLE, _CMD_BACK};    //available  commands
 
 char *read_save_key[] = {_SCMD_RD, _SCMD_SAVE};            // 'read/save' command arguments
@@ -192,10 +192,10 @@ int ConsoleExecute(microrl_t *microrl_ptr, int argc, const char * const *argv) {
             ConsolePrintBuff(microrl_ptr);
             microrl_set_execute_callback(microrl_ptr, ConsoleBuff);
         }
-        else if (strcmp(argv[i], _CMD_VISUAL) == 0) {
-            prvConsolePrint(microrl_ptr, "\tChoose your action with audio visualizer: " _ENDLINE_SEQ);
+        else if (strcmp(argv[i], _CMD_AUDIO) == 0) {
+            prvConsolePrint(microrl_ptr, "\tChoose your action with audio: " _ENDLINE_SEQ);
             ConsolePrintVisualizer(microrl_ptr);
-            microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
+            microrl_set_execute_callback(microrl_ptr, ConsoleAudio);
         }
         else if (strcmp(argv[i], _CMD_ACCELERO) == 0) {
             prvConsolePrint(microrl_ptr, "\tChoose your action with accelerometer: " _ENDLINE_SEQ);
@@ -324,7 +324,7 @@ int ConsoleBuff(microrl_t *microrl_ptr, int argc, const char * const *argv)
  * \brief           Visualizer menu in console
  * \param[in]
  */
-int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv)
+int ConsoleAudio(microrl_t *microrl_ptr, int argc, const char * const *argv)
 {
     int i = 0;
 
@@ -335,7 +335,7 @@ int ConsoleVisualizer(microrl_t *microrl_ptr, int argc, const char * const *argv
                 MicrophoneSetActivate(MICROPHONE_ON);
             }
 
-            MicrophoneSetStatus(MICROPHONE_INIT);
+            AudioSetStatus(AUDIO_INIT);
             IoSystemSetMode(IO_LOGS);
         }
         else if (strcmp(argv[i], _CMD_BACK) == 0) {
@@ -438,7 +438,7 @@ void ConsoleSigint(microrl_t *microrl_ptr)
 {
     MicrophoneSetActivate(MICROPHONE_OFF);
     AccelerometerSetStatus(ACCELERO_IDLE);
-    microrl_set_execute_callback(microrl_ptr, ConsoleVisualizer);
+    microrl_set_execute_callback(microrl_ptr, ConsoleAudio);
     prvConsoleClearScreen(microrl_ptr);
     ConsolePrintVisualizer(microrl_ptr);
 }
@@ -510,7 +510,7 @@ void ConsolePrintHelp(microrl_t *microrl_ptr)
     prvConsolePrint(microrl_ptr, "List of commands:"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tclear               - clear screen"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tlogout              - end session"_ENDLINE_SEQ);
-    prvConsolePrint(microrl_ptr, "\tvisual              - audio visualization configuration menu"_ENDLINE_SEQ);
+    prvConsolePrint(microrl_ptr, "\taudio               - audio configuration menu"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\tbuff                - buff configuration menu"_ENDLINE_SEQ);
     prvConsolePrint(microrl_ptr, "\taccelero            - accelerometer configuration menu"_ENDLINE_SEQ);
 
