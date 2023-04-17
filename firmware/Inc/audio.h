@@ -105,6 +105,7 @@ typedef enum {
     AUDIO_OK = 0x00,
     AUDIO_INIT_ERROR,
     AUDIO_PLAY_ERROR,
+    AUDIO_UNDEFINED_ERROR,
 } audio_error_t;
 
 typedef enum {
