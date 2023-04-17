@@ -37,13 +37,13 @@ osMessageQueueId_t uartRxQueueHandle;
 const osThreadAttr_t RxTask_attributes = {
         .name = "RxTask",
         .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal1,
+        .priority = (osPriority_t) osPriorityNormal,
 };
 
 const osThreadAttr_t TxTask_attributes = {
         .name = "TxTask",
         .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal1,
+        .priority = (osPriority_t) osPriorityNormal,
 };
 
 const osMessageQueueAttr_t uartRxQueueAttributes = {
@@ -136,8 +136,6 @@ void IoSystemRxTask(void *argument)
         if (io_system.rx_handler != NULL) {
             io_system.rx_handler(rx);
         }
-
-        osDelay(1);
     }
 
     osThreadTerminate(NULL);
@@ -180,7 +178,6 @@ void IoSystemTxTask(void *argument)
             }
             UARTSendByteTxBuff(&huart3);
         }
-        osDelay(1);
     }
 
     osThreadTerminate(NULL);

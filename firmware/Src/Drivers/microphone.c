@@ -158,7 +158,6 @@ void MicrophoneTask(void *argument)
             default:
                 break;
         }
-        osDelay(1);
     }
 }
 /******************************************************************************/
@@ -224,7 +223,9 @@ void prvMicrophoneTxState1(void)
 
         for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
             microphone.tx[i] = data[i];
+            MicrophonePutDataToTxBuffer(microphone.tx[i], 1);
             microphone.tx[i + 2] = data[i];
+            MicrophonePutDataToTxBuffer(microphone.tx[i + 2], 1);
         }
     }
 }
@@ -234,7 +235,7 @@ void prvMicrophoneTxState1(void)
 
 
 /**
- * \brief           Microphone TX_STATE_1
+ * \brief           Microphone TX_STATE_2
  * \param[in]
  */
 void prvMicrophoneTxState2(void)
@@ -246,7 +247,9 @@ void prvMicrophoneTxState2(void)
 
         for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
             microphone.tx[i] = data[i];
+            MicrophonePutDataToTxBuffer(microphone.tx[i], 1);
             microphone.tx[i + 2] = data[i];
+            MicrophonePutDataToTxBuffer(microphone.tx[i + 2], 1);
         }
     }
 }
@@ -302,6 +305,19 @@ void MicrophoneGetDataFromRxBuffer(uint16_t *data)
 
 
 /**
+ * \brief           Microphone get data from TX ring buffer
+ * \param[in]
+ */
+void MicrophoneGetDataFromTxBuffer(uint16_t *data)
+{
+    lwrb_read(&microphone.lwrb_tx, data, sizeof(data));
+}
+/******************************************************************************/
+
+
+
+
+/**
  * \brief           Microphone set state
  * \param[in]
  */
@@ -328,7 +344,7 @@ microphone_status_t MicrophoneGetStatus(void)
 
 
 /**
- * \brief           Microphone set state
+ * \brief           Microphone disable
  * \param[in]
  */
 bool MicrophoneDisable(void)

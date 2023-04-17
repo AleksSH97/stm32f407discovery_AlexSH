@@ -103,8 +103,6 @@ void AccelerometerTask(void* argument)
             default:
                 break;
         }
-
-        osDelay(1);
     }
 }
 /******************************************************************************/

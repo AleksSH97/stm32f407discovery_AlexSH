@@ -72,7 +72,6 @@ void ButtonTask(void *argumet)
     for (;;)
     {
         ButtonCheckMode();
-        osDelay(10);
     }
 }
 /**

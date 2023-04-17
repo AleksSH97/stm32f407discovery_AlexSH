@@ -43,8 +43,6 @@ static void prvIndicationLedReadySetup(mculed_t *led_ptr);
  */
 void IndicationInit(void)
 {
-    PrintfLogsCRLF(CLR_GR"INDICATION INIT..."CLR_DEF);
-
 	mculed_ctrl_t fns = {0};
 
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -86,14 +84,13 @@ void IndicationInit(void)
 
 void IndicationUpdateTask(void *argument)
 {
-    IndicationInit();
+    PrintfLogsCRLF(CLR_GR"INDICATION INIT..."CLR_DEF);
     osDelay(1000);
     IndicationLedReady();
 
     for (;;)
     {
         IndicationLedsUpdate();
-        osDelay(5);
     }
 }
 /******************************************************************************/
@@ -680,7 +677,7 @@ void prvIndicationLedReadySetup(mculed_t *led_ptr)
  */
 void IndicationLedsUpdate(void)
 {
-	for (int led_index = 0; led_index < N_LED; led_index++) {
+	for (uint8_t led_index = 0; led_index < N_LED; led_index++) {
 	    LedUpdate(&mculed[led_index]);
 	}
 }
