@@ -27,7 +27,7 @@ PDM_Filter_Config_t PDM1_filter_config;
 void PDM2PCM_init(void)
 {
 
-  PDM1_filter_handler.bit_order = PDM_FILTER_BIT_ORDER_MSB;
+  PDM1_filter_handler.bit_order = PDM_FILTER_BIT_ORDER_LSB;
   PDM1_filter_handler.endianness = PDM_FILTER_ENDIANNESS_BE;
   PDM1_filter_handler.high_pass_tap = 2104533974;
   PDM1_filter_handler.in_ptr_channels = 1;
@@ -36,7 +36,7 @@ void PDM2PCM_init(void)
 
   PDM1_filter_config.decimation_factor = PDM_FILTER_DEC_FACTOR_64;
   PDM1_filter_config.output_samples_number = 16;
-  PDM1_filter_config.mic_gain = 0;
+  PDM1_filter_config.mic_gain = 24;
   PDM_Filter_setConfig(&PDM1_filter_handler, &PDM1_filter_config);
 }
 /******************************************************************************/
