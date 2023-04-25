@@ -43,6 +43,7 @@
 
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
+#include "cmsis_os2.h"
 #include "semphr.h"
 
 #include "microphone.h"
@@ -50,6 +51,8 @@
 
 #include "accelerometer.h"
 #include "accelero_spi.h"
+
+#include "audio.h"
 
 #ifdef __cplusplus
 extern "C" {

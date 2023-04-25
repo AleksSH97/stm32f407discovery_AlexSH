@@ -73,13 +73,13 @@ extern struct accelero_spi accelero_spi;
 
 enum accelero_status
 {
-    ACCELERO_IDLE = 0,
+    ACCELERO_IDLE = 0x00,
     ACCELERO_XYZ,
     ACCELERO_BLOCKED,
 };
 
 enum accelero_error {
-    ACCELERO_OK = 0,
+    ACCELERO_OK = 0x00,
     ACCELERO_INIT_ERROR,
     ACCELERO_TX_BUFFER_READ_ERROR,
     ACCELERO_TX_BUFFER_WRITE_ERROR,

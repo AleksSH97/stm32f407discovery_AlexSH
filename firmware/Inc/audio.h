@@ -28,6 +28,7 @@
 #include "log.h"
 
 #include "FreeRTOS.h"
+#include "task.h"
 #include "cmsis_os.h"
 #include "cmsis_os2.h"
 
@@ -124,7 +125,6 @@ struct audio {
     audio_error_t error;
 };
 
-extern struct audio audio;
 extern struct audio_drv cs43l22_drv;
 
 /******************************************************************************/

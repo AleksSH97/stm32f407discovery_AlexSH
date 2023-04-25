@@ -65,15 +65,15 @@ void ButtonInit(void)
 
 
 
-void ButtonTask(void *argumet)
-{
-    ButtonInit();
-
-    for (;;)
-    {
-        ButtonCheckMode();
-    }
-}
+//void ButtonTask(void *argumet)
+//{
+//    ButtonInit();
+//
+//    for (;;)
+//    {
+//
+//    }
+//}
 /**
  * @brief          Button bool pushed status. Returns false if button has not been pushed,
  *                 returns 1 if button has been pushed

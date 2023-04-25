@@ -28,6 +28,11 @@
 #include "log.h"
 #include "pdm2pcm.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "cmsis_os.h"
+#include "cmsis_os2.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,6 +59,7 @@ extern "C" {
 /******************************************************************************/
 /* Public variables --------------------------------------------------------- */
 /******************************************************************************/
+
 extern struct microphone microphone;
 extern CRC_HandleTypeDef hcrc;
 extern osMessageQueueId_t VisualQueueHandle;
@@ -65,7 +71,7 @@ typedef enum {
 } microphone_transmit_t;
 
 typedef enum {
-    MICROPHONE_IDLE         = 0x00,
+    MICROPHONE_IDLE          = 0x00,
     MICROPHONE_RX_STATE_1    = 0x01,
     MICROPHONE_RX_STATE_2    = 0x02,
     MICROPHONE_TX_STATE_1    = 0x03,
@@ -91,22 +97,29 @@ struct microphone {
     bool activate;
     microphone_transmit_t transmit;
 
+    uint8_t rxstate;
+    uint8_t txstate;
+
     struct timeout *timer;
 };
-
 
 /******************************************************************************/
 /* Public functions --------------------------------------------------------- */
 /******************************************************************************/
 void MicrophoneInit(void);
 void MicrophoneTask(void *argument);
+
 bool MicrophonePutDataToTxBuffer(const void* data, size_t len);
 bool MicrophonePutDataToRxBuffer(const void* data, size_t len);
 void MicrophoneGetDataFromRxBuffer(uint16_t *data);
+void MicrophoneGetDataFromTxBuffer(uint16_t *data);
+
 void MicrophoneVisualizationTask(void *argument);
 void MicrophoneSetStatus(microphone_status_t status);
+
 void MicrophoneSetActivate(bool mode);
 bool MicrophoneGetActivate(void);
+
 bool MicrophoneDisable(void);
 void MicrophoneVisualizationClearQueue(void);
 microphone_status_t MicrophoneGetStatus(void);

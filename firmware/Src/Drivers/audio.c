@@ -20,8 +20,10 @@
 static struct audio_drv *audio_drv_ptr;
 struct audio audio;
 
+
 /******************************************************************************/
 void prvAudioErrorHandler(audio_error_t error);
+
 
 
 
@@ -31,14 +33,12 @@ void prvAudioErrorHandler(audio_error_t error);
  */
 uint8_t AudioInit(void)
 {
-    uint8_t res = AUDIO_OK;
+    uint8_t result = AUDIO_OK;
     uint32_t deviceid = 0x00;
 
-    audio.output_device = AUDIO_OUTPUT_DEVICE_AUTO;
+    audio.output_device = AUDIO_OUTPUT_DEVICE_BOTH;
 
-    res = DacI2cInit();
-
-    PrintfLogsCRLF(CLR_GR"AUDIO INIT..."CLR_DEF);
+    result = DacI2cInit();
 
     deviceid = cs43l22_drv.ReadID(AUDIO_I2C_ADDRESS);
 
@@ -57,12 +57,12 @@ uint8_t AudioInit(void)
         return AUDIO_INIT_ERROR;
     }
 
-    if (res == AUDIO_OK) {
-        res = audio_drv_ptr->Init(AUDIO_I2C_ADDRESS, audio.output_device, AUDIO_DEFAULT_VOLMAX, AUDIO_FREQUENCY_48K);
+    if (result == AUDIO_OK) {
+        result = audio_drv_ptr->Init(AUDIO_I2C_ADDRESS, audio.output_device, AUDIO_DEFAULT_VOLMAX, AUDIO_FREQUENCY_48K);
         AudioSetStatus(AUDIO_IDLE);
     }
 
-    return res;
+    return result;
 }
 /******************************************************************************/
 
@@ -76,6 +76,7 @@ uint8_t AudioInit(void)
 void AudioTask(void *argument)
 {
     audio.error = AudioInit();
+    PrintfLogsCRLF(CLR_GR"AUDIO INIT..."CLR_DEF);
 
     for (;;) {
         if (AudioGetError() != 0) {
@@ -118,18 +119,20 @@ uint8_t AudioPlay(void)
 {
     uint16_t buffer = 0x00;
 
-    MicrophoneGetDataFromTxBuffer(&buffer);
+    //MicrophoneGetDataFromTxBuffer(&buffer);
 
     if (audio_drv_ptr->Play == NULL) {
         return AUDIO_PLAY_ERROR;
     }
 
-    if(audio_drv_ptr->Play(AUDIO_I2C_ADDRESS, &buffer, 1) != 0) {
+    if(audio_drv_ptr->Play(AUDIO_I2C_ADDRESS, &microphone.tx[0], 64) != 0) {
         return AUDIO_PLAY_ERROR;
     }
     else {
-        HAL_I2S_Transmit_DMA(&hi2s3, &buffer, 1);
+        HAL_I2S_Transmit_DMA(&hi2s3, &microphone.tx[0], 64);
     }
+
+    //AudioSetStatus(AUDIO_IDLE);
 
     return AUDIO_OK;
 }
@@ -240,22 +243,6 @@ void prvAudioErrorHandler(audio_error_t error)
             PrintfLogsCRLF("Error AUDIO: " CLR_RD"0%d" CLR_DEF, error);
             AudioSetError(AUDIO_OK);
             break;
-//        case ACCELERO_RX_BUFFER_READ_ERROR:
-//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
-//            AccelerometerSetError(ACCELERO_OK);
-//            break;
-//        case ACCELERO_RX_BUFFER_WRITE_ERROR:
-//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
-//            AccelerometerSetError(ACCELERO_OK);
-//            break;
-//        case ACCELERO_DELETE_TRASH_ERROR:
-//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
-//            AccelerometerSetError(ACCELERO_OK);
-//            break;
-//        case ACCELERO_SPI_SETUP_ERROR:
-//            PrintfLogsCRLF("Error SPI: " CLR_RD"0%d" CLR_DEF, error);
-//            AccelerometerSetError(ACCELERO_OK);
-//            break;
         default:
             PrintfLogsCRLF(CLR_RD"Undefined error AUDIO"CLR_DEF);
             AudioSetError(AUDIO_OK);

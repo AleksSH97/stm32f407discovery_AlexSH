@@ -22,11 +22,12 @@
 /******************************************************************************/
 #include <stdarg.h>
 
-#include "cmsis_os.h"
-#include "cmsis_os2.h"
 #include "log.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
+#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 #include "lwprintf/lwprintf.h"
 

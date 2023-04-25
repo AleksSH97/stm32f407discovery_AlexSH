@@ -35,7 +35,6 @@ const osThreadAttr_t VisualizationTask_attributes = {
         .priority = (osPriority_t) osPriorityNormal,
 };
 
-
 /******************************************************************************/
 /* Private function prototypes ---------------------------------------------- */
 /******************************************************************************/
@@ -60,14 +59,15 @@ void prvMicrophoneDMAInit(void);
  */
 void MicrophoneInit(void)
 {
-    PrintfLogsCRLF(CLR_GR"MICROPHONE INIT..."CLR_DEF);
-
     prvMicrophoneDMAInit();
+    prvMicrophoneCRCInit();
     I2S2Init();
     I2S3Init();
     RingBufMicrophoneInit();
-    prvMicrophoneCRCInit();
     PDM2PCM_init();
+
+    microphone.rxstate = 0;
+    microphone.txstate = 0;
 
     prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_BLOCKED);
     MicrophoneSetActivate(MICROPHONE_ON);
@@ -116,6 +116,7 @@ void prvMicrophoneActivateDMA(void)
 void MicrophoneTask(void *argument)
 {
     MicrophoneInit();
+    PrintfLogsCRLF(CLR_GR"MICROPHONE INIT..."CLR_DEF);
 
     for (;;)
     {
@@ -134,19 +135,27 @@ void MicrophoneTask(void *argument)
                 VisualQueueHandle = osMessageQueueNew(128, sizeof(uint16_t), &VisualQueueAttributes);
                 VisualizationUpdate = osThreadNew(MicrophoneVisualizationTask, NULL, &VisualizationTask_attributes);
             case MICROPHONE_RX_STATE_1:
-                prvMicrophoneRxState1();
-                MicrophoneSetStatus(MICROPHONE_IDLE);
+                if (microphone.rxstate == 1) {
+                    prvMicrophoneRxState1();
+                    MicrophoneSetStatus(MICROPHONE_IDLE);
+                }
                 break;
             case MICROPHONE_RX_STATE_2:
-                prvMicrophoneRxState2();
-                MicrophoneSetStatus(MICROPHONE_IDLE);
+                if (microphone.rxstate == 2) {
+                    prvMicrophoneRxState2();
+                    MicrophoneSetStatus(MICROPHONE_IDLE);
+                }
                 break;
             case MICROPHONE_TX_STATE_1:
-                prvMicrophoneTxState1();
-                MicrophoneSetStatus(MICROPHONE_IDLE);
+                if (microphone.txstate == 1) {
+                    prvMicrophoneTxState1();
+                    MicrophoneSetStatus(MICROPHONE_IDLE);
+                }
             case MICROPHONE_TX_STATE_2:
-                prvMicrophoneTxState2();
-                MicrophoneSetStatus(MICROPHONE_IDLE);
+                if (microphone.txstate == 2) {
+                    prvMicrophoneTxState2();
+                    MicrophoneSetStatus(MICROPHONE_IDLE);
+                }
             case MICROPHONE_IDLE:
                 break;
             case MICROPHONE_PROCESS_ERROR:
@@ -173,16 +182,17 @@ void prvMicrophoneRxState1(void)
 {
     PDM_Filter(&microphone.rx[0], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-    if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+    if (!MicrophonePutDataToRxBuffer(microphone.mid_buff, sizeof(microphone.mid_buff))) {
         MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
     }
 
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
     if ((microphone.lwrb_rx.w - microphone.lwrb_rx.r) > MICROPHONE_BUFF_SIZE) {
-        IndicationLedTop();
+        IndicationLedButton();
         prvMicrophoneSetTransmit(MICROPHONE_TRANSMIT_READY);
     }
+    microphone.rxstate = 0;
 }
 /******************************************************************************/
 
@@ -197,13 +207,13 @@ void prvMicrophoneRxState2(void)
 {
     PDM_Filter(&microphone.rx[64], &microphone.mid_buff[0], &PDM1_filter_handler);
 
-    if (!MicrophonePutDataToRxBuffer(&microphone.mid_buff, sizeof(microphone.mid_buff))) {
+    if (!MicrophonePutDataToRxBuffer(microphone.mid_buff, sizeof(microphone.mid_buff))) {
         MicrophoneSetStatus(MICROPHONE_PROCESS_ERROR);
     }
 
     osMessageQueuePut(VisualQueueHandle, microphone.mid_buff, 0, 100);
 
-    MicrophoneSetStatus(MICROPHONE_IDLE);
+    microphone.rxstate = 0;
 }
 /******************************************************************************/
 
@@ -223,9 +233,9 @@ void prvMicrophoneTxState1(void)
 
         for (int i = 0; i < MICROPHONE_HALF_BUFF_SIZE; i = i + 4) {
             microphone.tx[i] = data[i];
-            MicrophonePutDataToTxBuffer(microphone.tx[i], 1);
+            MicrophonePutDataToTxBuffer(&microphone.tx[i], microphone.tx[i]);
             microphone.tx[i + 2] = data[i];
-            MicrophonePutDataToTxBuffer(microphone.tx[i + 2], 1);
+            MicrophonePutDataToTxBuffer(&microphone.tx[i + 2], microphone.tx[i]);
         }
     }
 }
@@ -247,9 +257,9 @@ void prvMicrophoneTxState2(void)
 
         for (int i = MICROPHONE_HALF_BUFF_SIZE; i < MICROPHONE_BUFF_SIZE; i = i + 4) {
             microphone.tx[i] = data[i];
-            MicrophonePutDataToTxBuffer(microphone.tx[i], 1);
+            MicrophonePutDataToTxBuffer(&microphone.tx[i], sizeof(microphone.tx[i]));
             microphone.tx[i + 2] = data[i];
-            MicrophonePutDataToTxBuffer(microphone.tx[i + 2], 1);
+            MicrophonePutDataToTxBuffer(&microphone.tx[i + 2], microphone.tx[i]);
         }
     }
 }
@@ -470,7 +480,7 @@ void MicrophoneVisualizationTask(void *argument)
         for (uint32_t i = 0; i < MICROPHONE_MID_BUFF_SIZE; i++) {
             osStatus_t event = osMessageQueueGet(VisualQueueHandle, &msg[i], NULL, 200);
 
-            if (event == osOK && msg[i] >= MICROPHONE_THRESHOLD && msg[i] <= 63000) {
+            if (event == osOK && msg[i] >= MICROPHONE_THRESHOLD && msg[i] <= 60000) {
 
                 uint8_t bars = (msg[i] * MICROPHONE_MAX_BARS) / 0xFFFF;
                 bars = bars > MICROPHONE_MAX_BARS ? MICROPHONE_MAX_BARS : bars;

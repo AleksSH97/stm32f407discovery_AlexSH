@@ -21,12 +21,13 @@ I2C_HandleTypeDef hi2c1;
 
 /******************************************************************************/
 
+
 /**
   * @brief  I2C of DAC initialization
   * @param
   * @retval None
   */
-void DacI2cInit(void)
+uint8_t DacI2cInit(void)
 {
     hi2c1.Instance = I2C1;
     hi2c1.Init.ClockSpeed = 100000;
@@ -40,9 +41,12 @@ void DacI2cInit(void)
 
     if (HAL_I2C_Init(&hi2c1) != HAL_OK)
     {
-        Error_Handler();
+        return AUDIO_INIT_ERROR;
     }
+
+    return AUDIO_OK;
 }
+/******************************************************************************/
 
 
 
@@ -61,7 +65,7 @@ void DacI2CWriteData(uint8_t addr, uint8_t reg, uint8_t value)
     status = HAL_I2C_Mem_Write(&hi2c1, addr, (uint16_t)reg, I2C_MEMADD_SIZE_8BIT, &value, 1, DAC_I2C_TIMEOUT_MAX);
 
     /* Check the communication status */
-    if(status != HAL_OK) {
+    if (status != HAL_OK) {
         Error_Handler();
     }
 }
@@ -70,6 +74,13 @@ void DacI2CWriteData(uint8_t addr, uint8_t reg, uint8_t value)
 
 
 
+/**
+  * @brief  Writes/Read a single data.
+  * @param  addr: I2C address
+  * @param  reg: Register address
+  * @param  value: Data to be written
+  * @retval None
+  */
 uint8_t DacI2CReadData(uint8_t addr, uint8_t reg)
 {
     HAL_StatusTypeDef status = HAL_OK;
@@ -77,8 +88,8 @@ uint8_t DacI2CReadData(uint8_t addr, uint8_t reg)
 
     status = HAL_I2C_Mem_Read(&hi2c1, addr, (uint16_t)reg, I2C_MEMADD_SIZE_8BIT, &value, 1, DAC_I2C_TIMEOUT_MAX);
 
-    if(status != HAL_OK) {
-        Error_Handler();
+    if (status != HAL_OK) {
+        AudioSetError(AUDIO_UNDEFINED_ERROR);
     }
 
     return value;

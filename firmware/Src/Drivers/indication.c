@@ -82,22 +82,6 @@ void IndicationInit(void)
 
 
 
-void IndicationUpdateTask(void *argument)
-{
-    PrintfLogsCRLF(CLR_GR"INDICATION INIT..."CLR_DEF);
-    osDelay(1000);
-    IndicationLedReady();
-
-    for (;;)
-    {
-        IndicationLedsUpdate();
-    }
-}
-/******************************************************************************/
-
-
-
-
 /**
  * @brief          Led actions fns
  */
