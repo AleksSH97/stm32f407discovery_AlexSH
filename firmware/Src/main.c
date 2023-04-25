@@ -97,6 +97,8 @@ void prvInitializeMCU(void)
     HAL_Init();
     prvSystemClockConfig();
     MX_TIM1_Init();
+    IndicationInit();
+    ButtonInit();
 }
 /******************************************************************************/
 
