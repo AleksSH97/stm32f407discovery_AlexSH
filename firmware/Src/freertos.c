@@ -23,23 +23,10 @@
 /******************************************************************************/
 /* Private variables -------------------------------------------------------- */
 /******************************************************************************/
-osThreadId_t ButtonInput;
-osThreadId_t IndicationUpdate;
 osThreadId_t MicrophoneInput;
 osThreadId_t AccelerometerUpdate;
 osThreadId_t AudioInput;
 
-const osThreadAttr_t ButtonTask_attributes = {
-        .name = "ButtonTask",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal,
-};
-
-const osThreadAttr_t IndicationTask_attributes = {
-        .name = "IndicationUpdateTask",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal,
-};
 
 const osThreadAttr_t MicrophoneTask_attributes = {
         .name = "MicrophoneTask",
@@ -70,10 +57,6 @@ const osThreadAttr_t AudioTaskAttributes = {
  */
 void MX_FREERTOS_Init(void)
 {
-    ButtonInput = osThreadNew(ButtonTask, NULL, &ButtonTask_attributes);
-
-    IndicationUpdate = osThreadNew(IndicationUpdateTask, NULL, &IndicationTask_attributes);
-
     MicrophoneInput = osThreadNew(MicrophoneTask, NULL, &MicrophoneTask_attributes);
 
     AccelerometerUpdate = osThreadNew(AccelerometerTask, NULL, &AccelerometerTask_attributes);
